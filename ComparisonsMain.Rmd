@@ -1,0 +1,218 @@
+---
+title: "Comparaciones Teórico-Experimental"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(warning=FALSE,echo=FALSE,message=FALSE)
+```
+
+```{r}
+#Remove objects#
+rm (list=ls())
+
+#Read Input#
+input <- read.csv("DATA/InputComp.csv")
+
+family <- input$family[1]
+p.ref <- input$p.ref[1]
+heme <- input$heme[1]
+index = as.vector(input$index)
+
+if (family == "Globins"){
+  family <- paste(family,"Heme",heme,sep ="")
+  p.ref <- paste(p.ref,"Heme",heme,sep ="")
+}
+
+#Nmodes to analyze#
+nmodes1 = 10 
+nmodes2 = 25
+nmodes3 = 50
+nmodes4 = 100
+
+#Load librarys# 
+library(flux) #function "auc"#
+
+#Read files#
+dir.t <- "OUT/Theoretical"
+dir.e <- "OUT/Experimental"
+  
+df.Pnt = read.csv(file.path(dir.t,paste(p.ref,".Out.df.Pn.csv",sep="")))[,1:nmodes4]
+df.Qnt = t(apply(df.Pnt,1,cumsum))
+evalues = read.csv(file.path(dir.t,paste(p.ref,".Out.evalues.csv",sep="")))$x[1:nmodes4]
+ievalues = 1/evalues
+
+df.Pne = read.csv(file.path(dir.e,paste(family,".Out.df.Pn.csv",sep="")))[index,1:nmodes4]
+df.Qne = t(apply(df.Pne,1,cumsum))
+
+df.evaluese = read.csv(file.path(dir.e,paste(family,".Out.df.evalues.csv",sep="")))[index,1:nmodes4]
+evaluese = colMeans(df.evaluese)
+ievaluese = 1/evaluese
+
+lalign = read.csv(file.path(dir.e,paste(family,".Out.df.lalign.csv",sep="")))$x
+MSD = read.csv(file.path(dir.e,paste(family,".Out.MSD.csv",sep="")))$x
+id = read.csv(file.path(dir.e,paste(family,".Out.df.ID.csv",sep="")))$x
+id.index = id[index]
+pdbid <- read.csv(file.path("DATA/Experimental",paste(family,"Dataset.csv",sep="")))$pdbid
+pdbid <- pdbid[pdbid!=as.character(p.ref)]
+
+#Number of t and e proteins#
+nmut = nrow(df.Pnt)
+nexp = length(index)
+  
+#Number of t groups#
+ngroups = as.integer(nmut/nexp)
+
+```
+
+Conjunto teórico: `r nmut` mutantes de `r p.ref` de `r id.index` % de identidad secuencial con ANM R0 = 12 y Fmax= 2. Se seleccionó esta proteína ya que es la que presenta menor MSD con respecto a las coordenadas xyz promedio de todas las proteínas del conjunto experimental. El porcentaje de mutaciones se seleccionó de acuerdo al promedio de identidad secuencial de proteínas del conjunto experimental. 
+
+Conjunto experimental: `r nexp` proteínas de la familia de `r family`.Las proteínas tienen un promedio de identidad secuencial de `r id.index`. Todas las proteínas del sub-conjunto elegidas alinean en todos los sitios de `r p.ref`, o en como máximo 1 sitio menos.
+```{r}
+
+#Analysis experimental dataset#
+
+layout(matrix(1:4,2,2,byrow=T))
+  
+  hist(id,main="%ID con referencia",col="grey")
+  hist(lalign,main="Número de sitios alineados con referencia",col="grey")
+  hist(MSD,main="MSD con la referencia",col="grey")
+  plot(id,MSD,xlab = "%ID", main ="MSD vs. %ID")
+
+  caract <- data.frame(pdbid,id,lalign,MSD)
+  caract
+```
+
+
+```{r, echo = FALSE, warning=FALSE, message=FALSE}
+
+  #rho#
+  
+   rho.t.1 <- matrix(0,nrow=nmut,ncol=1)
+   rho.t.2 <- matrix(0,nrow=nmut,ncol=1)
+   rho.t.3 <- matrix(0,nrow=nmut,ncol=1)
+   rho.t.4 <- matrix(0,nrow=nmut,ncol=1)
+   
+  for (i in (1: nmut)){
+	  rho.t.1[i,] <- cor((as.vector(as.matrix(df.Pnt[i,1:nmodes1]))*evalues[1:nmodes1]),ievalues[1:nmodes1],method="pearson")	
+	  rho.t.2[i,] <- cor((as.vector(as.matrix(df.Pnt[i,1:nmodes2]))*evalues[1:nmodes2]),ievalues[1:nmodes2],method="pearson")	   
+	  rho.t.3[i,] <- cor((as.vector(as.matrix(df.Pnt[i,1:nmodes3]))*evalues[1:nmodes3]),ievalues[1:nmodes3],method="pearson")	  
+	  rho.t.4[i,] <- cor((as.vector(as.matrix(df.Pnt[i,1:nmodes4]))*evalues[1:nmodes4]),ievalues[1:nmodes4],method="pearson")	   
+  }
+   
+  rho.e.1 <- matrix(0,nrow=nexp,ncol=1)
+  rho.e.2 <- matrix(0,nrow=nexp,ncol=1)
+  rho.e.3 <- matrix(0,nrow=nexp,ncol=1) 
+  rho.e.4 <- matrix(0,nrow=nexp,ncol=1) 
+
+  for (i in (1: nexp)){
+	  rho.e.1[i,] <- cor((as.vector(as.matrix(df.Pne[i,1:nmodes1]))*evaluese[1:nmodes1]),ievaluese[1:nmodes1],method="pearson")
+	  rho.e.2[i,] <- cor((as.vector(as.matrix(df.Pne[i,1:nmodes2]))*evaluese[1:nmodes2]),ievaluese[1:nmodes2],method="pearson")
+	  rho.e.3[i,] <- cor((as.vector(as.matrix(df.Pne[i,1:nmodes3]))*evaluese[1:nmodes3]),ievaluese[1:nmodes3],method="pearson")
+	  rho.e.4[i,] <- cor((as.vector(as.matrix(df.Pne[i,1:nmodes4]))*evaluese[1:nmodes4]),ievaluese[1:nmodes4],method="pearson")
+  }
+   
+  #auc#
+  auc.t.1 <- matrix(0,nrow=nmut,ncol=1)
+  auc.t.2 <- matrix(0,nrow=nmut,ncol=1)
+  auc.t.3 <- matrix(0,nrow=nmut,ncol=1)
+  auc.t.4 <- matrix(0,nrow=nmut,ncol=1)
+
+  for (i in (1:nmut)){
+	  auc.t.1[i,] <- auc(seq(1:nmodes1),df.Qnt[i,1:nmodes1])
+	  auc.t.2[i,] <- auc(seq(1:nmodes2),df.Qnt[i,1:nmodes2])
+	  auc.t.3[i,] <- auc(seq(1:nmodes3),df.Qnt[i,1:nmodes3])
+	  auc.t.4[i,] <- auc(seq(1:nmodes4),df.Qnt[i,1:nmodes4])
+  }
+  
+  auc.e.1 <- matrix(0,nrow=nexp,ncol=1)
+  auc.e.2 <- matrix(0,nrow=nexp,ncol=1)
+  auc.e.3 <- matrix(0,nrow=nexp,ncol=1)
+  auc.e.4 <- matrix(0,nrow=nexp,ncol=1)
+
+  for (i in (1:nexp)){
+	  auc.e.1[i,] <- auc(seq(1:nmodes1),df.Qne[i,1:nmodes1])
+	  auc.e.2[i,] <- auc(seq(1:nmodes2),df.Qne[i,1:nmodes2])
+	  auc.e.3[i,] <- auc(seq(1:nmodes3),df.Qne[i,1:nmodes3])
+	  auc.e.4[i,] <- auc(seq(1:nmodes4),df.Qne[i,1:nmodes4])
+  }
+``` 
+
+Las distribuciones de auc y rho para cada conjunto se muestran a continuación (azul= teórico, rojo = experimental)
+
+```{r}
+  
+layout(matrix(1:4,2,2,byrow=T))
+  
+plot(density(rho.t.1),col="blue",ylab="Frecuencia",xlab="rho",main="Histograma rho 10 modos")
+points(x=c(rho.e.1),y=rep(0,nexp),col="red")
+
+plot(density(auc.t.1),col="blue",ylab="Frecuencia",xlab="auc",main="Histograma auc 10 modos")
+points(x=c(auc.e.1),y=rep(0,nexp),col="red")
+
+plot(density(rho.t.2),col="blue",ylab="Frecuencia",xlab="rho",main="Histograma rho 25 modos")
+points(x=c(rho.e.2),y=rep(0,nexp),col="red")
+
+plot(density(auc.t.2),col="blue",ylab="Frecuencia",xlab="auc",main="Histograma auc 25 modos")
+points(x=c(auc.e.2),y=rep(0,nexp),col="red")
+```
+
+```{r}
+layout(matrix(1:4,2,2,byrow=T))
+
+plot(density(rho.t.3),col="blue",ylab="Frecuencia",xlab="rho",main="Histograma rho 50 modos")
+points(x=c(rho.e.3),y=rep(0,nexp),col="red")
+
+plot(density(auc.t.3),col="blue",ylab="Frecuencia",xlab="auc",main="Histograma auc 50 modos")
+points(x=c(auc.e.3),y=rep(0,nexp),col="red")
+
+plot(density(rho.t.4),col="blue",ylab="Frecuencia",xlab="rho",main="Histograma rho 100 modos")
+points(x=c(rho.e.4),y=rep(0,nexp),col="red")
+
+plot(density(auc.t.4),col="blue",ylab="Frecuencia",xlab="auc",main="Histograma auc 100 nmodos")
+points(x=c(auc.e.4),y=rep(0,nexp),col="red")
+
+```
+
+Las distribuciones de Pn y Qn de los conjuntos son las siguientes:
+
+```{r}
+
+#Calculate groups#
+
+source("FUNCTIONS/mean.groups.R")
+
+Pne.mean = colMeans(df.Pne)
+Qne.mean = colMeans(df.Qne)
+
+Pntgroup <- mean.groups(ngroups,nexp,df.Pnt)
+df.Pntgroup <- Pntgroup$mean.group
+Pntgroup.mean <- Pntgroup$mean.total
+Pntgroup.quantile5 <- Pntgroup$quantile[1,]
+Pntgroup.quantile95 <- Pntgroup$quantile[2,]
+
+Qntgroup <- mean.groups(ngroups,nexp,df.Qnt)
+df.Qntgroup <- Qntgroup$mean.group
+Qntgroup.mean <- Qntgroup$mean.total
+Qntgroup.quantile5 <- Qntgroup$quantile[1,]
+Qntgroup.quantile95 <- Qntgroup$quantile[2,]
+
+layout(matrix(1:2,1,2,byrow=T))
+
+plot(Pntgroup.mean,ylab ="Pn promedio", xlab = "nmodo",type="l",ylim=c(0,0.07),main="Pn promedio vs. nmodo")
+lines(Pntgroup.quantile5,col="green")
+lines(Pntgroup.quantile95,col="green")
+points(Pne.mean,col="red")
+
+plot(Qntgroup.mean,ylab ="Qn promedio", xlab = "nmodo",type="l",ylim=c(0,0.7),main ="Qn promedio vs. nmodo")
+lines(Qntgroup.quantile5,col="green")
+lines(Qntgroup.quantile95,col="green")
+points(Qne.mean,col="red")
+```
+
+Negro: Teorico
+Rojo: Experimental
+Verdes: cuartiles 0.05 y 0.95 de 100 grupos de 7 mutantes te?ricas
+
+
+
