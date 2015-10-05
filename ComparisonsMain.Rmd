@@ -1,8 +1,18 @@
+# INFORMACIÓN
+# este programa genera un archivo HTLM comparando la divergencia etsructural de proteínas
+# experimentales y mutantes teóricas.
+# Para correrlo se debe completar un Input ("DATA/inputComp.csv") especificando:
+# -family: la familia de proteínas a comparar, debe estar escrita consistentemente con los
+# archivos inputT e inputE (Ingés y plural).
+# -p.ref: la proteína dereferencia de la familia, que debe ser consisntente con el archivo 
+# inputE, es decir que se debe escribir de la forma en la que está escrita en el Dataset.
+# -heme: solo se utiliza para la familia de las globinas, puede ser "TRUE" o "FALSE" 
+# dependiendo de si se quiere considerar o no al grupo HEMO. 
+# -index: el índice de las proteínas de la familia que se desea analizar.
 ---
 title: "Comparaciones"
 output: html_document
 ---
-
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(warning=FALSE,echo=FALSE,message=FALSE)
 ```
@@ -21,7 +31,6 @@ index = as.vector(input$index)
 
 if (family == "Globins"){
   family <- paste(family,"Heme",heme,sep ="")
-  p.ref <- paste(p.ref,"Heme",heme,sep ="")
 }
 
 #Nmodes to analyze#
@@ -35,29 +44,27 @@ library(flux) #function "auc"#
 
 #Read files#
 dir.t <- "OUT/Theoretical"
-dir.e <- "OUT/Experimental"
-  
-df.Pnt = read.csv(file.path(dir.t,paste(p.ref,".Out.df.Pn.csv",sep="")))[,1:nmodes4]
-df.Qnt = t(apply(df.Pnt,1,cumsum))
-evalues = read.csv(file.path(dir.t,paste(p.ref,".Out.evalues.csv",sep="")))$x[1:nmodes4]
+m.Pnt = read.csv(file.path(dir.t,paste(family,".Out.m.Pn.csv",sep="")))[,1:nmodes4]
+m.Qnt = t(apply(m.Pnt,1,cumsum))
+evalues = read.csv(file.path(dir.t,paste(family,".Out.evalues.csv",sep="")))$x[1:nmodes4]
 ievalues = 1/evalues
 
-df.Pne = read.csv(file.path(dir.e,paste(family,".Out.df.Pn.csv",sep="")))[index,1:nmodes4]
-df.Qne = t(apply(df.Pne,1,cumsum))
-
-df.evaluese = read.csv(file.path(dir.e,paste(family,".Out.df.evalues.csv",sep="")))[index,1:nmodes4]
-evaluese = colMeans(df.evaluese)
+dir.e <- "OUT/Experimental"
+m.Pne = read.csv(file.path(dir.e,paste(family,".Out.m.Pn.csv",sep="")))[index,1:nmodes4]
+m.Qne = t(apply(m.Pne,1,cumsum))
+m.evaluese = read.csv(file.path(dir.e,paste(family,".Out.m.evalues.csv",sep="")))[index,1:nmodes4]
+evaluese = colMeans(m.evaluese)
 ievaluese = 1/evaluese
 
-lalign = read.csv(file.path(dir.e,paste(family,".Out.df.lalign.csv",sep="")))$x
+lalign = read.csv(file.path(dir.e,paste(family,".Out.m.lalign.csv",sep="")))$x
 MSD = read.csv(file.path(dir.e,paste(family,".Out.MSD.csv",sep="")))$x
-id = read.csv(file.path(dir.e,paste(family,".Out.df.ID.csv",sep="")))$x
+id = read.csv(file.path(dir.e,paste(family,".Out.m.ID.csv",sep="")))$x
 id.index = id[index]
 pdbid <- read.csv(file.path("DATA/Experimental",paste(family,"Dataset.csv",sep="")))$pdbid
 pdbid <- pdbid[pdbid!=as.character(p.ref)]
 
 #Number of t and e proteins#
-nmut = nrow(df.Pnt)
+nmut = nrow(m.Pnt)
 nexp = length(index)
   
 #Number of t groups#
@@ -94,10 +101,10 @@ layout(matrix(1:4,2,2,byrow=T))
    rho.t.4 <- matrix(0,nrow=nmut,ncol=1)
    
   for (i in (1: nmut)){
-	  rho.t.1[i,] <- cor((as.vector(as.matrix(df.Pnt[i,1:nmodes1]))*evalues[1:nmodes1]),ievalues[1:nmodes1],method="pearson")	
-	  rho.t.2[i,] <- cor((as.vector(as.matrix(df.Pnt[i,1:nmodes2]))*evalues[1:nmodes2]),ievalues[1:nmodes2],method="pearson")	   
-	  rho.t.3[i,] <- cor((as.vector(as.matrix(df.Pnt[i,1:nmodes3]))*evalues[1:nmodes3]),ievalues[1:nmodes3],method="pearson")	  
-	  rho.t.4[i,] <- cor((as.vector(as.matrix(df.Pnt[i,1:nmodes4]))*evalues[1:nmodes4]),ievalues[1:nmodes4],method="pearson")	   
+	  rho.t.1[i,] <- cor((as.vector(as.matrix(m.Pnt[i,1:nmodes1]))*evalues[1:nmodes1]),ievalues[1:nmodes1],method="pearson")	
+	  rho.t.2[i,] <- cor((as.vector(as.matrix(m.Pnt[i,1:nmodes2]))*evalues[1:nmodes2]),ievalues[1:nmodes2],method="pearson")	   
+	  rho.t.3[i,] <- cor((as.vector(as.matrix(m.Pnt[i,1:nmodes3]))*evalues[1:nmodes3]),ievalues[1:nmodes3],method="pearson")	  
+	  rho.t.4[i,] <- cor((as.vector(as.matrix(m.Pnt[i,1:nmodes4]))*evalues[1:nmodes4]),ievalues[1:nmodes4],method="pearson")	   
   }
    
   rho.e.1 <- matrix(0,nrow=nexp,ncol=1)
@@ -106,10 +113,10 @@ layout(matrix(1:4,2,2,byrow=T))
   rho.e.4 <- matrix(0,nrow=nexp,ncol=1) 
 
   for (i in (1: nexp)){
-	  rho.e.1[i,] <- cor((as.vector(as.matrix(df.Pne[i,1:nmodes1]))*evaluese[1:nmodes1]),ievaluese[1:nmodes1],method="pearson")
-	  rho.e.2[i,] <- cor((as.vector(as.matrix(df.Pne[i,1:nmodes2]))*evaluese[1:nmodes2]),ievaluese[1:nmodes2],method="pearson")
-	  rho.e.3[i,] <- cor((as.vector(as.matrix(df.Pne[i,1:nmodes3]))*evaluese[1:nmodes3]),ievaluese[1:nmodes3],method="pearson")
-	  rho.e.4[i,] <- cor((as.vector(as.matrix(df.Pne[i,1:nmodes4]))*evaluese[1:nmodes4]),ievaluese[1:nmodes4],method="pearson")
+	  rho.e.1[i,] <- cor((as.vector(as.matrix(m.Pne[i,1:nmodes1]))*evaluese[1:nmodes1]),ievaluese[1:nmodes1],method="pearson")
+	  rho.e.2[i,] <- cor((as.vector(as.matrix(m.Pne[i,1:nmodes2]))*evaluese[1:nmodes2]),ievaluese[1:nmodes2],method="pearson")
+	  rho.e.3[i,] <- cor((as.vector(as.matrix(m.Pne[i,1:nmodes3]))*evaluese[1:nmodes3]),ievaluese[1:nmodes3],method="pearson")
+	  rho.e.4[i,] <- cor((as.vector(as.matrix(m.Pne[i,1:nmodes4]))*evaluese[1:nmodes4]),ievaluese[1:nmodes4],method="pearson")
   }
    
   #auc#
@@ -119,10 +126,10 @@ layout(matrix(1:4,2,2,byrow=T))
   auc.t.4 <- matrix(0,nrow=nmut,ncol=1)
 
   for (i in (1:nmut)){
-	  auc.t.1[i,] <- auc(seq(1:nmodes1),df.Qnt[i,1:nmodes1])
-	  auc.t.2[i,] <- auc(seq(1:nmodes2),df.Qnt[i,1:nmodes2])
-	  auc.t.3[i,] <- auc(seq(1:nmodes3),df.Qnt[i,1:nmodes3])
-	  auc.t.4[i,] <- auc(seq(1:nmodes4),df.Qnt[i,1:nmodes4])
+	  auc.t.1[i,] <- auc(seq(1:nmodes1),m.Qnt[i,1:nmodes1])
+	  auc.t.2[i,] <- auc(seq(1:nmodes2),m.Qnt[i,1:nmodes2])
+	  auc.t.3[i,] <- auc(seq(1:nmodes3),m.Qnt[i,1:nmodes3])
+	  auc.t.4[i,] <- auc(seq(1:nmodes4),m.Qnt[i,1:nmodes4])
   }
   
   auc.e.1 <- matrix(0,nrow=nexp,ncol=1)
@@ -131,10 +138,10 @@ layout(matrix(1:4,2,2,byrow=T))
   auc.e.4 <- matrix(0,nrow=nexp,ncol=1)
 
   for (i in (1:nexp)){
-	  auc.e.1[i,] <- auc(seq(1:nmodes1),df.Qne[i,1:nmodes1])
-	  auc.e.2[i,] <- auc(seq(1:nmodes2),df.Qne[i,1:nmodes2])
-	  auc.e.3[i,] <- auc(seq(1:nmodes3),df.Qne[i,1:nmodes3])
-	  auc.e.4[i,] <- auc(seq(1:nmodes4),df.Qne[i,1:nmodes4])
+	  auc.e.1[i,] <- auc(seq(1:nmodes1),m.Qne[i,1:nmodes1])
+	  auc.e.2[i,] <- auc(seq(1:nmodes2),m.Qne[i,1:nmodes2])
+	  auc.e.3[i,] <- auc(seq(1:nmodes3),m.Qne[i,1:nmodes3])
+	  auc.e.4[i,] <- auc(seq(1:nmodes4),m.Qne[i,1:nmodes4])
   }
 ``` 
 
@@ -182,17 +189,17 @@ Las distribuciones de Pn y Qn de los conjuntos son las siguientes:
 
 source("FUNCTIONS/mean.groups.R")
 
-Pne.mean = colMeans(df.Pne)
-Qne.mean = colMeans(df.Qne)
+Pne.mean = colMeans(m.Pne)
+Qne.mean = colMeans(m.Qne)
 
-Pntgroup <- mean.groups(ngroups,nexp,df.Pnt)
-df.Pntgroup <- Pntgroup$mean.group
+Pntgroup <- mean.groups(ngroups,nexp,m.Pnt)
+m.Pntgroup <- Pntgroup$mean.group
 Pntgroup.mean <- Pntgroup$mean.total
 Pntgroup.quantile5 <- Pntgroup$quantile[1,]
 Pntgroup.quantile95 <- Pntgroup$quantile[2,]
 
-Qntgroup <- mean.groups(ngroups,nexp,df.Qnt)
-df.Qntgroup <- Qntgroup$mean.group
+Qntgroup <- mean.groups(ngroups,nexp,m.Qnt)
+m.Qntgroup <- Qntgroup$mean.group
 Qntgroup.mean <- Qntgroup$mean.total
 Qntgroup.quantile5 <- Qntgroup$quantile[1,]
 Qntgroup.quantile95 <- Qntgroup$quantile[2,]
@@ -212,7 +219,7 @@ points(Qne.mean,col="red")
 
 Negro: Teorico
 Rojo: Experimental
-Verdes: cuartiles 0.05 y 0.95 de 100 grupos de 7 mutantes te?ricas
+Verdes: cuartiles 0.05 y 0.95 de `r ngroups` grupos de `r nexp` mutantes teóricas
 
 
 
