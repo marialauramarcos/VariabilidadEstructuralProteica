@@ -158,7 +158,7 @@ MSDi = colMeans(as.matrix(m.dr.squarei),na.rm=T)
 MSD = rowMeans(m.dr.squarei,na.rm = T)
 
 #SAVE INFORMATION#
-if (family == "Globins") p.ref <- paste(family,"Heme",heme,sep ="")
+if (family == "Globins") family <- paste(family,"Heme",heme,sep ="")
 
 #Dataframes#
 write.csv(m.nH,file = file.path(OUT , paste(family , ".Out.m.nH.csv" , sep = "")) , row.names = FALSE)
