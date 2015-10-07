@@ -1,16 +1,5 @@
-# INFORMACIÓN
-# este programa genera un archivo HTLM comparando la divergencia etsructural de proteínas
-# experimentales y mutantes teóricas.
-# Para correrlo se debe completar un Input ("DATA/inputComp.csv") especificando:
-# -family: la familia de proteínas a comparar, debe estar escrita consistentemente con los
-# archivos inputT e inputE (Ingés y plural).
-# -p.ref: la proteína dereferencia de la familia, que debe ser consisntente con el archivo 
-# inputE, es decir que se debe escribir de la forma en la que está escrita en el Dataset.
-# -heme: solo se utiliza para la familia de las globinas, puede ser "TRUE" o "FALSE" 
-# dependiendo de si se quiere considerar o no al grupo HEMO. 
-# -index: el índice de las proteínas de la familia que se desea analizar.
 ---
-title: "Comparaciones"
+title: "Comparaciones Teórico-Experimental"
 output: html_document
 ---
 ```{r setup, include=FALSE}
@@ -18,6 +7,20 @@ knitr::opts_chunk$set(warning=FALSE,echo=FALSE,message=FALSE)
 ```
 
 ```{r}
+
+# INFORMACIÓN
+#
+# este programa genera un archivo HTLM comparando la divergencia etsructural de
+# proteínas experimentales y mutantes teóricas.
+# Para correrlo se debe completar un Input ("DATA/inputComp.csv") especificando:
+# -family: la familia de proteínas a comparar, debe estar escrita consistentemente # con los archivos inputT e inputE (Ingés y plural).
+# -p.ref: la proteína dereferencia de la familia, que debe ser escrita 
+# consisntentemente con el archivo inputE, es decir que debe ser escrita de la 
+# forma en la que está escrita en el Dataset.
+# -heme: solo se utiliza para la familia de las globinas, puede ser "TRUE" o 
+# "FALSE" dependiendo de si se quiere considerar o no al grupo HEMO. 
+# -index: el índice de las proteínas de la familia que se desea analizar.
+
 #Remove objects#
 rm (list=ls())
 
@@ -29,10 +32,6 @@ p.ref <- input$p.ref[1]
 heme <- input$heme[1]
 index = as.vector(input$index)
 
-if (family == "Globins"){
-  family <- paste(family,"Heme",heme,sep ="")
-}
-
 #Nmodes to analyze#
 nmodes1 = 10 
 nmodes2 = 25
@@ -43,13 +42,15 @@ nmodes4 = 100
 library(flux) #function "auc"#
 
 #Read files#
-dir.t <- "OUT/Theoretical"
-m.Pnt = read.csv(file.path(dir.t,paste(family,".Out.m.Pn.csv",sep="")))[,1:nmodes4]
-m.Qnt = t(apply(m.Pnt,1,cumsum))
-evalues = read.csv(file.path(dir.t,paste(family,".Out.evalues.csv",sep="")))$x[1:nmodes4]
-ievalues = 1/evalues
 
 dir.e <- "OUT/Experimental"
+pdbid <- read.csv(file.path("DATA/Experimental",paste(family,"Dataset.csv",sep="")))$pdbid
+pdbid <- pdbid[pdbid!=as.character(p.ref)]
+
+if (as.character(family) == "Globins"){
+  family <- paste(family,"Heme",heme,sep ="")
+}
+
 m.Pne = read.csv(file.path(dir.e,paste(family,".Out.m.Pn.csv",sep="")))[index,1:nmodes4]
 m.Qne = t(apply(m.Pne,1,cumsum))
 m.evaluese = read.csv(file.path(dir.e,paste(family,".Out.m.evalues.csv",sep="")))[index,1:nmodes4]
@@ -60,8 +61,13 @@ lalign = read.csv(file.path(dir.e,paste(family,".Out.m.lalign.csv",sep="")))$x
 MSD = read.csv(file.path(dir.e,paste(family,".Out.MSD.csv",sep="")))$x
 id = read.csv(file.path(dir.e,paste(family,".Out.m.ID.csv",sep="")))$x
 id.index = id[index]
-pdbid <- read.csv(file.path("DATA/Experimental",paste(family,"Dataset.csv",sep="")))$pdbid
-pdbid <- pdbid[pdbid!=as.character(p.ref)]
+
+dir.t <- "OUT/Theoretical"
+m.Pnt = read.csv(file.path(dir.t,paste(family,".Out.m.Pn.csv",sep="")))[,1:nmodes4]
+m.Qnt = t(apply(m.Pnt,1,cumsum))
+evalues = read.csv(file.path(dir.t,paste(family,".Out.evalues.csv",sep="")))$x[1:nmodes4]
+ievalues = 1/evalues
+
 
 #Number of t and e proteins#
 nmut = nrow(m.Pnt)
@@ -72,9 +78,9 @@ ngroups = as.integer(nmut/nexp)
 
 ```
 
-Conjunto teórico: `r nmut` mutantes de `r p.ref` de `r id.index` % de identidad secuencial con ANM R0 = 12 y Fmax= 2. Se seleccionó esta proteína ya que es la que presenta menor MSD con respecto a las coordenadas xyz promedio de todas las proteínas del conjunto experimental. El porcentaje de mutaciones se seleccionó de acuerdo al promedio de identidad secuencial de proteínas del conjunto experimental. 
+Conjunto teórico: `r nmut` mutantes de `r p.ref` de `r round(mean(id.index))` % de identidad secuencial con ANM R0 = 12 y Fmax= 2. Se seleccionó esta proteína ya que es la que presenta menor MSD con respecto a las coordenadas xyz promedio de todas las proteínas del conjunto experimental. El porcentaje de mutaciones se seleccionó de acuerdo al promedio de identidad secuencial de proteínas del conjunto experimental. 
 
-Conjunto experimental: `r nexp` proteínas de la familia de `r family`.Las proteínas tienen un promedio de identidad secuencial de `r id.index`. Todas las proteínas del sub-conjunto elegidas alinean en todos los sitios de `r p.ref`, o en como máximo 1 sitio menos.
+Conjunto experimental: `r nexp` proteínas de la familia de `r family`.Las proteínas tienen un promedio de identidad secuencial de `r round(mean(id.index))`%. Todas las proteínas del sub-conjunto elegidas alinean en todos los sitios de `r p.ref`, o en como máximo 1 sitio menos.
 ```{r}
 
 #Analysis experimental dataset#
@@ -91,7 +97,7 @@ layout(matrix(1:4,2,2,byrow=T))
 ```
 
 
-```{r, echo = FALSE, warning=FALSE, message=FALSE}
+```{r}
 
   #rho#
   
@@ -187,7 +193,7 @@ Las distribuciones de Pn y Qn de los conjuntos son las siguientes:
 
 #Calculate groups#
 
-source("FUNCTIONS/mean.groups.R")
+source("FUNCTIONS/Mean.groups.R")
 
 Pne.mean = colMeans(m.Pne)
 Qne.mean = colMeans(m.Qne)

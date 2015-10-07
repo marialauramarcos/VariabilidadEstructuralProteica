@@ -6,7 +6,8 @@
 # Para utilizar el programa se debe completar un input ("DATA/Experimental/inputE.csv") especificando: 
 # -family:la familia de proteínas del alineamiento, que puede ser "SerinProteases", "Globins" o "Plastocyanins"
 # -p.ref: la proteína de referncia que se desee utilizar, teniendo en cuenta que la misma debe ser escrita de 
-# la misma forma en la que se encuentra en el dataset.
+# la misma forma en la que se encuentra en el dataset de la familia correspondiente 
+# (ej:"DATA/Experimental/SerinProteasesDataset.csv").
 # -heme: solo se utiliza para la familia de las globinas, puede ser "TRUE" o "FALSE", dependiendo de si 
 # se desea o no considerar al grupo HEMO. 
 # -model: el modelo de red elástica a usar, que solo puede ser "ANM" por el momento.

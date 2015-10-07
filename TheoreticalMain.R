@@ -7,7 +7,8 @@
 #
 # Para utilizar el programa se debe completar un input ("DATA/Theoretical/inputT.csv") especificando: 
 # -family: la familia de proteínas a la que pertenece la proteína a mutar escrita en inglés y plural 
-# (ej.:"Globins").
+# (ej.:"Globins"). Tener en cuenta que las familias que pueden ser analizadas experimentalmente son
+# "SerinProteases", "Globins" o "Plastocyanins".
 # -p.ref: el código de pdb (pdbid) de la proteína a mutar (ej.:"1a6m")
 # -chain: la cadena de p.ref que se desea mutar.
 # -heme: solo se utiliza para la familia de las globinas, puede ser "TRUE" o "FALSE" dependiendo de 
@@ -171,8 +172,8 @@ write.csv(K.p.ref.2$va,file = file.path(OUT , paste(family , ".Out.evalues.csv" 
 write.csv(mean.nH,file = file.path(OUT , paste(family , ".Out.nH.mean.csv" , sep = "")) , row.names = FALSE)
 write.csv(mean.Pn,file = file.path(OUT , paste(family , ".Out.Pn.mean.csv" , sep = "")) , row.names = FALSE)
 write.csv(mean.d.evalues,file = file.path(OUT , paste(family , ".Out.d.evalues.mean.csv" , sep = "")) , row.names = FALSE)
-write.csv(MSDi,file = file.path(OUT , paste(family , ".Out.dr.squarei.mean.csv" , sep = "")) , row.names = FALSE)
-write.csv(MSD,file = file.path(OUT , paste(family , ".Out.dr.square.mean.csv", sep = "")) , row.names = FALSE)
+write.csv(MSDi,file = file.path(OUT , paste(family , ".Out.MSDi.csv" , sep = "")) , row.names = FALSE)
+write.csv(MSD,file = file.path(OUT , paste(family , ".Out.MSD.csv", sep = "")) , row.names = FALSE)
 
 #input#
 write.csv(input,file = file.path(OUT , paste(family , ".Input" , sep = "")) , row.names = FALSE)

@@ -3,6 +3,6 @@ En este respositorio se encuentran los programas, directorios y archivos  necesa
 Para utilizarlo se deben completar 3 archivos input: 
 -Input experimental: "DATA/Experimental/inputE.csv" 
 -Input teórico: "DATA/Theoretical/inputT.csv"
--Input comparaciones: "Data/InputComp.csv"
-Una breve descripción de cómo deben ser completados estos inputs se encuentran en los programas "ExperimentalMain.R", "TheoreticalMain.R" y "ComparisonsMain.R" respectivamente.
+-Input comparaciones: "DATA/InputComp.csv"
+Una breve descripción de cómo deben ser completados estos inputs se encuentran en los programas "ExperimentalMain.R", "TheoreticalMain.R" y "ComparisonsMain.R", respectivamente.
 Los programas "ExperimentalMain.R" y "TheoreticalMain.R" generan los outputs que lee "ComparisonsMain.R".
