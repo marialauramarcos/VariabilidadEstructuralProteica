@@ -7,220 +7,179 @@ knitr::opts_chunk$set(warning=FALSE,echo=FALSE,message=FALSE)
 ```
 
 ```{r}
-
 # INFORMACIÓN
 #
-# este programa genera un archivo HTLM comparando la divergencia etsructural de
+# Este programa genera un archivo HTLM comparando la divergencia etsructural de
 # proteínas experimentales y mutantes teóricas.
-# Para correrlo se debe completar un Input ("DATA/inputComp.csv") especificando:
-# -family: la familia de proteínas a comparar, debe estar escrita consistentemente # con los archivos inputT e inputE (Ingés y plural).
+# Para correrlo se debe completar un Input ("DATA/comp_input.csv") especificando:
+# -family: la familia de proteínas a comparar, debe estar escrita consistentemente 
+# con los archivos theoretical_input y experimental_input.
 # -p.ref: la proteína dereferencia de la familia, que debe ser escrita 
-# consisntentemente con el archivo inputE, es decir que debe ser escrita de la 
-# forma en la que está escrita en el Dataset.
+# consisntentemente con el archivo experimental_input, es decir que debe ser escrita de la 
+# forma en la que está escrita en el dataset.
 # -heme: solo se utiliza para la familia de las globinas, puede ser "TRUE" o 
 # "FALSE" dependiendo de si se quiere considerar o no al grupo HEMO. 
 # -index: el índice de las proteínas de la familia que se desea analizar.
-
-#Remove objects#
+# Remove objects.
 rm (list=ls())
-
-#Read Input#
-input <- read.csv("DATA/InputComp.csv")
-
+# Read Input.
+input <- read.csv("DATA/comp_input.csv")
 family <- input$family[1]
 p.ref <- input$p.ref[1]
 heme <- input$heme[1]
 index = as.vector(input$index)
-
-#Nmodes to analyze#
+# Nmodes to analyze.
 nmodes1 = 10 
 nmodes2 = 25
 nmodes3 = 50
 nmodes4 = 100
-
-#Load librarys# 
-library(flux) #function "auc"#
-
-#Read files#
-
+# Load librarys. 
+library(flux)  # function "auc".
+# Source functions.
+source("FUNCTIONS/CalculateGroupsMeansQuantiles.R")
+# Read files and calculate measures.
+# Experimental.
 dir.e <- "OUT/Experimental"
-pdbid <- read.csv(file.path("DATA/Experimental",paste(family,"Dataset.csv",sep="")))$pdbid
-pdbid <- pdbid[pdbid!=as.character(p.ref)]
-
-if (as.character(family) == "Globins"){
-  family <- paste(family,"Heme",heme,sep ="")
+pdbid <- read.csv(file.path("DATA/Experimental", paste(family, "_dataset.csv", sep = "")))$pdbid
+pdbid <- pdbid[pdbid != as.character(p.ref)]
+if (as.character(family) == "globins"){
+  family <- paste(family, "_heme_", heme, sep = "")
 }
-
-m.Pne = read.csv(file.path(dir.e,paste(family,".Out.m.Pn.csv",sep="")))[index,1:nmodes4]
-m.Qne = t(apply(m.Pne,1,cumsum))
-m.evaluese = read.csv(file.path(dir.e,paste(family,".Out.m.evalues.csv",sep="")))[index,1:nmodes4]
+m.Pne = read.csv(file.path(dir.e, paste(family, "_out_m.Pn.csv", sep = "")))[index, 1:nmodes4]
+Pne.mean = colMeans(m.Pne)
+m.Qne = t(apply(m.Pne, 1, cumsum))
+Qne.mean = colMeans(m.Qne)
+m.evaluese = read.csv(file.path(dir.e, paste(family, "_out_m.evalues.csv", sep = "")))[index, 1:nmodes4]
 evaluese = colMeans(m.evaluese)
 ievaluese = 1/evaluese
-
-lalign = read.csv(file.path(dir.e,paste(family,".Out.m.lalign.csv",sep="")))$x
-MSD = read.csv(file.path(dir.e,paste(family,".Out.MSD.csv",sep="")))$x
-id = read.csv(file.path(dir.e,paste(family,".Out.m.ID.csv",sep="")))$x
+laligned = read.csv(file.path(dir.e, paste(family, "_out_m.laligned.csv", sep = "")))$x
+MSD = read.csv(file.path(dir.e, paste(family, "_out_MSD.csv", sep = "")))$x
+id = read.csv(file.path(dir.e, paste(family, "_out_m.ID.csv", sep = "")))$x
 id.index = id[index]
-
+# Theoretical.
 dir.t <- "OUT/Theoretical"
-m.Pnt = read.csv(file.path(dir.t,paste(family,".Out.m.Pn.csv",sep="")))[,1:nmodes4]
-m.Qnt = t(apply(m.Pnt,1,cumsum))
-evalues = read.csv(file.path(dir.t,paste(family,".Out.evalues.csv",sep="")))$x[1:nmodes4]
+m.Pnt = read.csv(file.path(dir.t, paste(family, "_out_m.Pn.csv", sep = "")))[, 1:nmodes4]
+m.Qnt = t(apply(m.Pnt, 1, cumsum))
+evalues = read.csv(file.path(dir.t, paste(family, "_out_evalues.csv", sep = "")))$x[1:nmodes4]
 ievalues = 1/evalues
-
-
-#Number of t and e proteins#
+# Number of t and e proteins.
 nmut = nrow(m.Pnt)
 nexp = length(index)
-  
-#Number of t groups#
-ngroups = as.integer(nmut/nexp)
-
+# Number of t groups.
+ngroups = as.integer(nmut / nexp)
 ```
 
-Conjunto teórico: `r nmut` mutantes de `r p.ref` de `r round(mean(id.index))` % de identidad secuencial con ANM R0 = 12 y Fmax= 2. Se seleccionó esta proteína ya que es la que presenta menor MSD con respecto a las coordenadas xyz promedio de todas las proteínas del conjunto experimental. El porcentaje de mutaciones se seleccionó de acuerdo al promedio de identidad secuencial de proteínas del conjunto experimental. 
+Conjunto teórico: `r nmut` mutantes de `r p.ref` de `r round(mean(id.index))` % de identidad secuencial con ANM R0 = 12 y Fmax = 2. Se seleccionó esta proteína ya que es la que presenta menor MSD con respecto a las coordenadas xyz promedio de todas las proteínas del conjunto experimental. El porcentaje de mutaciones se seleccionó de acuerdo al promedio de identidad secuencial de proteínas del conjunto experimental. 
 
 Conjunto experimental: `r nexp` proteínas de la familia de `r family`.Las proteínas tienen un promedio de identidad secuencial de `r round(mean(id.index))`%. Todas las proteínas del sub-conjunto elegidas alinean en todos los sitios de `r p.ref`, o en como máximo 1 sitio menos.
 ```{r}
-
-#Analysis experimental dataset#
-
-layout(matrix(1:4,2,2,byrow=T))
-  
-  hist(id,main="%ID con referencia",col="grey")
-  hist(lalign,main="Número de sitios alineados con referencia",col="grey")
-  hist(MSD,main="MSD con la referencia",col="grey")
-  plot(id,MSD,xlab = "%ID", main ="MSD vs. %ID")
-
-  caract <- data.frame(pdbid,id,lalign,MSD)
-  caract
+# Analysis experimental dataset.
+layout(matrix(1:4, 2, 2, byrow = T))
+hist(id, main = "%ID con referencia", col = "grey")
+hist(laligned, main = "Número de sitios alineados con referencia", col = "grey")
+hist(MSD, main = "MSD con la referencia", col = "grey")
+plot(id, MSD, xlab = "%ID", main = "MSD vs. %ID")
+caract <- data.frame(pdbid, id, laligned, MSD)
+caract
 ```
 
 
 ```{r}
-
-  #rho#
-  
-   rho.t.1 <- matrix(0,nrow=nmut,ncol=1)
-   rho.t.2 <- matrix(0,nrow=nmut,ncol=1)
-   rho.t.3 <- matrix(0,nrow=nmut,ncol=1)
-   rho.t.4 <- matrix(0,nrow=nmut,ncol=1)
-   
-  for (i in (1: nmut)){
-	  rho.t.1[i,] <- cor((as.vector(as.matrix(m.Pnt[i,1:nmodes1]))*evalues[1:nmodes1]),ievalues[1:nmodes1],method="pearson")	
-	  rho.t.2[i,] <- cor((as.vector(as.matrix(m.Pnt[i,1:nmodes2]))*evalues[1:nmodes2]),ievalues[1:nmodes2],method="pearson")	   
-	  rho.t.3[i,] <- cor((as.vector(as.matrix(m.Pnt[i,1:nmodes3]))*evalues[1:nmodes3]),ievalues[1:nmodes3],method="pearson")	  
-	  rho.t.4[i,] <- cor((as.vector(as.matrix(m.Pnt[i,1:nmodes4]))*evalues[1:nmodes4]),ievalues[1:nmodes4],method="pearson")	   
-  }
-   
-  rho.e.1 <- matrix(0,nrow=nexp,ncol=1)
-  rho.e.2 <- matrix(0,nrow=nexp,ncol=1)
-  rho.e.3 <- matrix(0,nrow=nexp,ncol=1) 
-  rho.e.4 <- matrix(0,nrow=nexp,ncol=1) 
-
-  for (i in (1: nexp)){
-	  rho.e.1[i,] <- cor((as.vector(as.matrix(m.Pne[i,1:nmodes1]))*evaluese[1:nmodes1]),ievaluese[1:nmodes1],method="pearson")
-	  rho.e.2[i,] <- cor((as.vector(as.matrix(m.Pne[i,1:nmodes2]))*evaluese[1:nmodes2]),ievaluese[1:nmodes2],method="pearson")
-	  rho.e.3[i,] <- cor((as.vector(as.matrix(m.Pne[i,1:nmodes3]))*evaluese[1:nmodes3]),ievaluese[1:nmodes3],method="pearson")
-	  rho.e.4[i,] <- cor((as.vector(as.matrix(m.Pne[i,1:nmodes4]))*evaluese[1:nmodes4]),ievaluese[1:nmodes4],method="pearson")
-  }
-   
-  #auc#
-  auc.t.1 <- matrix(0,nrow=nmut,ncol=1)
-  auc.t.2 <- matrix(0,nrow=nmut,ncol=1)
-  auc.t.3 <- matrix(0,nrow=nmut,ncol=1)
-  auc.t.4 <- matrix(0,nrow=nmut,ncol=1)
-
-  for (i in (1:nmut)){
-	  auc.t.1[i,] <- auc(seq(1:nmodes1),m.Qnt[i,1:nmodes1])
-	  auc.t.2[i,] <- auc(seq(1:nmodes2),m.Qnt[i,1:nmodes2])
-	  auc.t.3[i,] <- auc(seq(1:nmodes3),m.Qnt[i,1:nmodes3])
-	  auc.t.4[i,] <- auc(seq(1:nmodes4),m.Qnt[i,1:nmodes4])
-  }
-  
-  auc.e.1 <- matrix(0,nrow=nexp,ncol=1)
-  auc.e.2 <- matrix(0,nrow=nexp,ncol=1)
-  auc.e.3 <- matrix(0,nrow=nexp,ncol=1)
-  auc.e.4 <- matrix(0,nrow=nexp,ncol=1)
-
-  for (i in (1:nexp)){
-	  auc.e.1[i,] <- auc(seq(1:nmodes1),m.Qne[i,1:nmodes1])
-	  auc.e.2[i,] <- auc(seq(1:nmodes2),m.Qne[i,1:nmodes2])
-	  auc.e.3[i,] <- auc(seq(1:nmodes3),m.Qne[i,1:nmodes3])
-	  auc.e.4[i,] <- auc(seq(1:nmodes4),m.Qne[i,1:nmodes4])
-  }
+# Calculate rho.
+rho.t.1 <- matrix(0, nrow = nmut, ncol = 1)
+rho.t.2 <- matrix(0, nrow = nmut, ncol = 1)
+rho.t.3 <- matrix(0, nrow = nmut, ncol = 1)
+rho.t.4 <- matrix(0, nrow = nmut, ncol = 1)
+for (i in (1:nmut)) {
+  rho.t.1[i, ] <- cor((as.vector(as.matrix(m.Pnt[i, 1:nmodes1])) * evalues[1:nmodes1]), ievalues[1:nmodes1], method = "pearson")	
+  rho.t.2[i, ] <- cor((as.vector(as.matrix(m.Pnt[i, 1:nmodes2])) * evalues[1:nmodes2]), ievalues[1:nmodes2], method = "pearson")	
+  rho.t.3[i, ] <- cor((as.vector(as.matrix(m.Pnt[i, 1:nmodes3])) * evalues[1:nmodes3]), ievalues[1:nmodes3], method = "pearson")	
+  rho.t.4[i, ] <- cor((as.vector(as.matrix(m.Pnt[i, 1:nmodes4])) * evalues[1:nmodes4]), ievalues[1:nmodes4], method = "pearson")	   
+}
+rho.e.1 <- matrix(0, nrow = nexp, ncol = 1)
+rho.e.2 <- matrix(0, nrow = nexp, ncol = 1)
+rho.e.3 <- matrix(0, nrow = nexp, ncol = 1) 
+rho.e.4 <- matrix(0, nrow = nexp, ncol = 1) 
+for (i in (1:nexp)) {
+  rho.e.1[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes1])) * evaluese[1:nmodes1]), ievaluese[1:nmodes1], method = "pearson")
+  rho.e.2[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes2])) * evaluese[1:nmodes2]), ievaluese[1:nmodes2], method = "pearson")
+  rho.e.3[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes3])) * evaluese[1:nmodes3]), ievaluese[1:nmodes3], method = "pearson")
+  rho.e.4[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes4])) * evaluese[1:nmodes4]), ievaluese[1:nmodes4], method = "pearson")
+}
+# Calculate auc.
+auc.t.1 <- matrix(0, nrow = nmut, ncol = 1)
+auc.t.2 <- matrix(0, nrow = nmut, ncol = 1)
+auc.t.3 <- matrix(0, nrow = nmut, ncol = 1)
+auc.t.4 <- matrix(0, nrow = nmut, ncol = 1)
+for (i in (1:nmut)) {
+  auc.t.1[i, ] <- auc(seq(1:nmodes1), m.Qnt[i,1:nmodes1])
+  auc.t.2[i, ] <- auc(seq(1:nmodes2), m.Qnt[i,1:nmodes2])
+  auc.t.3[i, ] <- auc(seq(1:nmodes3), m.Qnt[i,1:nmodes3])
+  auc.t.4[i, ] <- auc(seq(1:nmodes4), m.Qnt[i,1:nmodes4])
+}
+auc.e.1 <- matrix(0, nrow = nexp, ncol = 1)
+auc.e.2 <- matrix(0, nrow = nexp, ncol = 1)
+auc.e.3 <- matrix(0, nrow = nexp, ncol = 1)
+auc.e.4 <- matrix(0, nrow = nexp, ncol = 1)
+for (i in (1:nexp)) {
+  auc.e.1[i, ] <- auc(seq(1:nmodes1), m.Qne[i, 1:nmodes1])
+  auc.e.2[i, ] <- auc(seq(1:nmodes2), m.Qne[i, 1:nmodes2])
+  auc.e.3[i, ] <- auc(seq(1:nmodes3), m.Qne[i, 1:nmodes3])
+  auc.e.4[i, ] <- auc(seq(1:nmodes4), m.Qne[i, 1:nmodes4])
+}
 ``` 
 
 Las distribuciones de auc y rho para cada conjunto se muestran a continuación (azul= teórico, rojo = experimental)
 
 ```{r}
-  
-layout(matrix(1:4,2,2,byrow=T))
-  
-plot(density(rho.t.1),col="blue",ylab="Frecuencia",xlab="rho",main="Histograma rho 10 modos")
-points(x=c(rho.e.1),y=rep(0,nexp),col="red")
-
-plot(density(auc.t.1),col="blue",ylab="Frecuencia",xlab="auc",main="Histograma auc 10 modos")
-points(x=c(auc.e.1),y=rep(0,nexp),col="red")
-
-plot(density(rho.t.2),col="blue",ylab="Frecuencia",xlab="rho",main="Histograma rho 25 modos")
-points(x=c(rho.e.2),y=rep(0,nexp),col="red")
-
-plot(density(auc.t.2),col="blue",ylab="Frecuencia",xlab="auc",main="Histograma auc 25 modos")
-points(x=c(auc.e.2),y=rep(0,nexp),col="red")
+layout(matrix(1:4, 2, 2, byrow = T))
+plot(density(rho.t.1), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 10 modos")
+points(x = c(rho.e.1), y = rep(0, nexp), col = "red")
+plot(density(auc.t.1), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 10 modos")
+points(x = c(auc.e.1), y = rep(0, nexp), col = "red")
+plot(density(rho.t.2), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 25 modos")
+points(x = c(rho.e.2), y = rep(0, nexp), col = "red")
+plot(density(auc.t.2), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 25 modos")
+points(x = c(auc.e.2), y = rep(0, nexp), col = "red")
 ```
 
 ```{r}
-layout(matrix(1:4,2,2,byrow=T))
-
-plot(density(rho.t.3),col="blue",ylab="Frecuencia",xlab="rho",main="Histograma rho 50 modos")
-points(x=c(rho.e.3),y=rep(0,nexp),col="red")
-
-plot(density(auc.t.3),col="blue",ylab="Frecuencia",xlab="auc",main="Histograma auc 50 modos")
-points(x=c(auc.e.3),y=rep(0,nexp),col="red")
-
-plot(density(rho.t.4),col="blue",ylab="Frecuencia",xlab="rho",main="Histograma rho 100 modos")
-points(x=c(rho.e.4),y=rep(0,nexp),col="red")
-
-plot(density(auc.t.4),col="blue",ylab="Frecuencia",xlab="auc",main="Histograma auc 100 nmodos")
-points(x=c(auc.e.4),y=rep(0,nexp),col="red")
-
+layout(matrix(1:4, 2, 2, byrow = T))
+plot(density(rho.t.3), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 50 modos")
+points(x = c(rho.e.3), y = rep(0, nexp), col = "red")
+plot(density(auc.t.3), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 50 modos")
+points(x = c(auc.e.3), y = rep(0, nexp), col = "red")
+plot(density(rho.t.4), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 100 modos")
+points(x = c(rho.e.4), y = rep(0, nexp), col = "red")
+plot(density(auc.t.4), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 100 nmodos")
+points(x = c(auc.e.4), y = rep(0, nexp), col = "red")
 ```
 
 Las distribuciones de Pn y Qn de los conjuntos son las siguientes:
 
 ```{r}
 
-#Calculate groups#
-
-source("FUNCTIONS/Mean.groups.R")
-
-Pne.mean = colMeans(m.Pne)
-Qne.mean = colMeans(m.Qne)
-
-Pntgroup <- mean.groups(ngroups,nexp,m.Pnt)
+# Calculate groups, means and quantiles.
+Pntgroup <- CalculateGroupsMeansQuantiles(m.Pnt, ngroups, nexp)
 m.Pntgroup <- Pntgroup$mean.group
 Pntgroup.mean <- Pntgroup$mean.total
-Pntgroup.quantile5 <- Pntgroup$quantile[1,]
-Pntgroup.quantile95 <- Pntgroup$quantile[2,]
-
-Qntgroup <- mean.groups(ngroups,nexp,m.Qnt)
+Pntgroup.quantile5 <- Pntgroup$quantile[1, ]
+Pntgroup.quantile95 <- Pntgroup$quantile[2, ] 
+Qntgroup <- CalculateGroupsMeansQuantiles(m.Qnt, ngroups, nexp)
 m.Qntgroup <- Qntgroup$mean.group
 Qntgroup.mean <- Qntgroup$mean.total
-Qntgroup.quantile5 <- Qntgroup$quantile[1,]
-Qntgroup.quantile95 <- Qntgroup$quantile[2,]
-
-layout(matrix(1:2,1,2,byrow=T))
-
-plot(Pntgroup.mean,ylab ="Pn promedio", xlab = "nmodo",type="l",ylim=c(0,0.07),main="Pn promedio vs. nmodo")
-lines(Pntgroup.quantile5,col="green")
-lines(Pntgroup.quantile95,col="green")
-points(Pne.mean,col="red")
-
-plot(Qntgroup.mean,ylab ="Qn promedio", xlab = "nmodo",type="l",ylim=c(0,0.7),main ="Qn promedio vs. nmodo")
-lines(Qntgroup.quantile5,col="green")
-lines(Qntgroup.quantile95,col="green")
-points(Qne.mean,col="red")
+Qntgroup.quantile5 <- Qntgroup$quantile[1, ]
+Qntgroup.quantile95 <- Qntgroup$quantile[2, ]
+# Graphics.
+layout(matrix(1:2, 1, 2, byrow = T))
+plot(Pntgroup.mean, ylab = "Pn promedio", xlab = "nmodo", type = "l", ylim = c(0, 0.07), main = "Pn promedio vs. nmodo")
+lines(Pntgroup.quantile5, col = "green")
+lines(Pntgroup.quantile95, col = "green")
+points(Pne.mean, col = "red")
+plot(Qntgroup.mean, ylab = "Qn promedio", xlab = "nmodo", type = "l", ylim = c(0, 0.7), main = "Qn promedio vs. nmodo")
+lines(Qntgroup.quantile5, col = "green")
+lines(Qntgroup.quantile95, col = "green")
+points(Qne.mean, col = "red")
 ```
 
 Negro: Teorico
