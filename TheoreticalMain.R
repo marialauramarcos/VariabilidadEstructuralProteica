@@ -113,7 +113,7 @@ for(mut in seq(nmut)) {
     VA <- CalculateVariability(dr, K.p.ref.2, K.mut)
     m.nH[mut, 1:nmodes.p.ref.2] = t(VA$nH)
     m.Pn[mut, 1:nmodes.p.ref.2] = t(VA$Pn)
-    m.d.evalues[mut, 1:nmodes.p.ref.2]  = t(VA$d.evalues[1:nmodes.p.ref.2])
+    m.d.evalues[mut, 1:nmodes.p.ref.2] = t(VA$d.evalues[1:nmodes.p.ref.2])
     dr.squarei = rbind(VA$dr.squarei, seq(1, naa))
     for (i in (1:naa)) {
       m.dr.squarei[mut, i] = matrix(dr.squarei[1, dr.squarei[2, ] == i], ncol = 1, nrow = 1)
@@ -124,10 +124,10 @@ for(mut in seq(nmut)) {
   }
 }
 # Calculate Means.
-mean.nH = colMeans(as.matrix(m.nH), na.rm = T)
-mean.Pn = colMeans(as.matrix(m.Pn), na.rm = T)
-mean.d.evalues = colMeans(as.matrix(m.d.evalues), na.rm = T)
-MSDi = colMeans(as.matrix(m.dr.squarei), na.rm = T)
+mean.nH = colMeans(m.nH, na.rm = T)
+mean.Pn = colMeans(m.Pn, na.rm = T)
+mean.d.evalues = colMeans(m.d.evalues, na.rm = T)
+MSDi = colMeans(m.dr.squarei, na.rm = T)
 MSD = rowMeans(m.dr.squarei, na.rm = T)
 # Save information.
 if (family == "globins") {

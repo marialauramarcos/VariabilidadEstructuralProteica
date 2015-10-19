@@ -2,8 +2,8 @@
 title: "Comparaciones Teórico-Experimental"
 output: html_document
 ---
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(warning=FALSE,echo=FALSE,message=FALSE)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning=FALSE, echo=FALSE, message = FALSE)
 ```
 
 ```{r}
@@ -21,7 +21,7 @@ knitr::opts_chunk$set(warning=FALSE,echo=FALSE,message=FALSE)
 # "FALSE" dependiendo de si se quiere considerar o no al grupo HEMO. 
 # -index: el índice de las proteínas de la familia que se desea analizar.
 # Remove objects.
-rm (list=ls())
+rm (list = ls())
 # Read Input.
 input <- read.csv("DATA/comp_input.csv")
 family <- input$family[1]
@@ -38,11 +38,12 @@ library(flux)  # function "auc".
 # Source functions.
 source("FUNCTIONS/CalculateGroupsMeansQuantiles.R")
 # Read files and calculate measures.
-# Experimental.
-dir.e <- "OUT/Experimental"
+# Read pdbid.
 pdbid <- read.csv(file.path("DATA/Experimental", paste(family, "_dataset.csv", sep = "")))$pdbid
 pdbid <- pdbid[pdbid != as.character(p.ref)]
-if (as.character(family) == "globins"){
+# Read experimental output.
+dir.e <- "OUT/Experimental"
+if (as.character(family) == "globins") {
   family <- paste(family, "_heme_", heme, sep = "")
 }
 m.Pne = read.csv(file.path(dir.e, paste(family, "_out_m.Pn.csv", sep = "")))[index, 1:nmodes4]
@@ -50,13 +51,13 @@ Pne.mean = colMeans(m.Pne)
 m.Qne = t(apply(m.Pne, 1, cumsum))
 Qne.mean = colMeans(m.Qne)
 m.evaluese = read.csv(file.path(dir.e, paste(family, "_out_m.evalues.csv", sep = "")))[index, 1:nmodes4]
-evaluese = colMeans(m.evaluese)
-ievaluese = 1/evaluese
+evaluese.mean = colMeans(m.evaluese)
+ievaluese.mean = 1/evaluese.mean
 laligned = read.csv(file.path(dir.e, paste(family, "_out_m.laligned.csv", sep = "")))$x
 MSD = read.csv(file.path(dir.e, paste(family, "_out_MSD.csv", sep = "")))$x
 id = read.csv(file.path(dir.e, paste(family, "_out_m.ID.csv", sep = "")))$x
 id.index = id[index]
-# Theoretical.
+# Read theoretical output.
 dir.t <- "OUT/Theoretical"
 m.Pnt = read.csv(file.path(dir.t, paste(family, "_out_m.Pn.csv", sep = "")))[, 1:nmodes4]
 m.Qnt = t(apply(m.Pnt, 1, cumsum))
@@ -71,7 +72,7 @@ ngroups = as.integer(nmut / nexp)
 
 Conjunto teórico: `r nmut` mutantes de `r p.ref` de `r round(mean(id.index))` % de identidad secuencial con ANM R0 = 12 y Fmax = 2. Se seleccionó esta proteína ya que es la que presenta menor MSD con respecto a las coordenadas xyz promedio de todas las proteínas del conjunto experimental. El porcentaje de mutaciones se seleccionó de acuerdo al promedio de identidad secuencial de proteínas del conjunto experimental. 
 
-Conjunto experimental: `r nexp` proteínas de la familia de `r family`.Las proteínas tienen un promedio de identidad secuencial de `r round(mean(id.index))`%. Todas las proteínas del sub-conjunto elegidas alinean en todos los sitios de `r p.ref`, o en como máximo 1 sitio menos.
+Conjunto experimental: `r nexp` proteínas de la familia de `r family`. Las proteínas tienen un promedio de identidad secuencial de `r round(mean(id.index))`%. Todas las proteínas del sub-conjunto elegidas alinean en todos los sitios de `r p.ref`, o en como máximo 1 sitio menos.
 ```{r}
 # Analysis experimental dataset.
 layout(matrix(1:4, 2, 2, byrow = T))
@@ -82,7 +83,6 @@ plot(id, MSD, xlab = "%ID", main = "MSD vs. %ID")
 caract <- data.frame(pdbid, id, laligned, MSD)
 caract
 ```
-
 
 ```{r}
 # Calculate rho.
@@ -101,10 +101,10 @@ rho.e.2 <- matrix(0, nrow = nexp, ncol = 1)
 rho.e.3 <- matrix(0, nrow = nexp, ncol = 1) 
 rho.e.4 <- matrix(0, nrow = nexp, ncol = 1) 
 for (i in (1:nexp)) {
-  rho.e.1[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes1])) * evaluese[1:nmodes1]), ievaluese[1:nmodes1], method = "pearson")
-  rho.e.2[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes2])) * evaluese[1:nmodes2]), ievaluese[1:nmodes2], method = "pearson")
-  rho.e.3[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes3])) * evaluese[1:nmodes3]), ievaluese[1:nmodes3], method = "pearson")
-  rho.e.4[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes4])) * evaluese[1:nmodes4]), ievaluese[1:nmodes4], method = "pearson")
+  rho.e.1[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes1])) * evaluese.mean[1:nmodes1]), ievaluese.mean[1:nmodes1], method = "pearson")
+  rho.e.2[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes2])) * evaluese.mean[1:nmodes2]), ievaluese.mean[1:nmodes2], method = "pearson")
+  rho.e.3[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes3])) * evaluese.mean[1:nmodes3]), ievaluese.mean[1:nmodes3], method = "pearson")
+  rho.e.4[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes4])) * evaluese.mean[1:nmodes4]), ievaluese.mean[1:nmodes4], method = "pearson")
 }
 # Calculate auc.
 auc.t.1 <- matrix(0, nrow = nmut, ncol = 1)
@@ -160,25 +160,23 @@ Las distribuciones de Pn y Qn de los conjuntos son las siguientes:
 ```{r}
 
 # Calculate groups, means and quantiles.
-Pntgroup <- CalculateGroupsMeansQuantiles(m.Pnt, ngroups, nexp)
-m.Pntgroup <- Pntgroup$mean.group
-Pntgroup.mean <- Pntgroup$mean.total
-Pntgroup.quantile5 <- Pntgroup$quantile[1, ]
-Pntgroup.quantile95 <- Pntgroup$quantile[2, ] 
-Qntgroup <- CalculateGroupsMeansQuantiles(m.Qnt, ngroups, nexp)
-m.Qntgroup <- Qntgroup$mean.group
-Qntgroup.mean <- Qntgroup$mean.total
-Qntgroup.quantile5 <- Qntgroup$quantile[1, ]
-Qntgroup.quantile95 <- Qntgroup$quantile[2, ]
+Pnt.group <- CalculateGroupsMeansQuantiles(m.Pnt, ngroups, nexp)
+Pnt.group.mean <- Pnt.group$mean.total
+Pnt.group.quantile5 <- Pnt.group$quantile[1, ]
+Pnt.group.quantile95 <- Pnt.group$quantile[2, ] 
+Qnt.group <- CalculateGroupsMeansQuantiles(m.Qnt, ngroups, nexp)
+Qnt.group.mean <- Qnt.group$mean.total
+Qnt.group.quantile5 <- Qnt.group$quantile[1, ]
+Qnt.group.quantile95 <- Qnt.group$quantile[2, ]
 # Graphics.
 layout(matrix(1:2, 1, 2, byrow = T))
-plot(Pntgroup.mean, ylab = "Pn promedio", xlab = "nmodo", type = "l", ylim = c(0, 0.07), main = "Pn promedio vs. nmodo")
-lines(Pntgroup.quantile5, col = "green")
-lines(Pntgroup.quantile95, col = "green")
+plot(Pnt.group.mean, ylab = "Pn promedio", xlab = "nmodo", type = "l", ylim = c(0, 0.07), main = "Pn promedio vs. nmodo")
+lines(Pnt.group.quantile5, col = "green")
+lines(Pnt.group.quantile95, col = "green")
 points(Pne.mean, col = "red")
-plot(Qntgroup.mean, ylab = "Qn promedio", xlab = "nmodo", type = "l", ylim = c(0, 0.7), main = "Qn promedio vs. nmodo")
-lines(Qntgroup.quantile5, col = "green")
-lines(Qntgroup.quantile95, col = "green")
+plot(Qnt.group.mean, ylab = "Qn promedio", xlab = "nmodo", type = "l", ylim = c(0, 0.7), main = "Qn promedio vs. nmodo")
+lines(Qnt.group.quantile5, col = "green")
+lines(Qnt.group.quantile95, col = "green")
 points(Qne.mean, col = "red")
 ```
 

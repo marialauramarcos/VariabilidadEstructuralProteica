@@ -24,7 +24,7 @@ heme <- input$heme
 model <- input$model
 R0 = input$R0
 # Files fnames.
-alignment.fname <- file.path(data.dir, paste(family, "_alignment.txt", sep = ""))  # File with the multiple sequence alignmet.
+alignment.fname <- file.path(data.dir, paste(family, "_alignment.txt", sep = ""))  # File with the multiple sequence alignment.
 pdbs.fname <- file.path(data.dir, paste(family, "_coordinates.pdb", sep = ""))  # Coordinates of the proteins.
 dataset.fname <- file.path(data.dir, paste(family, "_dataset.csv", sep = ""))  # Dataset with pdbids and chains.
 # Functions fnames.
@@ -81,7 +81,7 @@ m.evalues = matrix(ncol = 3 * naa.p.ref, nrow = nprot)
 m.d.evalues = matrix(ncol = 3 * naa.p.ref, nrow = nprot)
 m.dr.squarei = matrix(ncol = naa.p.ref, nrow = nprot)
 for (P in (1:nprot)) {
-	# Read PDB & alignment of p.2.
+  # Read PDB & alignment of p.2.
 	chain.p.2 <- chains[[P]]
 	pdb.p.2 <- ReadCA(pdbs.fname, chain.p.2)
 	r.p.2 <- pdb.p.2$xyz.calpha
@@ -104,8 +104,7 @@ for (P in (1:nprot)) {
 	a.alignment.p.2 <- AnalyzeAlignment(alignment.p.2, alignment.p.ref, naa.p.2)
 	aligned.p.2.index <- a.alignment.p.2$aligned.index
 	not.aligned.p.2.index <- a.alignment.p.2$not.aligned.index
-	# Add heme to not.aligned.
-	if (family == "globins" & heme == "TRUE"){
+	if (family == "globins" & heme == "TRUE") {
 	  not.aligned.p.ref.index <- cbind(not.aligned.p.ref.index, t(seq((naa.p.ref+1), nsites.p.ref)))
 	  not.aligned.p.2.index <- cbind(not.aligned.p.2.index, t(seq((naa.p.2+1), nsites.p.2)))
 	}
