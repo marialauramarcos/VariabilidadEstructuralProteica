@@ -1,29 +1,33 @@
 # This function calculates % sequence identity between proteins P1 and P2.
 #
 # Args:
-#   alignment.P1: 1 x lalignment matrix containing the alignment of P1 extracted from the multiple
-#   sequence alignment.
-#   alignment.P2: 1 x lalignment matrix containing the alignment of P2 extracted from the multiple
-#   sequence alignment.
+#   df.alignment: data frame with data of the alignment. 
 #   
 # Returns:
 #   ID: % sequence identity between P1 and P2.
-CalculateID <- function(alignment.P1, alignment.P2) {
-  lalignment = length(alignment.P1)
-  aligned.P1 = matrix(0)
-  aligned.P2 = matrix(0)
+CalculateID <- function(df.alignment) {
+  # Prepare data.
+  alignment <- df.alignment$alignment
+  p.1 <- df.alignment$p.1
+  p.2 <- df.alignment$p.2
+  
+  # Extract data form the alignment.
+  lalignment = ncol(alignment)
+  alignment.p.1 = alignment[id == p.1,]
+  alignment.p.2 = alignment[id == p.2,]
+  
+  aligned.p.1 = c()
+  aligned.p.2 = c()
   for (i in (1:lalignment)) {
-    if (alignment.P1[i] != "-" & alignment.P2[i] != "-") {
-      aligned.P1 = cbind(aligned.P1,alignment.P1[i])
-      aligned.P2 = cbind(aligned.P2,alignment.P2[i])
+    if (alignment.p.1[i] != "-" & alignment.p.2[i] != "-") {
+      aligned.p.1 = cbind(aligned.p.1, alignment.p.1[i])
+      aligned.p.2 = cbind(aligned.p.2, alignment.p.2[i])
     }
   }
-  aligned.P2 = aligned.P2[, -1]	
-  aligned.P1 = aligned.P1[, -1]	
-  naligned = length(aligned.P1)	
+  naligned = length(aligned.p.1)	
   count = 0
   for (i in (1:naligned)) {
-    if (aligned.P1[i] == aligned.P2[i]) {
+    if (aligned.p.1[i] == aligned.p.2[i]) {
       count = count +1
     }
   }

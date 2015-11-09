@@ -1,2 +1,2 @@
-family,p.ref,heme,model,R0
-serinProteases,1mcta,FALSE,ANM,12
+family,p.ref,heme,model,R0,core
+serinProteases,1mcta,TRUE,ANM,12,FALSE

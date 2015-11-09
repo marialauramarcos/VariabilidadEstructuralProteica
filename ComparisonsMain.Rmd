@@ -3,7 +3,7 @@ title: "Comparaciones Teórico-Experimental"
 output: html_document
 ---
 ```{r setup, include = FALSE}
-knitr::opts_chunk$set(warning=FALSE, echo=FALSE, message = FALSE)
+knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)
 ```
 
 ```{r}
@@ -12,67 +12,84 @@ knitr::opts_chunk$set(warning=FALSE, echo=FALSE, message = FALSE)
 # Este programa genera un archivo HTLM comparando la divergencia etsructural de
 # proteínas experimentales y mutantes teóricas.
 # Para correrlo se debe completar un Input ("DATA/comp_input.csv") especificando:
-# -family: la familia de proteínas a comparar, debe estar escrita consistentemente 
+# - family: la familia de proteínas a comparar, debe estar escrita consistentemente 
 # con los archivos theoretical_input y experimental_input.
-# -p.ref: la proteína dereferencia de la familia, que debe ser escrita 
+# - p.ref: la proteína dereferencia de la familia, que debe ser escrita 
 # consisntentemente con el archivo experimental_input, es decir que debe ser escrita de la 
 # forma en la que está escrita en el dataset.
-# -heme: solo se utiliza para la familia de las globinas, puede ser "TRUE" o 
+# - heme: solo se utiliza para la familia de las globinas, puede ser "TRUE" o 
 # "FALSE" dependiendo de si se quiere considerar o no al grupo HEMO. 
-# -index: el índice de las proteínas de la familia que se desea analizar.
+# - index: el índice de las proteínas de la familia que se desea analizar.
+
 # Remove objects.
 rm (list = ls())
+
 # Read Input.
 input <- read.csv("DATA/comp_input.csv")
 family <- input$family[1]
 p.ref <- input$p.ref[1]
 heme <- input$heme[1]
+core <- input$core[1]
 index = as.vector(input$index)
+
 # Nmodes to analyze.
 nmodes1 = 10 
 nmodes2 = 25
 nmodes3 = 50
 nmodes4 = 100
+
 # Load librarys. 
 library(flux)  # function "auc".
+
 # Source functions.
 source("FUNCTIONS/CalculateGroupsMeansQuantiles.R")
+
 # Read files and calculate measures.
 # Read pdbid.
 pdbid <- read.csv(file.path("DATA/Experimental", paste(family, "_dataset.csv", sep = "")))$pdbid
 pdbid <- pdbid[pdbid != as.character(p.ref)]
+
 # Read experimental output.
 dir.e <- "OUT/Experimental"
 if (as.character(family) == "globins") {
   family <- paste(family, "_heme_", heme, sep = "")
 }
-m.Pne = read.csv(file.path(dir.e, paste(family, "_out_m.Pn.csv", sep = "")))[index, 1:nmodes4]
+m.Pne = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_m.Pn.csv", sep = "")))[index, 1:nmodes4]
 Pne.mean = colMeans(m.Pne)
 m.Qne = t(apply(m.Pne, 1, cumsum))
 Qne.mean = colMeans(m.Qne)
-m.evaluese = read.csv(file.path(dir.e, paste(family, "_out_m.evalues.csv", sep = "")))[index, 1:nmodes4]
+m.evaluese = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_m.evalues.csv", sep = "")))[index, 1:nmodes4]
 evaluese.mean = colMeans(m.evaluese)
 ievaluese.mean = 1/evaluese.mean
-laligned = read.csv(file.path(dir.e, paste(family, "_out_m.laligned.csv", sep = "")))$x
-MSD = read.csv(file.path(dir.e, paste(family, "_out_MSD.csv", sep = "")))$x
-id = read.csv(file.path(dir.e, paste(family, "_out_m.ID.csv", sep = "")))$x
+laligned = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_m.laligned.csv", sep = "")))$x
+MSD = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_MSD.csv", sep = "")))$x
+id = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_m.ID.csv", sep = "")))$x
 id.index = id[index]
+
 # Read theoretical output.
 dir.t <- "OUT/Theoretical"
-m.Pnt = read.csv(file.path(dir.t, paste(family, "_out_m.Pn.csv", sep = "")))[, 1:nmodes4]
+m.Pnt = read.csv(file.path(dir.t, paste(family, "_core_", core, "_out_m.Pn.csv", sep = "")))[, 1:nmodes4]
 m.Qnt = t(apply(m.Pnt, 1, cumsum))
-evalues = read.csv(file.path(dir.t, paste(family, "_out_evalues.csv", sep = "")))$x[1:nmodes4]
+evalues = read.csv(file.path(dir.t, paste(family, "_core_", core, "_out_evalues.csv", sep = "")))$x[1:nmodes4]
 ievalues = 1/evalues
+
 # Number of t and e proteins.
 nmut = nrow(m.Pnt)
 nexp = length(index)
+
 # Number of t groups.
 ngroups = as.integer(nmut / nexp)
 ```
 
-Conjunto teórico: `r nmut` mutantes de `r p.ref` de `r round(mean(id.index))` % de identidad secuencial con ANM R0 = 12 y Fmax = 2. Se seleccionó esta proteína ya que es la que presenta menor MSD con respecto a las coordenadas xyz promedio de todas las proteínas del conjunto experimental. El porcentaje de mutaciones se seleccionó de acuerdo al promedio de identidad secuencial de proteínas del conjunto experimental. 
+## Conjuntos de proteínas
 
-Conjunto experimental: `r nexp` proteínas de la familia de `r family`. Las proteínas tienen un promedio de identidad secuencial de `r round(mean(id.index))`%. Todas las proteínas del sub-conjunto elegidas alinean en todos los sitios de `r p.ref`, o en como máximo 1 sitio menos.
+### Conjunto teórico
+`r nmut` mutantes de `r p.ref` de `r round(mean(id.index))` % de identidad secuencial con ANM *R0* = 12 y *Fmax* = 2. Se seleccionó esta proteína ya que es la que presenta menor *MSD* con respecto a las coordenadas xyz promedio de todas las proteínas del conjunto experimental. El porcentaje de mutaciones se seleccionó de acuerdo al promedio de identidad secuencial de proteínas del conjunto experimental. 
+
+### Conjunto experimental 
+`r nexp` proteínas de la familia de `r family`. Las proteínas tienen un promedio de identidad secuencial de `r round(mean(id.index))`%. Todas las proteínas del sub-conjunto elegidas alinean en todos los sitios de `r p.ref`, o en como máximo 1 sitio menos.
+
+La caracterización del conjunto experimental se muestra a continuación:
 ```{r}
 # Analysis experimental dataset.
 layout(matrix(1:4, 2, 2, byrow = T))
@@ -106,6 +123,7 @@ for (i in (1:nexp)) {
   rho.e.3[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes3])) * evaluese.mean[1:nmodes3]), ievaluese.mean[1:nmodes3], method = "pearson")
   rho.e.4[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes4])) * evaluese.mean[1:nmodes4]), ievaluese.mean[1:nmodes4], method = "pearson")
 }
+
 # Calculate auc.
 auc.t.1 <- matrix(0, nrow = nmut, ncol = 1)
 auc.t.2 <- matrix(0, nrow = nmut, ncol = 1)
@@ -129,7 +147,10 @@ for (i in (1:nexp)) {
 }
 ``` 
 
-Las distribuciones de auc y rho para cada conjunto se muestran a continuación (azul= teórico, rojo = experimental)
+## Comparaciones
+
+### RHO y AUC
+Las distribuciones de *auc* y *rho* para cada conjunto se muestran a continuación (azul= teórico, rojo = experimental)
 
 ```{r}
 layout(matrix(1:4, 2, 2, byrow = T))
@@ -155,7 +176,8 @@ plot(density(auc.t.4), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "
 points(x = c(auc.e.4), y = rep(0, nexp), col = "red")
 ```
 
-Las distribuciones de Pn y Qn de los conjuntos son las siguientes:
+## Pn y Qn
+Las distribuciones de *Pn* y *Qn* de los conjuntos son las siguientes:
 
 ```{r}
 
@@ -168,6 +190,7 @@ Qnt.group <- CalculateGroupsMeansQuantiles(m.Qnt, ngroups, nexp)
 Qnt.group.mean <- Qnt.group$mean.total
 Qnt.group.quantile5 <- Qnt.group$quantile[1, ]
 Qnt.group.quantile95 <- Qnt.group$quantile[2, ]
+
 # Graphics.
 layout(matrix(1:2, 1, 2, byrow = T))
 plot(Pnt.group.mean, ylab = "Pn promedio", xlab = "nmodo", type = "l", ylim = c(0, 0.07), main = "Pn promedio vs. nmodo")

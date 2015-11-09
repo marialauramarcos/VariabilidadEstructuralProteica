@@ -3,8 +3,9 @@
 #  Args:
 #    r: 3 x nsites matrix containing the equilibrium coordinates of each site.
 #    aligned.index: aligned sites
-#    not.aligned.index: not aligned sites
-#    kijFunction: name of the function that calculates kij between 2 sites i and j.
+#    not.aligned.index: not aligned sites.
+#    CalculateK: name of the function that calculates tha matrix K.
+#    Calculatekij: name of the function that calculates kij between 2 sites i and j.
 #    R0: cut-off for ANM.
 #    TOLERANCE: 0 tolerance.
 #
@@ -12,7 +13,7 @@
 #    KEFF: 3*naligned x 3*naligned KEFF matrix.
 #    va: eigenvalues > TOLERANCE of KEFF.
 #    ve: eigenvectors > TOLERANCE of KEFF.
-CalculateKeff <- function(r, aligned.index, not.aligned.index, CalculateKij, R0, TOLERANCE) {
+CalculateKeff <- function(r, aligned.index, not.aligned.index, CalculateK, CalculateKij, R0, TOLERANCE) {
   naligned = length(aligned.index)
   n.not.aligned = length(not.aligned.index)
   nsites = ncol(r)
