@@ -97,9 +97,9 @@ if (core == "TRUE") {
   
   # Anylize alignment.
   a.alignment <- AnalyzeAlignmentGeneral(df.alignment)
-  aligned.index <- a.alignment$aligned.p.1.index
-  not.aligned.index <- a.alignment$not.aligned.p.1.index
-  naligned <- a.alignment$naligned
+  aligned.index = a.alignment$aligned.p.1.index
+  not.aligned.index = a.alignment$not.aligned.p.1.index
+  naligned = a.alignment$naligned
 } else {  
   
   # Aligned indexes for core = FALSE.
@@ -117,7 +117,7 @@ if (family == "globins" & heme == "TRUE") {
   not.aligned.index = c(not.aligned.index, seq((naa + 1), nsites))
 } else {
   
-  # Else nsites is equeal naa.
+  # nsites for heme = FALSE.
   nsites = naa
 }
 

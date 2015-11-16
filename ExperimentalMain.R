@@ -126,12 +126,12 @@ for (P in (1:nprot)) {
 	    r.p.ref = cbind(r.p.ref, r.heme.p.ref)
 	    nsites.p.ref = ncol(r.p.ref)
 	  }
-	  not.aligned.p.ref.index <- c(not.aligned.p.ref.index, t(seq((naa.p.ref+1), nsites.p.ref)))
+	  not.aligned.p.ref.index <- c(not.aligned.p.ref.index, t(seq((naa.p.ref + 1), nsites.p.ref)))
 	  
 	  r.heme.p.2 = ReadHeme(pdbs.fname, chain.p.2)
 	  r.p.2 = cbind(r.p.2, r.heme.p.2)
 	  nsites.p.2 = ncol(r.p.2)
-	  not.aligned.p.2.index <- c(not.aligned.p.2.index, t(seq((naa.p.2+1), nsites.p.2)))
+	  not.aligned.p.2.index <- c(not.aligned.p.2.index, t(seq((naa.p.2 + 1), nsites.p.2)))
 	} else {
 	  nsites.p.ref = naa.p.ref
 	  nsites.p.2 = naa.p.2

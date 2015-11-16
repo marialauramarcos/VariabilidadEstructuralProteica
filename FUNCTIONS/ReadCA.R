@@ -1,4 +1,4 @@
-# This function reads a pdb file and returns CA equilibrium coordinates, sites and nsites
+# This function reads a pdb file and returns CA equilibrium coordinates, sites and nsites.
 #
 #  Args:
 #    pdb.fname: pdb file name.

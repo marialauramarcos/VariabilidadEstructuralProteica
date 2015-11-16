@@ -1,4 +1,4 @@
-# This function reads a pdb file and returns coordinates of NA, NB, NC, ND and Fe of the Heme group
+# This function reads a pdb file and returns coordinates of NA, NB, NC, ND and Fe of the Heme group.
 #
 #  Args:
 #    pdb.fname: pdb file name.

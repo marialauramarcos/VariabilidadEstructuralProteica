@@ -10,8 +10,8 @@ AnalyzeAlignmentGeneral.NoCore <- function(df.alignment) {
   
   # Extract data form the alignment.
   lalignment = ncol(alignment)
-  alignment.p.1 = alignment[id == p.1,]
-  alignment.p.2 = alignment[id == p.2,]
+  alignment.p.1 = alignment[id == p.1, ]
+  alignment.p.2 = alignment[id == p.2, ]
 
   # Get indexes.
   p.1.index = c()
@@ -68,8 +68,8 @@ AnalyzeAlignmentGeneral.Core <- function(df.alignment) {
   # Extract data form the alignment.
   nprot = nrow(alignment)
   lalignment = ncol(alignment)
-  alignment.p.1 = alignment[id == p.1,]
-  alignment.p.2 = alignment[id == p.2,]
+  alignment.p.1 = alignment[id == p.1, ]
+  alignment.p.2 = alignment[id == p.2, ]
   
   # Calculate core.index.
   gaps = matrix(nrow = lalignment, ncol = 2)
