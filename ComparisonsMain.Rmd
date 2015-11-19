@@ -30,7 +30,6 @@ family <- input$family[1]
 p.ref <- input$p.ref[1]
 heme <- input$heme[1]
 core <- input$core[1]
-index = as.vector(input$index)
 
 # Nmodes to analyze.
 nmodes1 = 10 
@@ -54,6 +53,14 @@ dir.e <- "OUT/Experimental"
 if (as.character(family) == "globins") {
   family <- paste(family, "_heme_", heme, sep = "")
 }
+laligned = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_m.laligned.csv", sep = "")))$x
+  index <- c()
+  for (i in (1:length(laligned))) {
+    if (laligned[i] == max(laligned)) {
+      index[i] <- i
+    }
+  }
+index <- index[!is.na(index)]
 m.Pne = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_m.Pn.csv", sep = "")))[index, 1:nmodes4]
 Pne.mean = colMeans(m.Pne)
 m.Qne = t(apply(m.Pne, 1, cumsum))
@@ -61,7 +68,7 @@ Qne.mean = colMeans(m.Qne)
 m.evaluese = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_m.evalues.csv", sep = "")))[index, 1:nmodes4]
 evaluese.mean = colMeans(m.evaluese)
 ievaluese.mean = 1/evaluese.mean
-laligned = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_m.laligned.csv", sep = "")))$x
+
 MSD = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_MSD.csv", sep = "")))$x
 id = read.csv(file.path(dir.e, paste(family, "_core_", core, "_out_m.ID.csv", sep = "")))$x
 id.index = id[index]
