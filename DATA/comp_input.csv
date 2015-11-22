@@ -1,2 +1,9 @@
 family,p.ref,heme,core
+globins,1a6m,TRUE,TRUE
 globins,1a6m,TRUE,FALSE
+globins,1a6m,FALSE,TRUE
+globins,1a6m,FALSE,FALSE
+serinProteases,1mct,FALSE,TRUE
+serinProteases,1mct,FALSE,FALSE
+plastocyanins,1bxv,FALSE,TRUE
+plastocyanins,1bxv,FALSE,FALSE

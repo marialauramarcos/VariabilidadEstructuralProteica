@@ -1,0 +1,18 @@
+{
+    "contents" : "# load packages.\nlibrary(knitr)\nlibrary(markdown)\nlibrary(rmarkdown)\n\n# Remove objects.\nrm (list = ls())\n\n# Read Input.\ninput <- read.csv(\"DATA/comp_input.csv\")\nfamily <- input$family\np.ref <- input$p.ref\nheme <- input$heme\ncore <- input$core\n\n# For each input family in the data create a report.\n# These reports are saved with the name specified by output_file\nfor (f in (1:nrow(input))) {\n  print(f)\n  if (as.character(family[f]) == \"globins\") {\n    family.heme <- paste(family[f], \"_heme_\", heme[f], sep = \"\")\n  } else {\n    family.heme <- family[f]\n  }\n  input.i <- paste(family.heme, \"_core_\", core[f], sep = \"\")\n  rmarkdown::render('Report.Rmd', \n                    output_file =  paste(\"report_\", input.i, \".html\", sep='') \n                    )\n}\n",
+    "created" : 1448203110813.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1743338296",
+    "id" : "539B2AB3",
+    "lastKnownWriteTime" : 1448221898,
+    "path" : "C:/Users/Laurita/Desktop/Doctorado/VariabilidadEstructuralProteica/CreateReports.R",
+    "project_path" : "CreateReports.R",
+    "properties" : {
+        "tempName" : "Untitled2"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "type" : "r_source"
+}

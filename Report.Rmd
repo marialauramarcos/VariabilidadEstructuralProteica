@@ -1,0 +1,216 @@
+---
+title: "Report"
+date: "22 de noviembre de 2015"
+output: html_document
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)
+```
+
+```{r}
+# Load packages. 
+library(flux)  #  Contains function "auc".
+library(knitr)
+library(markdown)
+library(rmarkdown)
+
+# Source functions.
+source("FUNCTIONS/CalculateGroupsMeansQuantiles.R")
+
+# Nmodes to analyze.
+nmodes1 = 10 
+nmodes2 = 25
+nmodes3 = 50
+nmodes4 = 100
+
+# Read files and calculate measures.
+# Read pdbids.
+pdbid <- read.csv(file.path("DATA/Experimental", paste(family[f], "_dataset.csv", sep = "")))$pdbid
+pdbid <- pdbid[-which(grepl(p.ref[f], pdbid))]
+
+# Read experimental output.
+dir.e <- "OUT/Experimental"
+
+laligned = read.csv(file.path(dir.e, paste(input.i, "_out_m.laligned.csv", sep = "")))$x
+index <- c()
+for (i in (1:length(laligned))) {
+  if (laligned[i] == max(laligned)) {
+    index[i] <- i
+  }
+}
+index <- index[!is.na(index)]
+
+m.Pne = read.csv(file.path(dir.e, paste(input.i, "_out_m.Pn.csv", sep = "")))[index, 1:nmodes4]
+Pne.mean = colMeans(m.Pne)
+
+m.Qne = t(apply(m.Pne, 1, cumsum))
+Qne.mean = colMeans(m.Qne)
+
+m.evaluese = read.csv(file.path(dir.e, paste(input.i, "_out_m.evalues.csv", sep = "")))[index, 1:nmodes4]
+evaluese.mean = colMeans(m.evaluese)
+ievaluese.mean = 1/evaluese.mean
+
+MSD = read.csv(file.path(dir.e, paste(input.i, "_out_MSD.csv", sep = "")))$x
+
+id = read.csv(file.path(dir.e, paste(input.i, "_out_m.ID.csv", sep = "")))$x
+id.index = id[index]
+
+# Read theoretical output.
+dir.t <- "OUT/Theoretical"
+
+m.Pnt = read.csv(file.path(dir.t, paste(input.i, "_out_m.Pn.csv", sep = "")))[, 1:nmodes4]
+
+m.Qnt = t(apply(m.Pnt, 1, cumsum))
+
+evaluest = read.csv(file.path(dir.t, paste(input.i, "_out_evalues.csv", sep = "")))$x[1:nmodes4]
+
+ievaluest = 1/evaluest
+
+# Number of t and e proteins.
+nmut = nrow(m.Pnt)
+nexp = length(index)
+
+# Number of t groups.
+ngroups = as.integer(nmut / nexp)
+```
+
+## Conjuntos de proteínas
+
+### Conjunto teórico
+`r nmut` mutantes de `r p.ref[f]` de `r round(mean(id.index))` % de identidad secuencial con ANM *R0* = 12 y *Fmax* = 2. Se seleccionó esta proteína ya que es la que presenta menor *MSD* con respecto a las coordenadas xyz promedio de todas las proteínas del conjunto experimental. El porcentaje de mutaciones se seleccionó de acuerdo al promedio de identidad secuencial de proteínas del conjunto experimental. 
+
+### Conjunto experimental 
+`r nexp` proteínas de la familia de `r input.i`. Las proteínas tienen un promedio de identidad secuencial de `r round(mean(id.index))`%. Todas las proteínas del sub-conjunto elegidas alinean en todos los sitios de `r p.ref[f]`.
+
+La caracterización del conjunto experimental se muestra a continuación:
+```{r}
+# Analysis experimental dataset.
+layout(matrix(1:4, 2, 2, byrow = T))
+hist(id, main = "%ID con referencia", col = "grey")
+hist(laligned, main = "Número de sitios alineados con referencia", col = "grey")
+hist(MSD, main = "MSD con la referencia", col = "grey")
+plot(id, MSD, xlab = "%ID", main = "MSD vs. %ID")
+caract <- data.frame(pdbid, id, laligned, MSD)
+caract
+```
+
+```{r}
+# Calculate rho.
+rho.t.1 <- matrix(0, nrow = nmut, ncol = 1)
+rho.t.2 <- matrix(0, nrow = nmut, ncol = 1)
+rho.t.3 <- matrix(0, nrow = nmut, ncol = 1)
+rho.t.4 <- matrix(0, nrow = nmut, ncol = 1)
+for (i in (1:nmut)) {
+  rho.t.1[i, ] <- cor((as.vector(as.matrix(m.Pnt[i, 1:nmodes1])) * evaluest[1:nmodes1]), ievaluest[1:nmodes1], method = "pearson")	
+  rho.t.2[i, ] <- cor((as.vector(as.matrix(m.Pnt[i, 1:nmodes2])) * evaluest[1:nmodes2]), ievaluest[1:nmodes2], method = "pearson")	
+  rho.t.3[i, ] <- cor((as.vector(as.matrix(m.Pnt[i, 1:nmodes3])) * evaluest[1:nmodes3]), ievaluest[1:nmodes3], method = "pearson")	
+  rho.t.4[i, ] <- cor((as.vector(as.matrix(m.Pnt[i, 1:nmodes4])) * evaluest[1:nmodes4]), ievaluest[1:nmodes4], method = "pearson")	   
+}
+rho.e.1 <- matrix(0, nrow = nexp, ncol = 1)
+rho.e.2 <- matrix(0, nrow = nexp, ncol = 1)
+rho.e.3 <- matrix(0, nrow = nexp, ncol = 1) 
+rho.e.4 <- matrix(0, nrow = nexp, ncol = 1) 
+for (i in (1:nexp)) {
+  rho.e.1[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes1])) * evaluese.mean[1:nmodes1]), ievaluese.mean[1:nmodes1], method = "pearson")
+  rho.e.2[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes2])) * evaluese.mean[1:nmodes2]), ievaluese.mean[1:nmodes2], method = "pearson")
+  rho.e.3[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes3])) * evaluese.mean[1:nmodes3]), ievaluese.mean[1:nmodes3], method = "pearson")
+  rho.e.4[i, ] <- cor((as.vector(as.matrix(m.Pne[i, 1:nmodes4])) * evaluese.mean[1:nmodes4]), ievaluese.mean[1:nmodes4], method = "pearson")
+}
+
+# Calculate auc.
+auc.t.1 <- matrix(0, nrow = nmut, ncol = 1)
+auc.t.2 <- matrix(0, nrow = nmut, ncol = 1)
+auc.t.3 <- matrix(0, nrow = nmut, ncol = 1)
+auc.t.4 <- matrix(0, nrow = nmut, ncol = 1)
+for (i in (1:nmut)) {
+  auc.t.1[i, ] <- auc(seq(1:nmodes1), m.Qnt[i,1:nmodes1])
+  auc.t.2[i, ] <- auc(seq(1:nmodes2), m.Qnt[i,1:nmodes2])
+  auc.t.3[i, ] <- auc(seq(1:nmodes3), m.Qnt[i,1:nmodes3])
+  auc.t.4[i, ] <- auc(seq(1:nmodes4), m.Qnt[i,1:nmodes4])
+}
+auc.e.1 <- matrix(0, nrow = nexp, ncol = 1)
+auc.e.2 <- matrix(0, nrow = nexp, ncol = 1)
+auc.e.3 <- matrix(0, nrow = nexp, ncol = 1)
+auc.e.4 <- matrix(0, nrow = nexp, ncol = 1)
+for (i in (1:nexp)) {
+  auc.e.1[i, ] <- auc(seq(1:nmodes1), m.Qne[i, 1:nmodes1])
+  auc.e.2[i, ] <- auc(seq(1:nmodes2), m.Qne[i, 1:nmodes2])
+  auc.e.3[i, ] <- auc(seq(1:nmodes3), m.Qne[i, 1:nmodes3])
+  auc.e.4[i, ] <- auc(seq(1:nmodes4), m.Qne[i, 1:nmodes4])
+}
+``` 
+
+## Comparaciones
+
+### RHO y AUC
+Las distribuciones de *auc* y *rho* para cada conjunto se muestran a continuación (azul= teórico, rojo = experimental)
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T))
+plot(density(rho.t.1), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 10 modos")
+points(x = c(rho.e.1), y = rep(0, nexp), col = "red")
+plot(density(auc.t.1), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 10 modos")
+points(x = c(auc.e.1), y = rep(0, nexp), col = "red")
+plot(density(rho.t.2), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 25 modos")
+points(x = c(rho.e.2), y = rep(0, nexp), col = "red")
+plot(density(auc.t.2), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 25 modos")
+points(x = c(auc.e.2), y = rep(0, nexp), col = "red")
+```
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T))
+plot(density(rho.t.3), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 50 modos")
+points(x = c(rho.e.3), y = rep(0, nexp), col = "red")
+plot(density(auc.t.3), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 50 modos")
+points(x = c(auc.e.3), y = rep(0, nexp), col = "red")
+plot(density(rho.t.4), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 100 modos")
+points(x = c(rho.e.4), y = rep(0, nexp), col = "red")
+plot(density(auc.t.4), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 100 nmodos")
+points(x = c(auc.e.4), y = rep(0, nexp), col = "red")
+```
+
+## Pn y Qn
+Las distribuciones de *Pn* y *Qn* de los conjuntos son las siguientes:
+  
+```{r}
+
+# Calculate groups, means and quantiles.
+Pnt.group <- CalculateGroupsMeansQuantiles(m.Pnt, ngroups, nexp)
+Pnt.group.mean <- Pnt.group$mean.total
+Pnt.group.quantile5 <- Pnt.group$quantile[1, ]
+Pnt.group.quantile95 <- Pnt.group$quantile[2, ] 
+Qnt.group <- CalculateGroupsMeansQuantiles(m.Qnt, ngroups, nexp)
+Qnt.group.mean <- Qnt.group$mean.total
+Qnt.group.quantile5 <- Qnt.group$quantile[1, ]
+Qnt.group.quantile95 <- Qnt.group$quantile[2, ]
+
+# Graphics.
+layout(matrix(1:4, 2, 2, byrow = T)) 
+       
+plot(y = Pnt.group.mean, x = ievaluest, ylab = "Pn promedio teórico", xlab = "1/evalue") 
+   
+plot(y = Pne.mean, x = ievaluese.mean, ylab = "Pn promedio experimental", xlab = "1/evalue") 
+  
+plot(Pnt.group.mean, 
+     ylab = "Pn promedio", 
+     xlab = "nmodo", 
+     type = "l", 
+     ylim = c(0, max(c(Pnt.group.quantile95, Pne.mean))))
+lines(Pnt.group.quantile5, col = "green")
+lines(Pnt.group.quantile95, col = "green")
+points(Pne.mean, col = "red")
+
+plot(Qnt.group.mean, 
+     ylab = "Qn promedio", 
+     xlab = "nmodo", 
+     type = "l", 
+     ylim = c(0, max(c(Qnt.group.quantile95, Qne.mean))))
+lines(Qnt.group.quantile5, col = "green")
+lines(Qnt.group.quantile95, col = "green")
+points(Qne.mean, col = "red")
+
+```
+
+Negro: Teorico
+Rojo: Experimental
+Verdes: Cuartiles 0.05 y 0.95 de `r ngroups` grupos de `r nexp` mutantes teóricas
