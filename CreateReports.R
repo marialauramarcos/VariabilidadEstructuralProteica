@@ -1,3 +1,14 @@
+#  Este programa compara los outputs generados por "TheoreticalMain.R" y "ExperimentalMain.R". Genera reportes usando "Report.Rmd"
+#  Para utilizar el programa se debe completar un input ("DATA/comp_input.csv") especificando: 
+# -family: la familia de proteínas a la que pertenece la proteína a mutar. 
+# Tener en cuenta que las familias que pueden ser analizadas experimentalmente son
+# "serinProteases", "globins" o "plastocyanins".
+# -p.ref: el código de pdb (pdbid) de la proteína a mutar (ej.:"1a6m"). No especificar la cadena.
+# -heme: solo se utiliza para la familia de las globinas, puede ser "TRUE" o "FALSE" dependiendo de 
+# si se quiere considerar o no al grupo HEMO. 
+# -core: puede ser "TRUE" o "FALSE" dependiendo de si se quiere analizar solo los sectores
+# del alineamiento donde no hay gaps.
+
 # load packages.
 library(knitr)
 library(markdown)
