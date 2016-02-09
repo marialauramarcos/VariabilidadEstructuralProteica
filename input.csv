@@ -1,0 +1,5 @@
+family,p.ref,theo.chain.p.ref,exp.chain.p.ref,mut.model,n.mut.p,fmax,R0,core,rotate,heme,analyze.familiy,generate.mutants
+ldh,1mld,A,A,LFENM,10,2,12,FALSE,TRUE,FALSE,TRUE,TRUE
+ldh,1mld,A,A,LFENM,10,2,12,TRUE,TRUE,FALSE,FALSE,FALSE
+ldh,1mld,A,A,MND,10,2,12,FALSE,TRUE,FALSE,FALSE,TRUE
+ldh,1mld,A,A,MND,10,2,12,TRUE,TRUE,FALSE,FALSE,FALSE

@@ -1,0 +1,206 @@
+---
+title: "Estudio variabilidad estructural proteica"
+date: "30/01/2016"
+output: html_document
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)
+```
+
+```{r}
+
+# Source functions.
+source("FUNCTIONS/CalculateGroupsMeansQuantiles.R")
+
+# Nmodes to analyze.
+nmodes1 = 10 
+nmodes2 = 25
+nmodes3 = 50
+nmodes4 = 100
+
+# Read files and calculate measures.
+
+### Experimental ###
+
+pdbid <- read.csv(file.path(data.dir, paste(family, "_dataset.csv", sep = "")))$pdbid
+
+n.sites.p.1 = read.csv(file.path(out.dir, paste(family, "_out_m.n.sites.p.1.csv", sep = "")))$V1[1]
+m.n.sites.p.2 = read.csv(file.path(out.dir, paste(family, "_out_m.n.sites.p.2.csv", sep = "")))$V1
+
+n.core = read.csv(file.path(out.dir, paste(family, "_out_m.n.core.csv", sep = "")))$V1[1]
+m.n.aligned = read.csv(file.path(out.dir, paste(family, "_out_m.n.aligned.csv", sep = "")))$V1
+
+identity = read.csv(file.path(out.dir, paste(family, "_out_m.identity.csv", sep = "")))$V1
+
+m.exp.va = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.exp.va.csv", sep = "")))[, 1:nmodes4]
+mean.exp.va = colMeans(m.exp.va)
+i.mean.exp.va = 1/mean.exp.va
+
+m.exp.Pn = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.exp.Pn.csv", sep = "")))[, 1:nmodes4]
+mean.exp.Pn = colMeans(m.exp.Pn)
+
+m.exp.dr.squarei = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.exp.dr.squarei.csv", sep = "")))
+exp.MSDi = colMeans(m.exp.dr.squarei, na.rm = T )
+exp.MSD = rowMeans(m.exp.dr.squarei, na.rm = T)
+
+m.exp.Qn = t(apply(m.exp.Pn, 1, cumsum))
+mean.exp.Qn = colMeans(m.exp.Qn)
+
+family.data <- data.frame(pdbid, nsites = m.n.sites.p.2, naligned = m.n.aligned, identity, MSD = exp.MSD)
+
+### Theoretical ###
+m.theo.va = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.theo.va.csv", sep = "")))[, 1:nmodes4]
+mean.theo.va = colMeans(m.theo.va)
+i.mean.theo.va = 1/mean.theo.va
+
+m.theo.Pn = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.theo.Pn.csv", sep = "")))[, 1:nmodes4]
+
+m.theo.dr.squarei = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.theo.dr.squarei.csv", sep = "")))
+theo.MSDi = colMeans(m.theo.dr.squarei, na.rm = T)
+theo.MSD = rowMeans(m.theo.dr.squarei, na.rm = T)
+
+m.theo.Qn = t(apply(m.theo.Pn, 1, cumsum))
+
+# Number of t and e proteins.
+n.mut = nrow(m.theo.Pn)
+n.exp = length(pdbid)
+
+```
+
+## Conjuntos de proteinas
+
+### Conjunto teorico
+`r n.mut` mutantes de `r p.ref` (`r n.sites.p.1` sitios) simuladas con el modelo mutacional `r mut.model` con ANM *R0* = 12 y *Fmax* = 2. Para determinar que sitios mutar, se alineo `r p.ref` con cada una de las proteinas del conjunto, se obtuvieron los indices de los sitios alineados pero mutados y se simularon `r n.mut.p` mutantes por cada par de proteinas, obteniendose un total de `r n.mut.p * n.exp` mutantes.
+
+### Conjunto experimental 
+`r n.exp` proteinas de la familia de `r family`. Las proteinas tienen un promedio de identidad secuencial de `r round(mean(identity))`%. El core del alineamiento de la familia es de `r n.core` sitios.
+
+La caracterizacion del conjunto experimental se muestra a continuacion:
+```{r}
+family.data
+
+layout(matrix(1:2, 1, 2, byrow = T)) 
+hist(exp.MSD, main = "Experimental MSD", xlab = "MSD")
+hist(theo.MSD, main = "Theoretical MSD", xlab = "MSD")
+
+```
+
+```{r}
+# Calculate rho.
+rho.t.1 <- matrix(0, nrow = n.mut, ncol = 1)
+rho.t.2 <- matrix(0, nrow = n.mut, ncol = 1)
+rho.t.3 <- matrix(0, nrow = n.mut, ncol = 1)
+rho.t.4 <- matrix(0, nrow = n.mut, ncol = 1)
+for (i in (1:n.mut)) {
+  rho.t.1[i, ] <- cor((as.vector(as.matrix(m.theo.Pn[i, 1:nmodes1])) * mean.theo.va[1:nmodes1]), i.mean.theo.va[1:nmodes1], method = "pearson")	
+  rho.t.2[i, ] <- cor((as.vector(as.matrix(m.theo.Pn[i, 1:nmodes2])) * mean.theo.va[1:nmodes2]), i.mean.theo.va[1:nmodes2], method = "pearson")	
+  rho.t.3[i, ] <- cor((as.vector(as.matrix(m.theo.Pn[i, 1:nmodes3])) * mean.theo.va[1:nmodes3]), i.mean.theo.va[1:nmodes3], method = "pearson")	
+  rho.t.4[i, ] <- cor((as.vector(as.matrix(m.theo.Pn[i, 1:nmodes4])) * mean.theo.va[1:nmodes4]), i.mean.theo.va[1:nmodes4], method = "pearson")	   
+}
+rho.e.1 <- matrix(0, nrow = n.exp, ncol = 1)
+rho.e.2 <- matrix(0, nrow = n.exp, ncol = 1)
+rho.e.3 <- matrix(0, nrow = n.exp, ncol = 1) 
+rho.e.4 <- matrix(0, nrow = n.exp, ncol = 1) 
+for (i in (1:n.exp)) {
+  rho.e.1[i, ] <- cor((as.vector(as.matrix(m.exp.Pn[i, 1:nmodes1])) * mean.exp.va[1:nmodes1]), i.mean.exp.va[1:nmodes1], method = "pearson")
+  rho.e.2[i, ] <- cor((as.vector(as.matrix(m.exp.Pn[i, 1:nmodes2])) * mean.exp.va[1:nmodes2]), i.mean.exp.va[1:nmodes2], method = "pearson")
+  rho.e.3[i, ] <- cor((as.vector(as.matrix(m.exp.Pn[i, 1:nmodes3])) * mean.exp.va[1:nmodes3]), i.mean.exp.va[1:nmodes3], method = "pearson")
+  rho.e.4[i, ] <- cor((as.vector(as.matrix(m.exp.Pn[i, 1:nmodes4])) * mean.exp.va[1:nmodes4]), i.mean.exp.va[1:nmodes4], method = "pearson")
+}
+
+# Calculate auc.
+auc.t.1 <- matrix(0, nrow = n.mut, ncol = 1)
+auc.t.2 <- matrix(0, nrow = n.mut, ncol = 1)
+auc.t.3 <- matrix(0, nrow = n.mut, ncol = 1)
+auc.t.4 <- matrix(0, nrow = n.mut, ncol = 1)
+for (i in (1:n.mut)) {
+  auc.t.1[i, ] <- auc(seq(1:nmodes1), m.theo.Qn[i,1:nmodes1])
+  auc.t.2[i, ] <- auc(seq(1:nmodes2), m.theo.Qn[i,1:nmodes2])
+  auc.t.3[i, ] <- auc(seq(1:nmodes3), m.theo.Qn[i,1:nmodes3])
+  auc.t.4[i, ] <- auc(seq(1:nmodes4), m.theo.Qn[i,1:nmodes4])
+}
+auc.e.1 <- matrix(0, nrow = n.exp, ncol = 1)
+auc.e.2 <- matrix(0, nrow = n.exp, ncol = 1)
+auc.e.3 <- matrix(0, nrow = n.exp, ncol = 1)
+auc.e.4 <- matrix(0, nrow = n.exp, ncol = 1)
+for (i in (1:n.exp)) {
+  auc.e.1[i, ] <- auc(seq(1:nmodes1), m.exp.Qn[i, 1:nmodes1])
+  auc.e.2[i, ] <- auc(seq(1:nmodes2), m.exp.Qn[i, 1:nmodes2])
+  auc.e.3[i, ] <- auc(seq(1:nmodes3), m.exp.Qn[i, 1:nmodes3])
+  auc.e.4[i, ] <- auc(seq(1:nmodes4), m.exp.Qn[i, 1:nmodes4])
+}
+``` 
+
+## Comparaciones
+
+### RHO y AUC
+Las distribuciones de *auc* y *rho* para cada conjunto se muestran a continuacion (azul= teorico, rojo = experimental)
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T))
+plot(density(rho.t.1), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 10 modos")
+points(x = c(rho.e.1), y = rep(0, n.exp), col = "red")
+plot(density(auc.t.1), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 10 modos")
+points(x = c(auc.e.1), y = rep(0, n.exp), col = "red")
+plot(density(rho.t.2), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 25 modos")
+points(x = c(rho.e.2), y = rep(0, n.exp), col = "red")
+plot(density(auc.t.2), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 25 modos")
+points(x = c(auc.e.2), y = rep(0, n.exp), col = "red")
+```
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T))
+plot(density(rho.t.3), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 50 modos")
+points(x = c(rho.e.3), y = rep(0, n.exp), col = "red")
+plot(density(auc.t.3), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 50 modos")
+points(x = c(auc.e.3), y = rep(0, n.exp), col = "red")
+plot(density(rho.t.4), col = "blue", ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 100 modos")
+points(x = c(rho.e.4), y = rep(0, n.exp), col = "red")
+plot(density(auc.t.4), col = "blue", ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 100 nmodos")
+points(x = c(auc.e.4), y = rep(0, n.exp), col = "red")
+```
+
+## Pn y Qn
+Las distribuciones de *Pn* y *Qn* de los conjuntos son las siguientes:
+  
+```{r}
+
+# Calculate groups, means and quantiles.
+theo.Pn.group <- CalculateGroupsMeansQuantiles(m.theo.Pn, n.mut.p, n.exp)
+mean.theo.Pn.group <- theo.Pn.group$mean.total
+theo.Pn.group.quantile5 <- theo.Pn.group$quantile[1, ]
+theo.Pn.group.quantile95 <- theo.Pn.group$quantile[2, ] 
+theo.Qn.group <- CalculateGroupsMeansQuantiles(m.theo.Qn, n.mut.p, n.exp)
+mean.theo.Qn.group <- theo.Qn.group$mean.total
+theo.Qn.group.quantile5 <- theo.Qn.group$quantile[1, ]
+theo.Qn.group.quantile95 <- theo.Qn.group$quantile[2, ]
+
+# Graphics.
+layout(matrix(1:4, 2, 2, byrow = T)) 
+       
+plot(y = mean.theo.Pn.group, x = i.mean.theo.va, ylab = "Pn promedio teorico", xlab = "1/evalue") 
+plot(y = mean.exp.Pn, x = i.mean.exp.va, ylab = "Pn promedio experimental", xlab = "1/evalue") 
+  
+plot(mean.theo.Pn.group, 
+     ylab = "Pn promedio", 
+     xlab = "nmodo", 
+     type = "l", 
+     ylim = c(0, max(c(theo.Pn.group.quantile95, mean.exp.Pn))))
+lines(theo.Pn.group.quantile5, col = "green")
+lines(theo.Pn.group.quantile95, col = "green")
+points(mean.exp.Pn, col = "red")
+
+plot(mean.theo.Qn.group, 
+     ylab = "Qn promedio", 
+     xlab = "nmodo", 
+     type = "l", 
+     ylim = c(0, max(c(theo.Qn.group.quantile95, mean.exp.Qn))))
+lines(theo.Qn.group.quantile5, col = "green")
+lines(theo.Qn.group.quantile95, col = "green")
+points(mean.exp.Qn, col = "red")
+
+```
+
+Negro: Teorico
+Rojo: Experimental
+Verdes: Cuartiles 0.05 y 0.95 de `r n.mut.p` grupos de `r n.exp` mutantes teoricas.
