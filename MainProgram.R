@@ -6,19 +6,21 @@
 #    - family: the family of the protein to mutate. It can be "globins", "serinProteases", "plastocyanins", 
 #    "snakesToxin", "sh3", "proteasome", "lipocalin", "fabp", "kinase", "rrm", "phoslip", "gluts" and "ldh".
 #    - p.ref: the pdb code (pdbid) of the protein to mutate (example: "1a6m"). The protein must be a member of
-#    the selected family.
+#    the selected family. This pdbid must not be included in the dataset ("DATA/family_dataset.csv").
 #    - theo.chain.p.ref: the chain of p.ref to mutate.
 #    - exp.chain.p.ref: the chain of p.ref in the pdb file obtained from Homstrad.
-#    - mut.model: mutational model. It can be "LFENM" or "MND".
-#    - n.mut.p: the number of mutants to generate for each member of the family.
-#    - fmax: the maximun value for the forces that model the mutations.
-#    - R0: the cut-off for the ANM.
-#    - rotate: it can be "TRUE" or "FALSE". If it is "TRUE" r.p.2 is rotated in order to minimize RMSD with r.p.ref.
-#    - core: it can be "TRUE" or "FALSE". If it is "TRUE" the program only considers the conserved core of 
-#    the alignment. If it is "FALSE" the program analyzes the whole alignment.
-#    - heme: argument for globins. It can be "TRUE" or "FALSE". If it is "TRUE" the program considers the hemo group.
-#    - analyze.family: It can be "TRUE" or "FALSE". If it is true the program analyzes the family.
-#    - generate.mutants: It can be "TRUE" or "FALSE". If it is true the program generates new mutants.
+#    - mut.model: mutational model. It can be "LFENM" ("Linearly Forced - Elastic Network Model") or "MND" 
+#    ("Multivariate Normal Distribution").
+#    - n.mut.p: the number of mutants to generate for each member of the family. For example, if the family has 20 
+#    members, the program generates n.mut.p x 20 mutants.
+#    - fmax: argument for "LFENM". It is the maximun value for the forces that model the mutations. 
+#    - R0: the cut-off for the ANM ("Anisotropic Network Model") that represents the proteins.
+#    - rotate: it can be "TRUE" or "FALSE". If it is "TRUE", r.p.2 is rotated in order to minimize RMSD with r.p.ref.
+#    - core: it can be "TRUE" or "FALSE". If it is "TRUE", the program only considers the conserved core of 
+#    the alignment. If it is "FALSE", the program analyzes the whole alignment.
+#    - heme: argument for globins. It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the hemo group.
+#    - analyze.family: It can be "TRUE" or "FALSE". If it is "TRUE" the program analyzes the family.
+#    - generate.mutants: It can be "TRUE" or "FALSE". If it is "TRUE" the program generates new mutants.
 
 # Remove objects.
 rm(list = ls())
