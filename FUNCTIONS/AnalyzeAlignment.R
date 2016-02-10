@@ -1,13 +1,13 @@
 # This function calculates aligned and not aligned sites of two proteins p.1 and p.2 in a 
-# multiple alignment. It has to possibilitys:
-#  - core: aligned and not aligned sites of p.1 and p.2 that are in the 
-# conserved core of the alignment: positions with no gaps in the alignemnt.
-#  - noCore: all aligned and not aligned sites of p.1 and p.2.
+# multiple alignment. It does two types of analysis:
+#  - CORE = TRUE: aligned and not aligned sites of p.1 and p.2 that are in the 
+# conserved core of the alignment: positions with no gaps in the whole alignemnt.
+#  - CORE = FALSE: all aligned and not aligned sites of p.1 and p.2.
 #
 #  Args:
 #      alignment: multiple alignment.
-#      id: pdbid of proteins in the rows of the alignment.
-#      p.1: pdbid of one of the proteins to analyze.
+#      pdbid: pdbid of proteins in the rows of the alignment.
+#      p.1: pdbid of one of the reference protein.
 #      p.2: pdbid of the other protein to analyze.
 #
 #  Returns:
@@ -16,16 +16,16 @@
 #    n.aligned: n aligned sites of p.1.
 #    aligned.p.1.index: aligned sites of p.1.
 #    aligned.p.2.index: aligned sites of p.2.
-#    not.aligned.p.1.index: not.aligned sites of p.1.
-#    not.aligned.p.2.index: not.aligned sites of p.2.
+#    not.aligned.p.1.index: not aligned sites of p.1.
+#    not.aligned.p.2.index: not aligned sites of p.2.
 #    n.aligned.mut.p.1: n aligned but mutated sites of p.1.
 #    aligned.mut.p.1.index: aligned but mutated sites of p.1.
-#    n.core: n core sites of p.1.
+#    n.core: n core sites.
 #    core.p.1.index: core sites of p.1.
 #    core.p.2.index: core sites of p.2.
-#    no.core.p.1.index: no.core sites of p.1.
-#    no.core.p.2.index: no.core sites of p.2.
-#    identity: % sequence identity.
+#    no.core.p.1.index: no core sites of p.1.
+#    no.core.p.2.index: no core sites of p.2.
+#    identity: % sequence identity between p.1 and p.2.
 
 AnalyzeAlignment <- function(alignment, pdbid, p.1, p.2) {
   
