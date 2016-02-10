@@ -1,19 +1,21 @@
-# This function analyzes a multiple alignment of a family of proteins. It has to possibilitys:
-#  - core: aligned and not aligned sites of p.1 and p.2 that are in the 
+# This function analyzes a multiple alignment of a family of proteins comparing a reference protein p.1 with the other proteins. 
+#  It does two types of analysis:
+#  - CORE = TRUE: aligned and not aligned sites of p.1 and each p.2 that are in the 
 # conserved core of the alignment: positions with no gaps in whole the alignemnt.
-#  - noCore: all aligned and not aligned sites of p.1 and p.2.
+#  - CORE = FALSE: all aligned and not aligned sites of p.1 and each p.2.
 #
 #  Args:
 #   family: the family of p.ref.
 #   p.ref: reference protein.
-#   data.dir: directory of the data. It must contain the alignment and the dataset. 
+#   data.dir: directory of the data. It must contain the alignment of the family ("data.dir/family_alignment.txt") and the dataset 
+#  ("data.dir/family_dataset.csv"). 
 #   out.dir: output directory.
 #
 #  Requires:
 #   AnalyzeAlignment()
 #
 #  Returns:
-#   Files with the result of the analyisis in out.dir .
+#   Files with the result of the analyisis in out.dir.
 
 AnalyzeFamily <- function(family, p.ref, data.dir, out.dir) {
   
