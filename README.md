@@ -1,8 +1,8 @@
 ﻿# VariabilidadEstructuralProteica
 
-En este respositorio se encuentran los programas, directorios y archivos  necesarios para analizar la divergencia estructural proteica, comparando datos experimentales obtenidos de la base de alineamientos estructurales múltiples Homstrad y datos teóricos obtenidos simulando mutaciones con el modelo Linearly Forced-Elastic Network Model (LF-ENM) o mediante una distribución normal mulivariante (MND). Es posible analizar el alineamiento por completo o solo analizar el CORE.
+En este respositorio se encuentran los programas, directorios y archivos necesarios para analizar la divergencia estructural proteica, comparando datos experimentales obtenidos de la base de alineamientos estructurales múltiples Homstrad y datos teóricos obtenidos simulando mutaciones con el modelo "Linearly Forced - Elastic Network Model" (LF-ENM) o mediante una distribución normal mulivariante (MND). Es posible analizar el alineamiento por completo o solo analizar el CORE conservado.
 
-Para utilizar estos programas se debe completar el archivo input ("input.csv") y correr el programa "MainProgram.R. Una breve  descripción de cómo deben ser completados el input se encuentra en el inicio de este programa.
+Para utilizar estos programas se debe completar el archivo input ("input.csv") y correr el programa "MainProgram.R". Una breve  descripción de cómo debe ser completado el input se encuentra en el inicio de este programa.
 
 El programa principal realiza los siguientes pasos:
 
