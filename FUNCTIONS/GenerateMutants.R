@@ -1,16 +1,17 @@
-# This function generates  mutants of a given protein using two possible models:
-# - "LFENM" (Linearly Forced - Elastic Network Model) considering additive single mutations.
-# - "MND" (Multivariate Normal Distribution) considering mu = dr expected value = 0 and Sigma = Cov.
+# This function generates mutants of a given protein using two possible models:
+# - "LFENM" (Linearly Forced - Elastic Network Model), considering additive single mutations.
+# - "MND" (Multivariate Normal Distribution), considering mu = dr expected value = 0 and Sigma = Cov.
 #
 #  Args:
+#    family: the family of the protein to mutate.
 #    p.ref: the pdb code (pdbid) of the protein to mutate.
+#    chain: the chain of p.ref to mutate.
 #    mut.model: mutational model. It can be "LFENM" or "MND".
-#    theo.chain.p.ref: the chain of p.ref to mutate.
 #    n.mut.p: the number of mutants to generate for each protein of the family.
-#    fmax: the maximun value for the forces that model the mutations.
-#    R0: the cut-off for the ANM.
-#    heme: argument for globins. It can be "TRUE" or "FALSE". If it is "TRUE" the program considers the hemo group.
-#    data.dir: directory of the data. It must contain the file "_out_m.aligned.mut.p.1.index.csv" with indexes to mutate.
+#    fmax: argument for "LFENM". It is the maximun value for the forces that model the mutations.
+#    R0: the cut-off for the ANM ("Anisotropic Network Model").
+#    heme: argument for "globins". It can be "TRUE" or "FALSE". If it is "TRUE" the program considers the heme group.
+#    data.dir: directory of the data. It must contain the file "_out_m.aligned.mut.p.ref.index.csv" with indexes to mutate.
 #    This file is generated using AnalyzeFamily().
 #    out.dir: output directory.
 #    out.name: ID for output filenames.
@@ -41,7 +42,7 @@ GenerateMutants <- function(family,
 
   # Filenames.
   pdb.fname <- file.path(data.dir, paste(p.ref, ".pdb", sep = ""))
-  m.aligned.mut.p.1.index.fname <- file.path(out.dir, paste(family, "_out_m.aligned.mut.p.1.index.csv", sep = ""))
+  m.aligned.mut.p.ref.index.fname <- file.path(out.dir, paste(family, "_out_m.aligned.mut.p.ref.index.csv", sep = ""))
   
   # Get and read PDB of p.ref.
   get.pdb(as.character(p.ref), data.dir)
@@ -62,9 +63,9 @@ GenerateMutants <- function(family,
   # Calculate K of p.ref.
   ENMK.p.ref = CalculateENMK(r.p.ref, CalculateKij, R0, TOLERANCE)
   
-  # Get mutated sites of p.ref in the alignment.
-  m.aligned.mut.p.1.index = read.csv(m.aligned.mut.p.1.index.fname)
-  n.prot = nrow(m.aligned.mut.p.1.index)
+  # Get mutated sites of p.ref in the alignment and the number of proteins.
+  m.aligned.mut.p.ref.index = read.csv(m.aligned.mut.p.ref.index.fname)
+  n.prot = nrow(m.aligned.mut.p.ref.index)
 
   # Calculate mutants using "LF-ENM".
   if (mut.model == "LFENM") {
@@ -72,23 +73,30 @@ GenerateMutants <- function(family,
     # Create a matrix to save coordinates of each generated mutant.
     m.r.mut = matrix(nrow = 3 * n.sites, ncol = n.prot * n.mut.p)
 
-    # Start a loop to calculate coordinates of the mutants.
+    # Start a loop to read mutated sites of p.ref per protein.
     for (P in (1:n.prot)) {
       
-      # Get mutated sites of p.ref.
-      aligned.mut.p.1.index = m.aligned.mut.p.1.index[P, ]
-      aligned.mut.p.1.index = as.numeric(aligned.mut.p.1.index[, !is.na(aligned.mut.p.1.index)])
+      # Get mutated sites of p.ref for P.
+      aligned.mut.p.ref.index = m.aligned.mut.p.ref.index[P, ]
+      aligned.mut.p.ref.index = as.numeric(aligned.mut.p.ref.index[, !is.na(aligned.mut.p.ref.index)])
       
+      # Start a loop to generate n.mut.p mutants for P.
       for(mut in seq(n.mut.p)) {
         print(c(P,mut))
-        f <- rep(0, 3 * n.sites)
-        for (l in as.numeric(aligned.mut.p.1.index)) {
-          fl = CalculateForce(l, r.p.ref, ENMK.p.ref$kij, fmax)
-          f = f + fl
-       }
+        
+       # Calculate forces.
+       f = rep(0, 3 * n.sites)
+       for (l in as.numeric(aligned.mut.p.ref.index)) {
+         fl = CalculateForce(l, r.p.ref, ENMK.p.ref$kij, fmax)
+         f = f + fl
+        }
+        
+       # Calculate dr and r.mut.
        dr.mut = ENMK.p.ref$cov %*% f
        r.mut = as.vector(r.p.ref) + dr.mut
-       m.r.mut[, (n.mut.p * P) - n.mut.p - mut] = r.mut
+       
+       # Keep r.mut.
+       m.r.mut[, n.mut.p * P - (n.mut.p - mut)] = r.mut
       }
     }
   }
@@ -105,13 +113,17 @@ GenerateMutants <- function(family,
     # Start a loop to calculate coordinates of the mutants.
     for (mut in seq(n.prot * n.mut.p)) {
       print(mut)
+      
+      # Calculate dr and r.mut.
       dr.mut =  mvrnorm(n = 1, dr, ENMK.p.ref$cov)
       r.mut =  as.vector(r.p.ref) + dr.mut
+      
+      # Keep r.mut.
       m.r.mut[, mut] = r.mut
     }
   }
   
-  # Create files to save the data.
+  # Create files and save the data.
   write.csv(as.vector(r.p.ref), file = file.path(out.dir, paste(out.name, "_out_r.p.ref.csv", sep = "")), row.names = FALSE)
   write.csv(m.r.mut, file = file.path(out.dir, paste(out.name, "_out_m.r.mut.csv", sep = "")), row.names = FALSE)
 }

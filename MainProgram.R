@@ -18,7 +18,7 @@
 #    - rotate: it can be "TRUE" or "FALSE". If it is "TRUE", r.p.2 is rotated in order to minimize RMSD with r.p.ref.
 #    - core: it can be "TRUE" or "FALSE". If it is "TRUE", the program only considers the conserved core of 
 #    the alignment. If it is "FALSE", the program analyzes the whole alignment.
-#    - heme: argument for globins. It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the hemo group.
+#    - heme: argument for "globins". It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the heme group.
 #    - analyze.family: It can be "TRUE" or "FALSE". If it is "TRUE" the program analyzes the family.
 #    - generate.mutants: It can be "TRUE" or "FALSE". If it is "TRUE" the program generates new mutants.
 
@@ -90,6 +90,7 @@ for (a in (1:nrow(input))) {
   heme <- input$heme[a]
   analyze.family <- input$analyze.familiy[a]
   generate.mutants <- input$generate.mutants[a]
+  analyze.experimental.theoretical <- input$analyze.experimental.theoretical[a]
   
   # Generate names for output files.
   family.heme.model <- paste(family, "_heme_", heme, "_mut.model_", mut.model, sep = "")
@@ -120,18 +121,20 @@ for (a in (1:nrow(input))) {
   }
   
   # Analyze measures of variability of experimental proteins and simulated mutants.
-  AnalyzeExperimentalTheoretical(family,
-                                 exp.chain.p.ref,
-                                 n.mut.p,
-                                 R0, 
-                                 core,
-                                 rotate,
-                                 heme,
-                                 data.dir,
-                                 out.dir,
-                                 family.heme.model, 
-                                 family.heme.model.core,
-                                 TOLERANCE)
+  if (analyze.experimental.theoretical == "TRUE") {
+    AnalyzeExperimentalTheoretical(family,
+                                   exp.chain.p.ref,
+                                   n.mut.p,
+                                   R0, 
+                                   core,
+                                   rotate,
+                                   heme,
+                                   data.dir,
+                                   out.dir,
+                                   family.heme.model, 
+                                   family.heme.model.core,
+                                   TOLERANCE)
+  }
   
   # Generate a report.
   rmarkdown::render('Report.Rmd', 

@@ -23,6 +23,7 @@ nmodes4 = 100
 ### Experimental ###
 
 pdbid <- read.csv(file.path(data.dir, paste(family, "_dataset.csv", sep = "")))$pdbid
+n.exp = length(pdbid)
 
 n.sites.p.1 = read.csv(file.path(out.dir, paste(family, "_out_m.n.sites.p.1.csv", sep = "")))$V1[1]
 m.n.sites.p.2 = read.csv(file.path(out.dir, paste(family, "_out_m.n.sites.p.2.csv", sep = "")))$V1
@@ -54,23 +55,23 @@ mean.theo.va = colMeans(m.theo.va)
 i.mean.theo.va = 1/mean.theo.va
 
 m.theo.Pn = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.theo.Pn.csv", sep = "")))[, 1:nmodes4]
+n.mut = nrow(m.theo.Pn)
 
 m.theo.dr.squarei = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.theo.dr.squarei.csv", sep = "")))
 theo.MSDi = colMeans(m.theo.dr.squarei, na.rm = T)
 theo.MSD = rowMeans(m.theo.dr.squarei, na.rm = T)
 
-m.theo.Qn = t(apply(m.theo.Pn, 1, cumsum))
+theo.MSD.group <- CalculateGroupsMeansQuantiles(cbind(theo.MSD,theo.MSD), n.exp, n.mut.p)
+mean.theo.MSD.group <- theo.MSD.group$mean.group[,1]
 
-# Number of t and e proteins.
-n.mut = nrow(m.theo.Pn)
-n.exp = length(pdbid)
+m.theo.Qn = t(apply(m.theo.Pn, 1, cumsum))
 
 ```
 
 ## Conjuntos de proteinas
 
 ### Conjunto teorico
-`r n.mut` mutantes de `r p.ref` (`r n.sites.p.1` sitios) simuladas con el modelo mutacional `r mut.model` con ANM *R0* = 12 y *Fmax* = 2. Para determinar que sitios mutar, se alineo `r p.ref` con cada una de las proteinas del conjunto, se obtuvieron los indices de los sitios alineados pero mutados y se simularon `r n.mut.p` mutantes por cada par de proteinas, obteniendose un total de `r n.mut.p * n.exp` mutantes.
+`r n.mut` mutantes de `r p.ref` (`r n.sites.p.1` sitios) simuladas con el modelo mutacional `r mut.model` con ANM *R0* = 12 y *Fmax* = 2 (solo para LFENM). Para determinar que sitios mutar, se alineo `r p.ref` con cada una de las proteinas del conjunto, se obtuvieron los indices de los sitios alineados pero mutados y se simularon `r n.mut.p` mutantes por cada par de proteinas, obteniendose un total de `r n.mut.p * n.exp` mutantes. Luego, para el analisis, se tomaron como alineados los sitios alineados de `r p.ref` para cada par de proteinas.
 
 ### Conjunto experimental 
 `r n.exp` proteinas de la familia de `r family`. Las proteinas tienen un promedio de identidad secuencial de `r round(mean(identity))`%. El core del alineamiento de la familia es de `r n.core` sitios.
@@ -79,9 +80,12 @@ La caracterizacion del conjunto experimental se muestra a continuacion:
 ```{r}
 family.data
 
-layout(matrix(1:2, 1, 2, byrow = T)) 
+layout(matrix(1:4, 2, 2, byrow = T)) 
 hist(exp.MSD, main = "Experimental MSD", xlab = "MSD")
 hist(theo.MSD, main = "Theoretical MSD", xlab = "MSD")
+
+plot(exp.MSD, identity, xlab = "experimental MSD")
+plot(mean.theo.MSD.group, identity, xlab = "mean theoretical MSD")
 
 ```
 
@@ -164,6 +168,15 @@ points(x = c(auc.e.4), y = rep(0, n.exp), col = "red")
 Las distribuciones de *Pn* y *Qn* de los conjuntos son las siguientes:
   
 ```{r}
+# Re-ordenate Pn and Qn.
+m.theo.index = matrix(ncol = 1, nrow = n.mut)
+for (P in (1:n.exp)) {
+  for (mut in (1:n.mut.p)) {
+    m.theo.index[(P - 1) * n.mut.p + mut, ] = (mut - 1) * 10 + P
+  }
+}
+m.theo.Pn = m.theo.Pn[as.vector(m.theo.index), ]
+m.theo.Qn = m.theo.Qn[as.vector(m.theo.index), ]
 
 # Calculate groups, means and quantiles.
 theo.Pn.group <- CalculateGroupsMeansQuantiles(m.theo.Pn, n.mut.p, n.exp)

@@ -1,14 +1,14 @@
-# This function analyzes a multiple alignment of a family of proteins comparing a reference protein p.1 with the other proteins. 
+# This function analyzes a multiple alignment of a family of proteins comparing a reference protein p.ref with the other proteins. 
 #  It does two types of analysis:
-#  - CORE = TRUE: aligned and not aligned sites of p.1 and each p.2 that are in the 
+#  - CORE = TRUE: aligned and not aligned sites of p.ref and each p.2 that are in the 
 # conserved core of the alignment: positions with no gaps in whole the alignemnt.
-#  - CORE = FALSE: all aligned and not aligned sites of p.1 and each p.2.
+#  - CORE = FALSE: all aligned and not aligned sites of p.ref and each p.2.
 #
 #  Args:
-#   family: the family of p.ref.
-#   p.ref: reference protein.
-#   data.dir: directory of the data. It must contain the alignment of the family ("data.dir/family_alignment.txt") and the dataset 
-#  ("data.dir/family_dataset.csv"). 
+#   family: the family of the reference protein.
+#   p.ref: the pdb code (pdbid) of the reference protein.
+#   data.dir: directory of the data. It must contain a file with the alignment of the family ("data.dir/family_alignment.txt") and 
+#   a file with the dataset ("data.dir/family_dataset.csv").
 #   out.dir: output directory.
 #
 #  Requires:
@@ -32,22 +32,23 @@ AnalyzeFamily <- function(family, p.ref, data.dir, out.dir) {
   alignment.id <- ReadFasta(alignment.fname)
   alignment <- alignment.id$ali[, -ncol(alignment.id$ali)]  # The last column is "*".
   pdbid.alignment <- alignment.id$id
+  l.alignment = ncol(alignment)
   
   # Create matrices to save data.
-  m.n.sites.p.1 = matrix(nrow = n.prot, ncol = 1)
+  m.n.sites.p.ref = matrix(nrow = n.prot, ncol = 1)
   m.n.sites.p.2 = matrix(nrow = n.prot, ncol = 1)
   m.n.aligned = matrix(nrow = n.prot, ncol = 1)
-  m.aligned.p.1.index = matrix(nrow = n.prot, ncol = 500)
-  m.aligned.p.2.index = matrix(nrow = n.prot, ncol = 500)
-  m.not.aligned.p.1.index = matrix(nrow = n.prot, ncol = 500)
-  m.not.aligned.p.2.index = matrix(nrow = n.prot, ncol = 500)
-  m.n.aligned.mut.p.1 = matrix(nrow = n.prot, ncol = 1)
-  m.aligned.mut.p.1.index = matrix(nrow = n.prot, ncol = 500)
+  m.aligned.p.ref.index = matrix(nrow = n.prot, ncol = l.alignment)
+  m.aligned.p.2.index = matrix(nrow = n.prot, ncol = l.alignment)
+  m.not.aligned.p.ref.index = matrix(nrow = n.prot, ncol = l.alignment)
+  m.not.aligned.p.2.index = matrix(nrow = n.prot, ncol = l.alignment)
+  m.n.aligned.mut.p.ref = matrix(nrow = n.prot, ncol = 1)
+  m.aligned.mut.p.ref.index = matrix(nrow = n.prot, ncol = l.alignment)
   m.n.core = matrix(nrow = n.prot, ncol = 1)
-  m.core.p.1.index = matrix(nrow = n.prot, ncol = 500) 
-  m.core.p.2.index = matrix(nrow = n.prot, ncol = 500)
-  m.no.core.p.1.index = matrix(nrow = n.prot, ncol = 500)
-  m.no.core.p.2.index = matrix(nrow = n.prot, ncol = 500)
+  m.core.p.ref.index = matrix(nrow = n.prot, ncol = l.alignment) 
+  m.core.p.2.index = matrix(nrow = n.prot, ncol = l.alignment)
+  m.no.core.p.ref.index = matrix(nrow = n.prot, ncol = l.alignment)
+  m.no.core.p.2.index = matrix(nrow = n.prot, ncol = l.alignment)
   m.identity = matrix(nrow = n.prot, ncol = 1)
   
   # Start a loop to evaluate each protein of the family.
@@ -64,44 +65,44 @@ AnalyzeFamily <- function(family, p.ref, data.dir, out.dir) {
                                           p.2)
     
     # Save analysis in the matrices.
-    m.n.sites.p.1[P, ] = analysis.alignment$n.sites.p.1
+    m.n.sites.p.ref[P, ] = analysis.alignment$n.sites.p.ref
     m.n.sites.p.2[P, ] = analysis.alignment$n.sites.p.2
     m.n.aligned[P, ] = analysis.alignment$n.aligned
-    m.aligned.p.1.index[P, 1:length(analysis.alignment$aligned.p.1.index)] = analysis.alignment$aligned.p.1.index
+    m.aligned.p.ref.index[P, 1:length(analysis.alignment$aligned.p.ref.index)] = analysis.alignment$aligned.p.ref.index
     m.aligned.p.2.index[P, 1:length(analysis.alignment$aligned.p.2.index)] = analysis.alignment$aligned.p.2.index
-    if (length(analysis.alignment$not.aligned.p.1.index) > 0) {
-      m.not.aligned.p.1.index[P, 1:length(analysis.alignment$not.aligned.p.1.index)] = analysis.alignment$not.aligned.p.1.index
+    if (length(analysis.alignment$not.aligned.p.ref.index) > 0) {
+      m.not.aligned.p.ref.index[P, 1:length(analysis.alignment$not.aligned.p.ref.index)] = analysis.alignment$not.aligned.p.ref.index
     }
     if (length(analysis.alignment$not.aligned.p.2.index) > 0) {
       m.not.aligned.p.2.index[P, 1:length(analysis.alignment$not.aligned.p.2.index)] = analysis.alignment$not.aligned.p.2.index
     }
-    m.n.aligned.mut.p.1[P, ] = analysis.alignment$n.aligned.mut.p.1
-    if (analysis.alignment$n.aligned.mut.p.1 > 0) {
-      m.aligned.mut.p.1.index[P, 1:length(analysis.alignment$aligned.mut.p.1.index)] = analysis.alignment$aligned.mut.p.1.index
+    m.n.aligned.mut.p.ref[P, ] = analysis.alignment$n.aligned.mut.p.ref
+    if (analysis.alignment$n.aligned.mut.p.ref > 0) {
+      m.aligned.mut.p.ref.index[P, 1:length(analysis.alignment$aligned.mut.p.ref.index)] = analysis.alignment$aligned.mut.p.ref.index
     }
     m.n.core[P, ] = analysis.alignment$n.core
-    m.core.p.1.index[P, 1:length(analysis.alignment$core.p.1.index)] = analysis.alignment$core.p.1.index 
+    m.core.p.ref.index[P, 1:length(analysis.alignment$core.p.ref.index)] = analysis.alignment$core.p.ref.index 
     m.core.p.2.index[P, 1:length(analysis.alignment$core.p.2.index)] = analysis.alignment$core.p.2.index
-    m.no.core.p.1.index[P, 1:length(analysis.alignment$no.core.p.1.index)] = analysis.alignment$no.core.p.1.index
+    m.no.core.p.ref.index[P, 1:length(analysis.alignment$no.core.p.ref.index)] = analysis.alignment$no.core.p.ref.index
     m.no.core.p.2.index[P, 1:length(analysis.alignment$no.core.p.2.index)] = analysis.alignment$no.core.p.2.index
     m.identity[P, ] = analysis.alignment$identity
   }
   
   
   # Create files to save data.
-  write.csv(m.n.sites.p.1, file = file.path(out.dir, paste(family, "_out_m.n.sites.p.1.csv", sep = "")), row.names = FALSE)
+  write.csv(m.n.sites.p.ref, file = file.path(out.dir, paste(family, "_out_m.n.sites.p.ref.csv", sep = "")), row.names = FALSE)
   write.csv(m.n.sites.p.2, file = file.path(out.dir, paste(family, "_out_m.n.sites.p.2.csv", sep = "")), row.names = FALSE)
   write.csv(m.n.aligned, file = file.path(out.dir, paste(family, "_out_m.n.aligned.csv", sep = "")), row.names = FALSE)
-  write.csv(m.aligned.p.1.index, file = file.path(out.dir, paste(family, "_out_m.aligned.p.1.index.csv", sep = "")), row.names = FALSE)
+  write.csv(m.aligned.p.ref.index, file = file.path(out.dir, paste(family, "_out_m.aligned.p.ref.index.csv", sep = "")), row.names = FALSE)
   write.csv(m.aligned.p.2.index, file = file.path(out.dir, paste(family, "_out_m.aligned.p.2.index.csv", sep = "")), row.names = FALSE)
-  write.csv(m.not.aligned.p.1.index, file = file.path(out.dir, paste(family, "_out_m.not.aligned.p.1.index.csv", sep = "")), row.names = FALSE)
+  write.csv(m.not.aligned.p.ref.index, file = file.path(out.dir, paste(family, "_out_m.not.aligned.p.ref.index.csv", sep = "")), row.names = FALSE)
   write.csv(m.not.aligned.p.2.index, file = file.path(out.dir, paste(family, "_out_m.not.aligned.p.2.index.csv", sep = "")), row.names = FALSE)
-  write.csv(m.n.aligned.mut.p.1, file = file.path(out.dir, paste(family, "_out_m.n.aligned.mut.p.1.csv", sep = "")), row.names = FALSE)
-  write.csv(m.aligned.mut.p.1.index, file = file.path(out.dir, paste(family, "_out_m.aligned.mut.p.1.index.csv", sep = "")), row.names = FALSE)
+  write.csv(m.n.aligned.mut.p.ref, file = file.path(out.dir, paste(family, "_out_m.n.aligned.mut.p.ref.csv", sep = "")), row.names = FALSE)
+  write.csv(m.aligned.mut.p.ref.index, file = file.path(out.dir, paste(family, "_out_m.aligned.mut.p.ref.index.csv", sep = "")), row.names = FALSE)
   write.csv(m.n.core, file = file.path(out.dir, paste(family, "_out_m.n.core.csv", sep = "")), row.names = FALSE)
-  write.csv(m.core.p.1.index, file = file.path(out.dir, paste(family, "_out_m.core.p.1.index.csv", sep = "")), row.names = FALSE)
+  write.csv(m.core.p.ref.index, file = file.path(out.dir, paste(family, "_out_m.core.p.ref.index.csv", sep = "")), row.names = FALSE)
   write.csv(m.core.p.2.index, file = file.path(out.dir, paste(family, "_out_m.core.p.2.index.csv", sep = "")), row.names = FALSE)
-  write.csv(m.no.core.p.1.index, file = file.path(out.dir, paste(family, "_out_m.no.core.p.1.index.csv", sep = "")), row.names = FALSE)
+  write.csv(m.no.core.p.ref.index, file = file.path(out.dir, paste(family, "_out_m.no.core.p.ref.index.csv", sep = "")), row.names = FALSE)
   write.csv(m.no.core.p.2.index, file = file.path(out.dir, paste(family, "_out_m.no.core.p.2.index.csv", sep = "")), row.names = FALSE)
   write.csv(m.identity, file = file.path(out.dir, paste(family, "_out_m.identity.csv", sep = "")), row.names = FALSE)
 }
