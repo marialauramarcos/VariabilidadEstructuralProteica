@@ -1,13 +1,12 @@
 # This is the main program of the project. The program simulates mutants of a given protein, analyzes the multiple
 # alignment of the family to which the protein belongs, calculates measures of variabilty of theoretical and 
 # experimental data, compares them, and generates a report.
-# To run the program it is necessary to fill the input file ("input.csv") with the following information:
+# To run the program it is necessary to fill the input file ("input_MainProgram.csv") with the following information:
 #
 #    - family: the family of the protein to mutate. It can be "globins", "serinProteases", "plastocyanins", 
-#    "snakesToxin", "sh3", "proteasome", "lipocalin", "fabp", "kinase", "rrm", "phoslip", "gluts" and "ldh".
+#    "snakesToxin", "sh3", "lipocalin", "fabp", "kinase", "rrm", "phoslip", "gluts" and "ldh".
 #    - p.ref: the pdb code (pdbid) of the protein to mutate (example: "1a6m"). The protein must be a member of
 #    the selected family. This pdbid must not be included in the dataset ("DATA/family_dataset.csv").
-#    - theo.chain.p.ref: the chain of p.ref to mutate.
 #    - exp.chain.p.ref: the chain of p.ref in the pdb file obtained from Homstrad.
 #    - mut.model: mutational model. It can be "LFENM" ("Linearly Forced - Elastic Network Model") or "MND" 
 #    ("Multivariate Normal Distribution").
@@ -21,6 +20,10 @@
 #    - heme: argument for "globins". It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the heme group.
 #    - analyze.family: It can be "TRUE" or "FALSE". If it is "TRUE" the program analyzes the family.
 #    - generate.mutants: It can be "TRUE" or "FALSE". If it is "TRUE" the program generates new mutants.
+#    - natural.selection: It can be "TRUE" or "FALSE". If it is "TRUE", the mutants are calculated considering natural 
+#    selection. If it is "FALSE", the mutants are calculated in a random manner.
+#    - K.analysis: It can be "K" or "Keff". For "K" or "Keff", the analysis is based on normal modes of "K" or "Keff"
+#    respectibly.
 
 # Remove objects.
 rm(list = ls())
@@ -46,13 +49,13 @@ TOLERANCE = 1e-10
 # Functions filenames.
 AnalyzeExperimentalTheoretical.fname <- "FUNCTIONS/AnalyzeExperimentalTheoretical.R"
 AnalyzeFamily.fname <- "FUNCTIONS/AnalyzeFamily.R"
-AnalyzeAlignment.fname <- "FUNCTIONS/AnalyzeAlignment.R" 
+AnalyzeAlignment.fname <- "FUNCTIONS/AnalyzeAlignment.R"
 GenerateMutants.fname <- "FUNCTIONS/GenerateMutants.R"
 ReadFasta.fname <- "FUNCTIONS/ReadFasta.R"
-ReadCA.fname <- "FUNCTIONS/ReadCA.R" 
+ReadCA.fname <- "FUNCTIONS/ReadCA.R"
 ReadHeme.fname <- "FUNCTIONS/ReadHeme.R"
 CalculateENMKeff.fname <- "FUNCTIONS/CalculateENMKeff.R"
-CalculateENMK.fname <- "FUNCTIONS/CalculateENMK.R"  
+CalculateENMK.fname <- "FUNCTIONS/CalculateENMK.R"
 CalculateKij.fname <- "FUNCTIONS/CalculateKij.R"
 CalculateForce.fname <- "FUNCTIONS/CalculateForce.R"
 CalculateVariability.fname <- "FUNCTIONS/CalculateVariability.R"
@@ -72,14 +75,13 @@ source(CalculateForce.fname)
 source(CalculateVariability.fname)
 
 # Read input.
-input.fname <- file.path("input.csv")
+input.fname <- file.path("input_MainProgram.csv")
 input <- read.csv(input.fname)
 
 for (a in (1:nrow(input))) { 
   print(a)
   family <- as.character(input$family)[a]
   p.ref <- as.character(input$p.ref)[a]
-  theo.chain.p.ref <- as.character(input$theo.chain.p.ref)[a]
   exp.chain.p.ref <- as.character(input$exp.chain.p.ref)[a]
   mut.model = input$mut.model[a]
   n.mut.p = input$n.mut.p[a]
@@ -91,12 +93,14 @@ for (a in (1:nrow(input))) {
   analyze.family <- input$analyze.familiy[a]
   generate.mutants <- input$generate.mutants[a]
   analyze.experimental.theoretical <- input$analyze.experimental.theoretical[a]
+  natural.selection <- input$natural.selection[a]
+  K.analysis <- input$K.analysis[a]
   
-  # Generate names for output files.
-  family.heme.model <- paste(family, "_heme_", heme, "_mut.model_", mut.model, sep = "")
-  family.heme.model.core <- paste(family.heme.model, "_core_", core, sep = "")
+  # Generate ids for output filenames.
+  mut.fname.id <- paste(family, "_mut.model_", mut.model, "_naturalSelection_", natural.selection, "_R0_", R0, sep = "")
+  analysis.fname.id <- paste(mut.fname.id, "_core_", core, "_K.analysis_", K.analysis, sep = "")
   
-  # Analyze the family of p.ref.
+  # Analyze the alignment of the family.
   if (analyze.family == "TRUE") {
     AnalyzeFamily(family,
                   p.ref, 
@@ -107,16 +111,16 @@ for (a in (1:nrow(input))) {
   # Generate mutants.
   if (generate.mutants == "TRUE") {
     GenerateMutants(family,
-                    p.ref, 
-                    theo.chain.p.ref, 
+                    exp.chain.p.ref, 
                     mut.model,
                     n.mut.p,
                     fmax, 
                     R0,
                     heme, 
+                    natural.selection,
                     data.dir,
                     out.dir,
-                    family.heme.model,
+                    mut.fname.id,
                     TOLERANCE)
   }
   
@@ -129,17 +133,20 @@ for (a in (1:nrow(input))) {
                                    core,
                                    rotate,
                                    heme,
+                                   natural.selection,
+                                   K.analysis,
                                    data.dir,
                                    out.dir,
-                                   family.heme.model, 
-                                   family.heme.model.core,
+                                   mut.fname.id, 
+                                   analysis.fname.id,
                                    TOLERANCE)
   }
-  
-  # Generate a report.
-  rmarkdown::render('Report.Rmd', 
-                    output_file =  paste("report_", family.heme.model.core, ".html", sep=''))
 }
+
+#  Generate a report.
+#  rmarkdown::render('Report.Rmd', 
+#                    output_file = paste("report_", analysis.fname.id, ".html", sep = ''))
+#}
 
 
   

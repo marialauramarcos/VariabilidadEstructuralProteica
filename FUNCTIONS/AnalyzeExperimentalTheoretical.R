@@ -10,12 +10,16 @@
 #    core: it can be "TRUE" or "FALSE". If it is "TRUE", the program only considers the conserved core of 
 #    the alignment. If it is "FALSE", the program analyzes the whole alignment.
 #    heme: argument for globins. It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the heme group. 
+#    natural.selection: It can be "TRUE" or "FALSE". If it is "TRUE" the mutants are calculated considering natural 
+#    selection. If it is "FALSE" the mutants are calculated in a random manner.
+#    K.analysis: It can be "K" or "Keff". For "K" or "Keff", the analysis is based on normal modes of "K" or "Keff"
+#    respectibly.
 #    data.dir: directory of the data. It must contain the file with the dataset ("data.dir/family_dataset.csv") and the pdb file 
 #    obtained from Homstrad ("data.dir/family_coordinates.csv").
 #    out.dir: directory of the output. It must contain output files generated with AnalyzeFamily() and GenerateMutants().
 #    The output of this function is also saved in out.dir.
-#    mut.name: ID of filnames of mutant proteins.
-#    out.name: ID of output filenames.
+#    mut.fname.id: ID of filnames of mutant proteins.
+#    analysis.fname.id: ID of output filenames.
 #    TOLERANCE: 0 tolerance.
 #
 #  Requires:
@@ -40,10 +44,12 @@ AnalyzeExperimentalTheoretical <- function(family,
                                            core,
                                            rotate,
                                            heme,
+                                           natural.selection,
+                                           K.analysis,
                                            data.dir,
                                            out.dir,
-                                           mut.name, 
-                                           out.name,
+                                           mut.fname.id, 
+                                           analysis.fname.id,
                                            TOLERANCE) {
   # Filenames.
   dataset.fname <- file.path(data.dir, paste(family, "_dataset.csv", sep = ""))
@@ -61,8 +67,8 @@ AnalyzeExperimentalTheoretical <- function(family,
   m.no.core.p.ref.index.fname <- file.path(out.dir, paste(family, "_out_m.no.core.p.ref.index.csv", sep = ""))
   m.no.core.p.2.index.fname <- file.path(out.dir, paste(family, "_out_m.no.core.p.2.index.csv", sep = ""))
   
-  m.r.mut.fname <- file.path(out.dir, paste(mut.name, "_out_m.r.mut.csv", sep = ""))
-  theo.r.p.ref.fname <- file.path(out.dir, paste(mut.name, "_out_r.p.ref.csv", sep = ""))
+  m.r.mut.fname <- file.path(out.dir, paste(mut.fname.id, "_out_m.r.mut.csv", sep = ""))
+  theo.r.p.ref.fname <- file.path(out.dir, paste(mut.fname.id, "_out_r.p.ref.csv", sep = ""))
   
   # Read dataset.
   dataset <- read.csv(dataset.fname)
@@ -151,9 +157,10 @@ AnalyzeExperimentalTheoretical <- function(family,
                                            not.aligned.p.2.index,
                                            R0,
                                            rotate,
+                                           K.analysis,
                                            TOLERANCE)
     
-    m.exp.va[P, 1:length(exp.variability$va)]  = exp.variability$va
+    m.exp.va[P, 1:length(exp.variability$va)] = exp.variability$va
     m.exp.Pn[P, 1:length(exp.variability$Pn)] = exp.variability$Pn
     exp.dr.squarei = exp.variability$dr.squarei
     for (i in (1:n.sites.p.ref)) {
@@ -161,12 +168,13 @@ AnalyzeExperimentalTheoretical <- function(family,
     }
 
     for (mut in (1:n.mut.p)) {
-    print(c(P,mut))
+    print(c(P, mut))
       
       # Get theo.r.p.2.
       theo.r.p.2 = m.r.mut[, n.mut.p * P - (n.mut.p - mut)]
     
       # Calculate measures of variavility for theo.
+      if (natural.selection == "TRUE") {
       theo.variability = CalculateVariability(as.vector(theo.r.p.ref), 
                                               as.vector(theo.r.p.2), 
                                               aligned.p.ref.index, 
@@ -175,7 +183,21 @@ AnalyzeExperimentalTheoretical <- function(family,
                                               not.aligned.p.ref.index,
                                               R0,
                                               rotate,
+                                              K.analysis,
                                               TOLERANCE)
+      }
+      if (natural.selection == "FALSE") {
+        theo.variability = CalculateVariability(as.vector(theo.r.p.ref), 
+                                                as.vector(theo.r.p.2), 
+                                                seq(1, n.sites.p.ref), 
+                                                seq(1, n.sites.p.ref), 
+                                                c(),
+                                                c(),
+                                                R0,
+                                                rotate,
+                                                K.analysis,
+                                                TOLERANCE)
+      }
       
       m.theo.va[n.mut.p * P - (n.mut.p - mut), 1:length(theo.variability$va)] = theo.variability$va
       m.theo.Pn[n.mut.p * P - (n.mut.p - mut), 1:length(theo.variability$Pn)] = theo.variability$Pn
@@ -187,10 +209,10 @@ AnalyzeExperimentalTheoretical <- function(family,
   }
   
   # Create files to save the data.
-  write.csv(m.exp.va, file = file.path(out.dir, paste(out.name, "_out_m.exp.va.csv", sep = "")), row.names = FALSE)
-  write.csv(m.exp.Pn, file = file.path(out.dir, paste(out.name, "_out_m.exp.Pn.csv", sep = "")), row.names = FALSE)
-  write.csv(m.exp.dr.squarei, file = file.path(out.dir, paste(out.name, "_out_m.exp.dr.squarei.csv", sep = "")), row.names = FALSE)
-  write.csv(m.theo.va, file = file.path(out.dir, paste(out.name, "_out_m.theo.va.csv", sep = "")), row.names = FALSE)
-  write.csv(m.theo.Pn, file = file.path(out.dir, paste(out.name, "_out_m.theo.Pn.csv", sep = "")), row.names = FALSE)
-  write.csv(m.theo.dr.squarei, file = file.path(out.dir, paste(out.name, "_out_m.theo.dr.squarei.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.va, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.va.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.Pn, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.Pn.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.dr.squarei.csv", sep = "")), row.names = FALSE)
+  write.csv(m.theo.va, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.va.csv", sep = "")), row.names = FALSE)
+  write.csv(m.theo.Pn, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.Pn.csv", sep = "")), row.names = FALSE)
+  write.csv(m.theo.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.dr.squarei.csv", sep = "")), row.names = FALSE)
 }

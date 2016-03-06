@@ -33,14 +33,25 @@ m.n.aligned = read.csv(file.path(out.dir, paste(family, "_out_m.n.aligned.csv", 
 
 identity = read.csv(file.path(out.dir, paste(family, "_out_m.identity.csv", sep = "")))$V1
 
-m.exp.va = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.exp.va.csv", sep = "")))[, 1:nmodes4]
+####
+
+m.exp.va = read.csv(file.path(out.dir, paste(family.model.naturalSelection.core, "_out_m.exp.va.csv", sep = "")))[, 1:nmodes4]
 mean.exp.va = colMeans(m.exp.va)
 i.mean.exp.va = 1/mean.exp.va
 
-m.exp.Pn = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.exp.Pn.csv", sep = "")))[, 1:nmodes4]
+m.exp.Pn = read.csv(file.path(out.dir, paste(family.model.naturalSelection.core, "_out_m.exp.Pn.csv", sep = "")))[, 1:nmodes4]
 mean.exp.Pn = colMeans(m.exp.Pn)
 
-m.exp.dr.squarei = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.exp.dr.squarei.csv", sep = "")))
+exp.Pn.quantile1 = matrix(0, ncol = ncol(m.exp.Pn), nrow = 1)
+exp.Pn.quantile2 = matrix(0, ncol = ncol(m.exp.Pn), nrow = 1)
+
+for (i in (1:ncol(m.exp.Pn))){
+    exp.Pn.quantiles <- as.vector(quantile((m.exp.Pn[, i]), probs = c(0.05, 0.95)))
+    exp.Pn.quantile1[1, i] = exp.Pn.quantiles[1]
+    exp.Pn.quantile2[1, i] = exp.Pn.quantiles[2]
+}
+
+m.exp.dr.squarei = read.csv(file.path(out.dir, paste(family.model.naturalSelection.core, "_out_m.exp.dr.squarei.csv", sep = "")))
 exp.MSDi = colMeans(m.exp.dr.squarei, na.rm = T )
 exp.MSD = rowMeans(m.exp.dr.squarei, na.rm = T)
 
@@ -50,14 +61,14 @@ mean.exp.Qn = colMeans(m.exp.Qn)
 family.data <- data.frame(pdbid, nsites = m.n.sites.p.2, naligned = m.n.aligned, identity, MSD = exp.MSD)
 
 ### Theoretical ###
-m.theo.va = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.theo.va.csv", sep = "")))[, 1:nmodes4]
+m.theo.va = read.csv(file.path(out.dir, paste(family.model.naturalSelection.core, "_out_m.theo.va.csv", sep = "")))[, 1:nmodes4]
 mean.theo.va = colMeans(m.theo.va)
 i.mean.theo.va = 1/mean.theo.va
 
-m.theo.Pn = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.theo.Pn.csv", sep = "")))[, 1:nmodes4]
+m.theo.Pn = read.csv(file.path(out.dir, paste(family.model.naturalSelection.core, "_out_m.theo.Pn.csv", sep = "")))[, 1:nmodes4]
 n.mut = nrow(m.theo.Pn)
 
-m.theo.dr.squarei = read.csv(file.path(out.dir, paste(family.heme.model.core, "_out_m.theo.dr.squarei.csv", sep = "")))
+m.theo.dr.squarei = read.csv(file.path(out.dir, paste(family.model.naturalSelection.core, "_out_m.theo.dr.squarei.csv", sep = "")))
 theo.MSDi = colMeans(m.theo.dr.squarei, na.rm = T)
 theo.MSD = rowMeans(m.theo.dr.squarei, na.rm = T)
 
@@ -71,7 +82,7 @@ m.theo.Qn = t(apply(m.theo.Pn, 1, cumsum))
 ## Conjuntos de proteinas
 
 ### Conjunto teorico
-`r n.mut` mutantes de `r p.ref` (`r n.sites.p.1` sitios) simuladas con el modelo mutacional `r mut.model` con ANM *R0* = 12 y *Fmax* = 2 (solo para LFENM). Para determinar que sitios mutar, se alineo `r p.ref` con cada una de las proteinas del conjunto, se obtuvieron los indices de los sitios alineados pero mutados y se simularon `r n.mut.p` mutantes por cada par de proteinas, obteniendose un total de `r n.mut.p * n.exp` mutantes. Luego, para el analisis, se tomaron como alineados los sitios alineados de `r p.ref` para cada par de proteinas.
+`r n.mut` mutantes de `r p.ref` (`r n.sites.p.1` sitios) simuladas con el modelo mutacional `r mut.model` con ANM *R0* = `r R0` y *Fmax* = 2 (solo para LFENM). Para determinar que sitios mutar, se alineo `r p.ref` con cada una de las proteinas del conjunto, se obtuvieron los indices de los sitios alineados pero mutados y se simularon `r n.mut.p` mutantes por cada par de proteinas, obteniendose un total de `r n.mut.p * n.exp` mutantes. Luego, para el analisis, se tomaron como alineados los sitios alineados de `r p.ref` para cada par de proteinas.
 
 ### Conjunto experimental 
 `r n.exp` proteinas de la familia de `r family`. Las proteinas tienen un promedio de identidad secuencial de `r round(mean(identity))`%. El core del alineamiento de la familia es de `r n.core` sitios.
@@ -179,41 +190,34 @@ m.theo.Pn = m.theo.Pn[as.vector(m.theo.index), ]
 m.theo.Qn = m.theo.Qn[as.vector(m.theo.index), ]
 
 # Calculate groups, means and quantiles.
-theo.Pn.group <- CalculateGroupsMeansQuantiles(m.theo.Pn, n.mut.p, n.exp)
-mean.theo.Pn.group <- theo.Pn.group$mean.total
-theo.Pn.group.quantile5 <- theo.Pn.group$quantile[1, ]
-theo.Pn.group.quantile95 <- theo.Pn.group$quantile[2, ] 
-theo.Qn.group <- CalculateGroupsMeansQuantiles(m.theo.Qn, n.mut.p, n.exp)
-mean.theo.Qn.group <- theo.Qn.group$mean.total
-theo.Qn.group.quantile5 <- theo.Qn.group$quantile[1, ]
-theo.Qn.group.quantile95 <- theo.Qn.group$quantile[2, ]
+theo.Pn.group = CalculateGroupsMeansQuantiles(m.theo.Pn, n.mut.p, n.exp)
+mean.theo.Pn.group = theo.Pn.group$mean.mean.group
+theo.Pn.group.quantile1 = theo.Pn.group$mean.quantile1.group
+theo.Pn.group.quantile2 = theo.Pn.group$mean.quantile2.group
 
 # Graphics.
-layout(matrix(1:4, 2, 2, byrow = T)) 
+layout(matrix(1:2, 1, 2, byrow = T)) 
        
 plot(y = mean.theo.Pn.group, x = i.mean.theo.va, ylab = "Pn promedio teorico", xlab = "1/evalue") 
 plot(y = mean.exp.Pn, x = i.mean.exp.va, ylab = "Pn promedio experimental", xlab = "1/evalue") 
   
+
+layout(matrix(1:1, 1, 1, byrow = T)) 
+
 plot(mean.theo.Pn.group, 
      ylab = "Pn promedio", 
      xlab = "nmodo", 
      type = "l", 
-     ylim = c(0, max(c(theo.Pn.group.quantile95, mean.exp.Pn))))
-lines(theo.Pn.group.quantile5, col = "green")
-lines(theo.Pn.group.quantile95, col = "green")
+     ylim = c(0, max(c(theo.Pn.group.quantile2, mean.exp.Pn))))
+lines(theo.Pn.group.quantile1, col = "green")
+lines(theo.Pn.group.quantile2, col = "green")
 points(mean.exp.Pn, col = "red")
+lines(as.vector(exp.Pn.quantile1), col = "red")
+lines(as.vector(exp.Pn.quantile2), col = "red")
 
-plot(mean.theo.Qn.group, 
-     ylab = "Qn promedio", 
-     xlab = "nmodo", 
-     type = "l", 
-     ylim = c(0, max(c(theo.Qn.group.quantile95, mean.exp.Qn))))
-lines(theo.Qn.group.quantile5, col = "green")
-lines(theo.Qn.group.quantile95, col = "green")
-points(mean.exp.Qn, col = "red")
 
 ```
 
 Negro: Teorico
 Rojo: Experimental
-Verdes: Cuartiles 0.05 y 0.95 de `r n.mut.p` grupos de `r n.exp` mutantes teoricas.
+Verdes: Cuartiles 0.01 y 0.99 de `r n.mut.p` grupos de `r n.exp` mutantes teoricas.
