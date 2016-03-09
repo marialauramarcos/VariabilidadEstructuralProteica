@@ -229,14 +229,14 @@ hist(nsT.cT.theo.MSD, main = "Theoretical MSD ns = T, C = T", xlab = "MSD")
 ```{r}
 
 layout(matrix(1:4, 2, 2, byrow = T)) 
-plot(rank(nsF.cF.theo.MSDi), main = "MSDi ns = F, c = F", xlab = "site", ylab = "rank MSDi")
-points(rank(cF.exp.MSDi), col = "red")
-plot(rank(nsT.cF.theo.MSDi), main = "MSDi ns = T, c = F", xlab = "site", ylab = "rank MSDi")
-points(rank(cF.exp.MSDi), col = "red")
-plot(rank(nsF.cT.theo.MSDi), main = "MSDi ns = F, c = T", xlab = "site", ylab = "rank MSDi")
-points(rank(cT.exp.MSDi), col = "red")
-plot(rank(nsT.cT.theo.MSDi), main = "MSDi ns = T, c = T", xlab = "site", ylab = "rank MSDi")
-points(rank(cT.exp.MSDi), col = "red")
+plot(rank(nsF.cF.theo.MSDi, na.last = "keep"), main = "MSDi ns = F, c = F", xlab = "site", ylab = "rank MSDi")
+points(rank(cF.exp.MSDi, na.last = "keep"), col = "red")
+plot(rank(nsT.cF.theo.MSDi, na.last = "keep"), main = "MSDi ns = T, c = F", xlab = "site", ylab = "rank MSDi")
+points(rank(cF.exp.MSDi, na.last = "keep"), col = "red")
+plot(rank(nsF.cT.theo.MSDi, na.last = "keep"), main = "MSDi ns = F, c = T", xlab = "site", ylab = "rank MSDi")
+points(rank(cT.exp.MSDi, na.last = "keep"), col = "red")
+plot(rank(nsT.cT.theo.MSDi, na.last = "keep"), main = "MSDi ns = T, c = T", xlab = "site", ylab = "rank MSDi")
+points(rank(cT.exp.MSDi, na.last = "keep"), col = "red")
 ```
 rojo: experimental
 negro: teorico
@@ -544,7 +544,94 @@ lines(as.vector(cT.exp.Qn.quantile1), col = "red")
 lines(as.vector(cT.exp.Qn.quantile2), col = "red")
 ```
 
-*Negro*: Puntos: promedio de promedios teorico. Lineas: promedio de cuartiles 0.05 y 0.95 de `r n.mut.p` grupos de `r n.exp` mutantes teoricas.
-*Rojo*: Experimental. Puntos: promedio. Lineas: cuartiles 0.05 y 0.95.
+
+
+*Negro*: Puntos: promedio de promedios teorico. Lineas: promedio de cuantiles 0.05 y 0.95 de `r n.mut.p` grupos de `r n.exp` mutantes teoricas.
+*Rojo*: Experimental. Puntos: promedio. Lineas: cuantiles 0.05 y 0.95.
+
+
+## R^2 y MSE
+Las comparaciones entre perfines promedio Pn y MSDi teoricos fiteados y experimentales se muestran a continuacion. En cada grafico se muestra la correlacion (R^2) y el error (MSE).
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+fit.nsF.cF = lm(mean.cF.exp.Pn ~ mean.nsF.cF.theo.Pn.group)
+Pn.fit.nsF.cF = fitted.values(fit.nsF.cF)
+R2.nsF.cF = cor(mean.cF.exp.Pn, Pn.fit.nsF.cF) ^ 2 
+MSE.nsF.cF = mean((Pn.fit.nsF.cF - mean.cF.exp.Pn) ^ 2)
+plot(Pn.fit.nsF.cF, mean.cF.exp.Pn, xlab = "Pn teorico", ylab = "Pn experimental", main = "ns = F c = F")
+abline(0, 1)
+legend("topleft", paste("R^2", round(R2.nsF.cF, digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(MSE.nsF.cF, digits = 2)), bty = "n", text.col = "red")
+
+fit.nsT.cF = lm(mean.cF.exp.Pn ~ mean.nsT.cF.theo.Pn.group)
+Pn.fit.nsT.cF = fitted.values(fit.nsT.cF)
+R2.nsT.cF = cor(mean.cF.exp.Pn, Pn.fit.nsT.cF) ^ 2 
+MSE.nsT.cF = mean((Pn.fit.nsT.cF - mean.cF.exp.Pn) ^ 2)
+plot(Pn.fit.nsT.cF, mean.cF.exp.Pn, xlab = "Pn teorico", ylab = "Pn experimental", main = "ns = T c = F")
+abline(0, 1)
+legend("topleft", paste("R^2", round(R2.nsT.cF, digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(MSE.nsT.cF, digits = 2)), bty = "n", text.col = "red")
+
+fit.nsF.cT = lm(mean.cT.exp.Pn ~ mean.nsF.cT.theo.Pn.group)
+Pn.fit.nsF.cT = fitted.values(fit.nsF.cT)
+R2.nsF.cT = cor(mean.cT.exp.Pn, Pn.fit.nsF.cT) ^ 2 
+MSE.nsF.cT = mean((Pn.fit.nsF.cT - mean.cT.exp.Pn) ^ 2)
+plot(Pn.fit.nsF.cT, mean.cT.exp.Pn, xlab = "Pn teorico", ylab = "Pn experimental", main = "ns = F c = T")
+abline(0, 1)
+legend("topleft", paste("R^2", round(R2.nsF.cT, digits = 2)), bty = "n", text.col = "red") 
+legend("bottomright", paste("MSE", signif(MSE.nsF.cT, digits = 2)), bty = "n", text.col = "red")
+
+fit.nsT.cT = lm(mean.cT.exp.Pn ~ mean.nsT.cT.theo.Pn.group)
+Pn.fit.nsT.cT = fitted.values(fit.nsT.cT)
+R2.nsT.cT = cor(mean.cT.exp.Pn, Pn.fit.nsT.cT) ^ 2 
+MSE.nsT.cT = mean((Pn.fit.nsT.cT - mean.cT.exp.Pn) ^ 2)
+plot(Pn.fit.nsT.cT, mean.cT.exp.Pn, xlab = "Pn teorico", ylab = "Pn experimental", main = "ns = T c = T")
+abline(0, 1)
+legend("topleft", paste("R^2", round(R2.nsT.cT, digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(MSE.nsT.cT, digits = 2)), bty = "n", text.col = "red")
+
+```
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+fit.nsF.cF = lm(cF.exp.MSDi ~ nsF.cF.theo.MSDi)
+MSDi.fit.nsF.cF = fitted.values(fit.nsF.cF)
+R2.nsF.cF = cor(cF.exp.MSDi[!is.na(cF.exp.MSDi)], MSDi.fit.nsF.cF) ^ 2 
+MSE.nsF.cF = mean((MSDi.fit.nsF.cF - cF.exp.MSDi[!is.na(cF.exp.MSDi)]) ^ 2)
+plot(MSDi.fit.nsF.cF, cF.exp.MSDi[!is.na(cF.exp.MSDi)], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "ns = F c = F")
+abline(0, 1)
+legend("topleft", paste("R^2", round(R2.nsF.cF, digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(MSE.nsF.cF, digits = T)), bty = "n", text.col = "red")
+
+fit.nsT.cF = lm(cF.exp.MSDi ~ nsT.cF.theo.MSDi)
+MSDi.fit.nsT.cF = fitted.values(fit.nsT.cF)
+R2.nsT.cF = cor(cF.exp.MSDi[!is.na(cF.exp.MSDi)], MSDi.fit.nsT.cF) ^ 2 
+MSE.nsT.cF = mean((MSDi.fit.nsT.cF - cF.exp.MSDi[!is.na(cF.exp.MSDi)]) ^ 2)
+plot(MSDi.fit.nsT.cF, cF.exp.MSDi[!is.na(cF.exp.MSDi)], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "ns = T c = F")
+abline(0, 1)
+legend("topleft", paste("R^2", round(R2.nsT.cF, digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(MSE.nsT.cF, digits = 2)), bty = "n", text.col = "red")
+
+fit.nsF.cT = lm(cT.exp.MSDi ~ nsF.cT.theo.MSDi)
+MSDi.fit.nsF.cT = fitted.values(fit.nsF.cT)
+R2.nsF.cT = cor(cT.exp.MSDi[!is.na(cT.exp.MSDi)], MSDi.fit.nsF.cT) ^ 2 
+MSE.nsF.cT = mean((MSDi.fit.nsF.cT - cT.exp.MSDi[!is.na(cT.exp.MSDi)]) ^ 2)
+plot(MSDi.fit.nsF.cT, cT.exp.MSDi[!is.na(cT.exp.MSDi)], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "ns = F c = T")
+abline(0, 1)
+legend("topleft", paste("R^2", round(R2.nsF.cT, digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(MSE.nsF.cT, digits = 2)), bty = "n", text.col = "red")
+
+fit.nsT.cT = lm(cT.exp.MSDi ~ nsT.cT.theo.MSDi)
+MSDi.fit.nsT.cT = fitted.values(fit.nsT.cT)
+R2.nsT.cT = cor(cT.exp.MSDi[!is.na(cT.exp.MSDi)], MSDi.fit.nsT.cT) ^ 2 
+MSE.nsT.cT = mean((MSDi.fit.nsT.cT - cT.exp.MSDi[!is.na(cT.exp.MSDi)]) ^ 2)
+plot(MSDi.fit.nsT.cT, cT.exp.MSDi[!is.na(cT.exp.MSDi)], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "ns = T c = T")
+abline(0, 1)
+legend("topleft", paste("R^2", round(R2.nsT.cT, digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(MSE.nsT.cT, digits = 2)), bty = "n", text.col = "red")
+```
+
 
 

@@ -1,0 +1,17 @@
+{
+    "contents" : "# Load packages.\nlibrary(knitr)\nlibrary(markdown)\n\n# Read input.\ninput.fname <- file.path(\"input_MainMultipleReport.csv\")\ninput <- read.csv(input.fname)\n\nfor (a in (1:nrow(input))) { \n  print(a)\n  family <- as.character(input$family)[a]\n  p.ref <- as.character(input$p.ref)[a]\n  mut.model = input$mut.model[a]\n  n.mut.p = input$n.mut.p[a]\n  R0 = input$R0[a]\n  K.analysis = input$K.analysis[a]\n\n  # Generate a report.\n  rmarkdown::render('MultipleReport.Rmd', \n                    output_file =  paste(\"report_\", family, \"_R0_\", R0, \"_K.analysis_\", K.analysis, \".html\", sep = ''))\n}\n",
+    "created" : 1457367949626.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1558212037",
+    "id" : "90F41F25",
+    "lastKnownWriteTime" : 1457289128,
+    "path" : "C:/Users/Laurita/Desktop/Doctorado/VariabilidadEstructuralProteica/MainMultipleReport.R",
+    "project_path" : "MainMultipleReport.R",
+    "properties" : {
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "type" : "r_source"
+}
