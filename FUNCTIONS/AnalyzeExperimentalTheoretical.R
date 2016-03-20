@@ -103,10 +103,14 @@ AnalyzeExperimentalTheoretical <- function(family,
   m.exp.Pn = matrix(nrow = n.prot, ncol = 3 * n.sites.p.ref)
   m.exp.va = matrix(nrow = n.prot, ncol = 3 * n.sites.p.ref)
   m.exp.dr.squarei = matrix(nrow = n.prot, ncol = n.sites.p.ref)
+  m.exp.dr.squarei.10.modes = matrix(nrow = n.prot, ncol = n.sites.p.ref)
+  m.exp.smooth.dr.squarei = matrix(nrow = n.prot, ncol = n.sites.p.ref)
   
   m.theo.Pn = matrix(nrow = n.prot * n.mut.p, ncol = 3 * n.sites.p.ref)
   m.theo.va = matrix(nrow = n.prot * n.mut.p, ncol = 3 * n.sites.p.ref)
   m.theo.dr.squarei = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
+  m.theo.dr.squarei.10.modes = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
+  m.theo.smooth.dr.squarei = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
   
   # Start a loop to evaluate each protein of the family.
   for (P in (1:n.prot)) {
@@ -166,27 +170,22 @@ AnalyzeExperimentalTheoretical <- function(family,
     for (i in (1:n.sites.p.ref)) {
       m.exp.dr.squarei[P, i] = matrix(exp.dr.squarei[ aligned.p.ref.index == i], nrow = 1, ncol = 1)
     }
-
+  
+    # Calculate smooth dr.squarei 1
+    kij = CalculateENMK(exp.r.p.ref, CalculateKij, R0, TOLERANCE)$kij
+    m.exp.dr.squarei.0 = m.exp.dr.squarei[P, ]
+    m.exp.dr.squarei.0[is.na(m.exp.dr.squarei.0)] = TOLERANCE
+    m.exp.smooth.dr.squarei[P, ] = (m.exp.dr.squarei[P, ] +  kij %*%  m.exp.dr.squarei.0) / rowSums(kij)
+    
     for (mut in (1:n.mut.p)) {
     print(c(P, mut))
       
+      P.mut = n.mut.p * P - (n.mut.p - mut)
+      
       # Get theo.r.p.2.
-      theo.r.p.2 = m.r.mut[, n.mut.p * P - (n.mut.p - mut)]
+      theo.r.p.2 = m.r.mut[, P.mut]
     
       # Calculate measures of variavility for theo.
-      if (natural.selection == "TRUE") {
-      theo.variability = CalculateVariability(as.vector(theo.r.p.ref), 
-                                              as.vector(theo.r.p.2), 
-                                              aligned.p.ref.index, 
-                                              aligned.p.ref.index, 
-                                              not.aligned.p.ref.index,
-                                              not.aligned.p.ref.index,
-                                              R0,
-                                              rotate,
-                                              K.analysis,
-                                              TOLERANCE)
-      }
-      if (natural.selection == "FALSE") {
         theo.variability = CalculateVariability(as.vector(theo.r.p.ref), 
                                                 as.vector(theo.r.p.2), 
                                                 seq(1, n.sites.p.ref), 
@@ -197,22 +196,30 @@ AnalyzeExperimentalTheoretical <- function(family,
                                                 rotate,
                                                 K.analysis,
                                                 TOLERANCE)
-      }
       
-      m.theo.va[n.mut.p * P - (n.mut.p - mut), 1:length(theo.variability$va)] = theo.variability$va
-      m.theo.Pn[n.mut.p * P - (n.mut.p - mut), 1:length(theo.variability$Pn)] = theo.variability$Pn
+      m.theo.va[P.mut, 1:length(theo.variability$va)] = theo.variability$va
+      m.theo.Pn[P.mut, 1:length(theo.variability$Pn)] = theo.variability$Pn
       theo.dr.squarei = theo.variability$dr.squarei
       for (i in (1:n.sites.p.ref)) {
-        m.theo.dr.squarei[n.mut.p * P - (n.mut.p - mut), i] = matrix(theo.dr.squarei[ aligned.p.ref.index == i], nrow = 1, ncol = 1)
+        m.theo.dr.squarei[P.mut, i] = matrix(theo.dr.squarei[ aligned.p.ref.index == i], nrow = 1, ncol = 1)
       }
-    }
+      
+      # Calculate smooth dr.squarei
+      kij = CalculateENMK(matrix(theo.r.p.ref, nrow = 3), CalculateKij, R0, TOLERANCE)$kij
+      m.theo.dr.squarei.0 = m.theo.dr.squarei[P.mut, ]
+      m.theo.dr.squarei.0[is.na(m.theo.dr.squarei.0)] = TOLERANCE
+      m.theo.smooth.dr.squarei[P.mut, ] = (m.theo.dr.squarei[P.mut, ] +  kij %*%  m.theo.dr.squarei.0) / rowSums(kij)
+    } 
   }
   
   # Create files to save the data.
   write.csv(m.exp.va, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.va.csv", sep = "")), row.names = FALSE)
   write.csv(m.exp.Pn, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.Pn.csv", sep = "")), row.names = FALSE)
   write.csv(m.exp.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.dr.squarei.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.smooth.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.dr.squarei.csv", sep = "")), row.names = FALSE)
   write.csv(m.theo.va, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.va.csv", sep = "")), row.names = FALSE)
   write.csv(m.theo.Pn, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.Pn.csv", sep = "")), row.names = FALSE)
   write.csv(m.theo.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.dr.squarei.csv", sep = "")), row.names = FALSE)
+  write.csv(m.theo.smooth.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.dr.squarei.csv", sep = "")), row.names = FALSE)
 }
+

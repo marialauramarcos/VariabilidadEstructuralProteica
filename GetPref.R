@@ -31,7 +31,7 @@ for (a in (1:nrow(input))) {
   source(f.readFasta.fname)
 
   # Read multiple alignment.
-  alignment.id <- read.fasta(alignment.dir)
+  alignment.id <- ReadFasta(alignment.dir)
   alignment <- alignment.id$ali[, - ncol(alignment.id$ali)]
   pdbid.alignment <- alignment.id$id
   l.align = ncol(alignment)

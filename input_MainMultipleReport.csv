@@ -1,34 +1,9 @@
-family,p.ref,mut.model,n.mut.p,R0,K.analysis
-lipocalin,1bj7,LFENM,10,10,Keff
-serinProteases,1mct,LFENM,10,10,Keff
-plastocyanins,1bxv,LFENM,10,10,Keff
-sh3,1lcka,LFENM,10,10,Keff
-snakesToxin,1ntx,LFENM,10,10,Keff
-fabp,1hmt,LFENM,10,10,Keff
-kinase,1phk,LFENM,10,10,Keff
-rrm,1fxla2,LFENM,10,10,Keff
-phoslip,1jiaa,LFENM,10,10,Keff
-gluts,1gtua,LFENM,10,10,Keff
-globins,1a6m,LFENM,10,10,Keff
-lipocalin,1bj7,LFENM,10,8,Keff
-serinProteases,1mct,LFENM,10,8,Keff
-plastocyanins,1bxv,LFENM,10,8,Keff
-sh3,1lcka,LFENM,10,8,Keff
-snakesToxin,1ntx,LFENM,10,8,Keff
-fabp,1hmt,LFENM,10,8,Keff
-kinase,1phk,LFENM,10,8,Keff
-rrm,1fxla2,LFENM,10,8,Keff
-phoslip,1jiaa,LFENM,10,8,Keff
-gluts,1gtua,LFENM,10,8,Keff
-globins,1a6m,LFENM,10,8,Keff
-lipocalin,1bj7,LFENM,10,12,Keff
-serinProteases,1mct,LFENM,10,12,Keff
-plastocyanins,1bxv,LFENM,10,12,Keff
-sh3,1lcka,LFENM,10,12,Keff
-snakesToxin,1ntx,LFENM,10,12,Keff
-fabp,1hmt,LFENM,10,12,Keff
-kinase,1phk,LFENM,10,12,Keff
-rrm,1fxla2,LFENM,10,12,Keff
-phoslip,1jiaa,LFENM,10,12,Keff
-gluts,1gtua,LFENM,10,12,Keff
-globins,1a6m,LFENM,10,12,Keff
+family,type,p.ref,mut.model,n.mut.p,R0,K.analysis
+cys,alpha and beta,1cqd,LFENM,10,10,Keff
+rrm,alpha and beta,1fxla2,LFENM,10,10,Keff
+sh3,small,1lcka,LFENM,10,10,Keff
+snakesToxin,small,1ntx,LFENM,10,10,Keff
+phoslip,alpha,1jiaa,LFENM,10,10,Keff
+globins,alpha,1a6m,LFENM,10,10,Keff
+fabp,beta,1hmt,LFENM,10,10,Keff
+serinProteases,beta,1mct ,LFENM,10,10,Keff

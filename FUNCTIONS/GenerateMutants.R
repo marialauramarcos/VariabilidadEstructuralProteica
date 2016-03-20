@@ -39,7 +39,7 @@ GenerateMutants <- function(family,
                             out.dir,
                             mut.fname.id,
                             TOLERANCE) {
-
+  
   # Filenames.
   pdbs.fname <- file.path(data.dir, paste(family, "_coordinates.pdb", sep = "")) 
   m.aligned.mut.p.ref.index.fname <- file.path(out.dir, paste(family, "_out_m.aligned.mut.p.ref.index.csv", sep = ""))
@@ -59,7 +59,8 @@ GenerateMutants <- function(family,
   } else {
     n.sites = n.aa
   }
-
+  sites = seq(1:n.sites)
+  
   # Calculate K of p.ref.
   ENMK.p.ref = CalculateENMK(r.p.ref, CalculateKij, R0, TOLERANCE)
   
@@ -69,34 +70,56 @@ GenerateMutants <- function(family,
   m.not.aligned.p.ref.index = read.csv(m.not.aligned.p.ref.index.fname)
   m.identity = read.csv(m.identity.fname)$V1
   n.prot = nrow(m.aligned.mut.p.ref.index)
-
+  
   # Calculate mutants using "LF-ENM".
   if (mut.model == "LFENM") {
-
+    
     # Create a matrix to save coordinates of each generated mutant.
     m.r.mut = matrix(nrow = 3 * n.sites, ncol = n.prot * n.mut.p)
-
+    m.r.mut.10.modes = matrix(nrow = 3 * n.sites, ncol = n.prot * n.mut.p)
+    
     # Start a loop to read mutated sites of p.ref for each P.
     for (P in (1:n.prot)) {
       
-      # Get mutated and not aligned sites of p.ref for each P (natural.selection == TRUE).
+      #    # Get mutated and not aligned sites of p.ref for each P (natural.selection == TRUE).
+      #   if (natural.selection == "TRUE") {
+      #      aligned.mut.p.ref.index = m.aligned.mut.p.ref.index[P, ]
+      #      not.aligned.p.ref.index = m.not.aligned.p.ref.index[P, ]
+      #  
+      #      aligned.mut.p.ref.index = as.numeric(aligned.mut.p.ref.index[, !is.na(aligned.mut.p.ref.index)])
+      #      not.aligned.p.ref.index = as.numeric(not.aligned.p.ref.index[, !is.na(not.aligned.p.ref.index)])
+      #    
+      #      mutated.index = c(aligned.mut.p.ref.index, not.aligned.p.ref.index)
+      #    }
+      #   
+      # Decide which sites to mutate (natural.selection == TRUE).
       if (natural.selection == "TRUE") {
-        aligned.mut.p.ref.index = m.aligned.mut.p.ref.index[P, ]
-        not.aligned.p.ref.index = m.not.aligned.p.ref.index[P, ]
-    
-        aligned.mut.p.ref.index = as.numeric(aligned.mut.p.ref.index[, !is.na(aligned.mut.p.ref.index)])
-        not.aligned.p.ref.index = as.numeric(not.aligned.p.ref.index[, !is.na(not.aligned.p.ref.index)])
       
-        mutated.index = c(aligned.mut.p.ref.index, not.aligned.p.ref.index)
+        # Calculate the probability of mutations.
+        identity = m.identity[P]
+        prob.mut = 1 - (identity / 100)
+        n.sites.mut = prob.mut * n.aa
+      
+        # Calculate the number of contacts of each site.
+        CN = ENMK.p.ref$kij
+        CN.i = colSums(CN)
+        mean.CN = mean(CN.i)
+      
+        # Calculate beta and the probability of mutation of each site for the stress model.
+        beta = (1 - prob.mut) / mean.CN
+        prob.i = 1 - (beta * CN.i)
+      
+        increasing.prob = order(prob.i, decreasing = T)
+        mutated.index = increasing.prob[1:n.sites.mut]
       }
       
       # Start a loop to generate n.mut.p mutants for each P.
       for(mut in seq(n.mut.p)) {
         print(c(P, mut))
         
-        # Get mutated sites of p.ref for each P (natural.selection == FALSE).
+          # Get mutated sites of p.ref for each P (natural.selection == FALSE).
         if (natural.selection == "FALSE") {
-          n.sites.mut = (100 - mean(m.identity)) * n.aa / 100
+          n.sites.mut = (100 - (m.identity[P])) * n.aa / 100
           mutated.index = sample(1:n.aa, replace = F)[1:n.sites.mut]
         }
         
@@ -110,22 +133,30 @@ GenerateMutants <- function(family,
         # Calculate dr and r.mut.
         dr.mut = ENMK.p.ref$cov %*% f
         r.mut = as.vector(r.p.ref) + dr.mut
-       
+        
         # Keep r.mut.
         m.r.mut[, n.mut.p * P - (n.mut.p - mut)] = r.mut
-       }
-     }
-   }
+        
+        # Calculate dr and r.mut 10 modes.
+        dr.mut.10.modes = ENMK.p.ref$cov.10.modes %*% f
+        r.mut.10.modes = as.vector(r.p.ref) + dr.mut.10.modes
+        
+        # Keep r.mut.
+        m.r.mut[, n.mut.p * P - (n.mut.p - mut)] = r.mut
+        m.r.mut.10.modes[, n.mut.p * P - (n.mut.p - mut)] = r.mut.10.modes
+      }
+    }
+  }
   
   # Calculate mutants using "MND".
   if (mut.model == "MND") {
     
     # Calculate the expected dr value for each site.
     dr = matrix(0, nrow = 1, ncol = 3 * n.sites)
-  
+    
     # Create a matrix to save coordinates of each mutant.
     m.r.mut = matrix(0, nrow = 3 * n.sites, ncol = n.prot * n.mut.p)
-  
+    
     # Start a loop to calculate coordinates of the mutants.
     for (mut in seq(n.prot * n.mut.p)) {
       print(mut)
@@ -142,6 +173,5 @@ GenerateMutants <- function(family,
   # Create files and save the data.
   write.csv(as.vector(r.p.ref), file = file.path(out.dir, paste(mut.fname.id, "_out_r.p.ref.csv", sep = "")), row.names = FALSE)
   write.csv(m.r.mut, file = file.path(out.dir, paste(mut.fname.id, "_out_m.r.mut.csv", sep = "")), row.names = FALSE)
+  write.csv(m.r.mut.10.modes, file = file.path(out.dir, paste(mut.fname.id, "_out_m.r.mut.10.modes.csv", sep = "")), row.names = FALSE)
 }
-  
-  

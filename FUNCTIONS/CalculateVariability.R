@@ -71,9 +71,10 @@ CalculateVariability <- function(r.p.1,
   dr.squarei = colSums(matrix(dr, nrow = 3) ^ 2) 
 
   # Create a list for the output.
-  output = list("va" = va,
-                "Pn" = Pn, 
-        "dr.squarei" = dr.squarei)
+  output = list( "va" = va,
+                 "ve" = ve,
+                 "Pn" = Pn, 
+         "dr.squarei" = dr.squarei)
   
   output
 }
