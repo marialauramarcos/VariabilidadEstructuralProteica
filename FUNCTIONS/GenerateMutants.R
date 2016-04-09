@@ -64,20 +64,20 @@ GenerateMutants <- function(family,
   # Calculate K of p.ref.
   ENMK.p.ref = CalculateENMK(r.p.ref, CalculateKij, R0, TOLERANCE)
   
-  # Get mutated and not aligned sites of p.ref in the multiple alignment, the % sequence identity between p.ref
-  # and the other proteins, and the number of proteins.
-  m.aligned.mut.p.ref.index = read.csv(m.aligned.mut.p.ref.index.fname)
-  m.not.aligned.p.ref.index = read.csv(m.not.aligned.p.ref.index.fname)
+  # Get mutated and not aligned sites of p.ref in the multiple alignment
+  #m.aligned.mut.p.ref.index = read.csv(m.aligned.mut.p.ref.index.fname)
+  #m.not.aligned.p.ref.index = read.csv(m.not.aligned.p.ref.index.fname)
+  
+  # Get the % sequence identity between p.ref and the other proteins, and the number of proteins.
   m.identity = read.csv(m.identity.fname)$V1
-  n.prot = nrow(m.aligned.mut.p.ref.index)
+  n.prot = length(m.identity)
   
   # Calculate mutants using "LF-ENM".
   if (mut.model == "LFENM") {
     
     # Create a matrix to save coordinates of each generated mutant.
     m.r.mut = matrix(nrow = 3 * n.sites, ncol = n.prot * n.mut.p)
-    m.r.mut.10.modes = matrix(nrow = 3 * n.sites, ncol = n.prot * n.mut.p)
-    
+
     # Start a loop to read mutated sites of p.ref for each P.
     for (P in (1:n.prot)) {
       
@@ -91,7 +91,7 @@ GenerateMutants <- function(family,
       #    
       #      mutated.index = c(aligned.mut.p.ref.index, not.aligned.p.ref.index)
       #    }
-      #   
+         
       # Decide which sites to mutate (natural.selection == TRUE).
       if (natural.selection == "TRUE") {
       
@@ -109,8 +109,8 @@ GenerateMutants <- function(family,
         beta = (1 - prob.mut) / mean.CN
         prob.i = 1 - (beta * CN.i)
       
-        increasing.prob = order(prob.i, decreasing = T)
-        mutated.index = increasing.prob[1:n.sites.mut]
+        decreasing.prob = order(prob.i, decreasing = T)
+        mutated.index = decreasing.prob[1:n.sites.mut]
       }
       
       # Start a loop to generate n.mut.p mutants for each P.
@@ -136,14 +136,6 @@ GenerateMutants <- function(family,
         
         # Keep r.mut.
         m.r.mut[, n.mut.p * P - (n.mut.p - mut)] = r.mut
-        
-        # Calculate dr and r.mut 10 modes.
-        dr.mut.10.modes = ENMK.p.ref$cov.10.modes %*% f
-        r.mut.10.modes = as.vector(r.p.ref) + dr.mut.10.modes
-        
-        # Keep r.mut.
-        m.r.mut[, n.mut.p * P - (n.mut.p - mut)] = r.mut
-        m.r.mut.10.modes[, n.mut.p * P - (n.mut.p - mut)] = r.mut.10.modes
       }
     }
   }
@@ -173,5 +165,4 @@ GenerateMutants <- function(family,
   # Create files and save the data.
   write.csv(as.vector(r.p.ref), file = file.path(out.dir, paste(mut.fname.id, "_out_r.p.ref.csv", sep = "")), row.names = FALSE)
   write.csv(m.r.mut, file = file.path(out.dir, paste(mut.fname.id, "_out_m.r.mut.csv", sep = "")), row.names = FALSE)
-  write.csv(m.r.mut.10.modes, file = file.path(out.dir, paste(mut.fname.id, "_out_m.r.mut.10.modes.csv", sep = "")), row.names = FALSE)
 }

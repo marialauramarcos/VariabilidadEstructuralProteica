@@ -63,18 +63,6 @@ cF.exp.smooth.MSDi = colMeans(m.cF.exp.smooth.dr.squarei, na.rm = T )
 
 cF.exp.MSD = rowMeans(m.cF.exp.dr.squarei, na.rm = T)
 
-m.cF.exp.Qn = t(apply(m.cF.exp.Pn, 1, cumsum))
-mean.cF.exp.Qn = colMeans(m.cF.exp.Qn)
-
-cF.exp.Qn.quantile1 = matrix(0, ncol = ncol(m.cF.exp.Qn), nrow = 1)
-cF.exp.Qn.quantile2 = matrix(0, ncol = ncol(m.cF.exp.Qn), nrow = 1)
-
-for (i in (1:ncol(m.cF.exp.Qn))){
-    cF.exp.Qn.quantiles = as.vector(quantile((m.cF.exp.Qn[, i]), probs = c(0.05, 0.95)))
-    cF.exp.Qn.quantile1[1, i] = cF.exp.Qn.quantiles[1]
-    cF.exp.Qn.quantile2[1, i] = cF.exp.Qn.quantiles[2]
-}
-
 family.data <- data.frame(pdbid, nsites = m.n.sites.p.2, naligned = m.n.aligned, identity, MSD = cF.exp.MSD)
 
 ### Theoretical ###
@@ -94,8 +82,6 @@ nsF.cF.theo.MSD = rowMeans(m.nsF.cF.theo.dr.squarei, na.rm = T)
 
 nsF.cF.theo.MSD.group <- CalculateGroupsMeansQuantiles(cbind(nsF.cF.theo.MSD,nsF.cF.theo.MSD), n.exp, n.mut.p)
 mean.nsF.cF.theo.MSD.group <- nsF.cF.theo.MSD.group$mean.group[,1]
-
-m.nsF.cF.theo.Qn = t(apply(m.nsF.cF.theo.Pn, 1, cumsum))
 
 ### natural_selection = TRUE, core = FALSE ####
 
@@ -117,91 +103,8 @@ nsT.cF.theo.MSD = rowMeans(m.nsT.cF.theo.dr.squarei, na.rm = T)
 nsT.cF.theo.MSD.group <- CalculateGroupsMeansQuantiles(cbind(nsT.cF.theo.MSD,nsT.cF.theo.MSD), n.exp, n.mut.p)
 mean.nsT.cF.theo.MSD.group <- nsT.cF.theo.MSD.group$mean.group[,1]
 
-m.nsT.cF.theo.Qn = t(apply(m.nsT.cF.theo.Pn, 1, cumsum))
 ```
 
-```{r, include = FALSE}
-
-### natural_selection = FALSE, core = TRUE ####
-
-analysis.fname.id <- paste(family, "_mut.model_", mut.model, "_naturalSelection_", "FALSE", "_R0_", R0, "_core_", "TRUE", "_K.analysis_", K.analysis, sep = "")
-  
-m.cT.exp.va = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.va.csv", sep = "")))[, 1:nmodes3]
-i.m.cT.exp.va = 1/m.cT.exp.va
-
-m.cT.exp.Pn = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.Pn.csv", sep = "")))[, 1:nmodes3]
-mean.cT.exp.Pn = colMeans(m.cT.exp.Pn)
-
-cT.exp.Pn.quantile1 = matrix(0, ncol = ncol(m.cT.exp.Pn), nrow = 1)
-cT.exp.Pn.quantile2 = matrix(0, ncol = ncol(m.cT.exp.Pn), nrow = 1)
-
-for (i in (1:ncol(m.cT.exp.Pn))){
-    cT.exp.Pn.quantiles <- as.vector(quantile((m.cT.exp.Pn[, i]), probs = c(0.05, 0.95)))
-    cT.exp.Pn.quantile1[1, i] = cT.exp.Pn.quantiles[1]
-    cT.exp.Pn.quantile2[1, i] = cT.exp.Pn.quantiles[2]
-}
-
-m.cT.exp.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.dr.squarei.csv", sep = "")))
-m.cT.exp.dr.smooth.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.dr.squarei.csv", sep = "")))
-cT.exp.MSDi = colMeans(m.cT.exp.dr.squarei, na.rm = T )
-cT.exp.smooth.MSDi = colMeans(m.cT.exp.dr.smooth.squarei, na.rm = T )
-
-cT.exp.MSD = rowMeans(m.cT.exp.dr.squarei, na.rm = T)
-
-m.cT.exp.Qn = t(apply(m.cT.exp.Pn, 1, cumsum))
-mean.cT.exp.Qn = colMeans(m.cT.exp.Qn)
-
-cT.exp.Qn.quantile1 = matrix(0, ncol = ncol(m.cT.exp.Qn), nrow = 1)
-cT.exp.Qn.quantile2 = matrix(0, ncol = ncol(m.cT.exp.Qn), nrow = 1)
-
-for (i in (1:ncol(m.cT.exp.Qn))){
-    cT.exp.Qn.quantiles = as.vector(quantile((m.cT.exp.Qn[, i]), probs = c(0.05, 0.95)))
-    cT.exp.Qn.quantile1[1, i] = cT.exp.Qn.quantiles[1]
-    cT.exp.Qn.quantile2[1, i] = cT.exp.Qn.quantiles[2]
-}
-
-### Theoretical ###
-
-m.nsF.cT.theo.va = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.va.csv", sep = "")))[, 1:nmodes3]
-i.m.nsF.cT.theo.va = 1/m.nsF.cT.theo.va
-
-m.nsF.cT.theo.Pn = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.Pn.csv", sep = "")))[, 1:nmodes3]
-n.mut = nrow(m.nsF.cT.theo.Pn)
-
-m.nsF.cT.theo.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.dr.squarei.csv", sep = "")))
-m.nsF.cT.theo.smooth.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.dr.squarei.csv", sep = "")))
-nsF.cT.theo.MSDi = colMeans(m.nsF.cT.theo.dr.squarei, na.rm = T)
-nsF.cT.theo.smooth.MSDi = colMeans(m.nsF.cT.theo.smooth.dr.squarei, na.rm = T)
-
-nsF.cT.theo.MSD = rowMeans(m.nsF.cT.theo.dr.squarei, na.rm = T)
-nsF.cT.theo.MSD.group <- CalculateGroupsMeansQuantiles(cbind(nsF.cT.theo.MSD,nsF.cT.theo.MSD), n.exp, n.mut.p)
-mean.nsF.cT.theo.MSD.group <- nsF.cT.theo.MSD.group$mean.group[,1]
-
-m.nsF.cT.theo.Qn = t(apply(m.nsF.cT.theo.Pn, 1, cumsum))
-
-### natural_selection = TRUE, core = TRUE ####
-
-analysis.fname.id <- paste(family, "_mut.model_", mut.model, "_naturalSelection_", "TRUE", "_R0_", R0, "_core_", "TRUE", "_K.analysis_", K.analysis, sep = "")
-  
-m.nsT.cT.theo.va = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.va.csv", sep = "")))[, 1:nmodes3]
-i.m.nsT.cT.theo.va = 1/m.nsT.cT.theo.va
-
-m.nsT.cT.theo.Pn = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.Pn.csv", sep = "")))[, 1:nmodes3]
-n.mut = nrow(m.nsT.cT.theo.Pn)
-
-m.nsT.cT.theo.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.dr.squarei.csv", sep = "")))
-m.nsT.cT.theo.smooth.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.dr.squarei.csv", sep = "")))
-nsT.cT.theo.MSDi = colMeans(m.nsT.cT.theo.dr.squarei, na.rm = T)
-nsT.cT.theo.smooth.MSDi = colMeans(m.nsT.cT.theo.smooth.dr.squarei, na.rm = T)
-
-nsT.cT.theo.MSD = rowMeans(m.nsT.cT.theo.dr.squarei, na.rm = T)
-
-nsT.cT.theo.MSD.group <- CalculateGroupsMeansQuantiles(cbind(nsT.cT.theo.MSD,nsT.cT.theo.MSD), n.exp, n.mut.p)
-mean.nsT.cT.theo.MSD.group <- nsT.cT.theo.MSD.group$mean.group[,1]
-
-m.nsT.cT.theo.Qn = t(apply(m.nsT.cT.theo.Pn, 1, cumsum))
-
-```
 
 ## Conjuntos de proteinas
 
@@ -239,57 +142,10 @@ hist(nsT.cF.theo.MSD, main = "Theoretical MSD ns = T", xlab = "MSD", col = "grey
 ```
 
 ### MSDi
-```{r, include = F}
 
-layout(matrix(1:4, 2, 2, byrow = T)) 
-plot(rank(nsF.cF.theo.MSDi, na.last = "keep"), main = "MSDi ns = F", xlab = "site", ylab = "rank MSDi")
-points(rank(cF.exp.MSDi, na.last = "keep"), col = "red")
-
-plot(rank(nsT.cF.theo.MSDi, na.last = "keep"), main = "MSDi ns = T", xlab = "site", ylab = "rank MSDi")
-points(rank(cF.exp.MSDi, na.last = "keep"), col = "red")
-
-plot(rank(nsF.cF.theo.smooth.MSDi, na.last = "keep"), main = "MSDi.smooth ns = F", xlab = "site", ylab = "rank MSDi")
-points(rank(cF.exp.smooth.MSDi, na.last = "keep"), col = "red")
-
-plot(rank(nsT.cF.theo.smooth.MSDi, na.last = "keep"), main = "MSDi.smooth ns = T", xlab = "site", ylab = "rank MSDi")
-points(rank(cF.exp.smooth.MSDi, na.last = "keep"), col = "red")
-
-```
 Los perfiles teoricos de MSDi y smooth.MSDi fueron fiteados con los perfiles exterimentales. Se compararon y se calcularon R^2 y MSE. 
 ```{r}
 keep.data = c()
-
-layout(matrix(1:4, 2, 2, byrow = F)) 
-
-fit.nsF.cF = lm(cF.exp.MSDi ~ nsF.cF.theo.MSDi)
-MSDi.fit.nsF.cF = fitted.values(fit.nsF.cF)
-R2.nsF.cF = cor(cF.exp.MSDi[!is.na(cF.exp.MSDi)], MSDi.fit.nsF.cF) ^ 2 
-MSE.nsF.cF = mean((MSDi.fit.nsF.cF - cF.exp.MSDi[!is.na(cF.exp.MSDi)]) ^ 2)
-
-keep.data = c(keep.data, R2.nsF.cF, MSE.nsF.cF)
-
-plot(MSDi.fit.nsF.cF, main = "MSDi ns = F", xlab = "site", ylab = "MSDi", ylim = c(0, max(cbind(MSDi.fit.nsF.cF, cF.exp.MSDi[!is.na(cF.exp.MSDi)]))))
-points(cF.exp.MSDi[!is.na(cF.exp.MSDi)], col = "red")
-
-plot(MSDi.fit.nsF.cF, cF.exp.MSDi[!is.na(cF.exp.MSDi)], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "ns = F c = F")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsF.cF, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsF.cF, digits = T)), bty = "n", text.col = "red")
-
-fit.nsT.cF = lm(cF.exp.MSDi ~ nsT.cF.theo.MSDi)
-MSDi.fit.nsT.cF = fitted.values(fit.nsT.cF)
-R2.nsT.cF = cor(cF.exp.MSDi[!is.na(cF.exp.MSDi)], MSDi.fit.nsT.cF) ^ 2 
-MSE.nsT.cF = mean((MSDi.fit.nsT.cF - cF.exp.MSDi[!is.na(cF.exp.MSDi)]) ^ 2)
-
-keep.data = c(keep.data, R2.nsT.cF, MSE.nsT.cF)
-
-plot(MSDi.fit.nsT.cF, main = "MSDi ns = T", xlab = "site", ylab = "MSDi", ylim = c(0, max(cbind(MSDi.fit.nsT.cF, cF.exp.MSDi[!is.na(cF.exp.MSDi)]))))
-points(cF.exp.MSDi[!is.na(cF.exp.MSDi)], col = "red")
-
-plot(MSDi.fit.nsT.cF, cF.exp.MSDi[!is.na(cF.exp.MSDi)], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "ns = T c = F")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsT.cF, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsT.cF, digits = 2)), bty = "n", text.col = "red")
 ```
 
 ```{r}
@@ -330,6 +186,23 @@ legend("bottomright", paste("MSE", signif(MSE.nsT.cF, digits = 2)), bty = "n", t
 rojo: experimental
 negro: teorico
 
+```{r}
+# Write pdb files for MSDi.
+pdbs.fname <- file.path(data.dir, paste(family, "_coordinates.pdb", sep = "")) 
+pdb = ReadCA(pdbs.fname, exp.chain.p.ref)
+xyz.calpha = pdb$xyz.calpha
+
+MSDi.fit.nsF.cF.pdb <- vec2resno(as.vector(MSDi.fit.nsF.cF), sort(rep(1:ncol(xyz.calpha),3)))
+write.pdb(xyz = c(xyz.calpha) ,b = MSDi.fit.nsF.cF.pdb*100, file = file.path(out.dir, paste(p.ref, ".theo.nsF.pdb", sep = "")))
+
+MSDi.fit.nsT.cF.pdb <- vec2resno(as.vector(MSDi.fit.nsT.cF), sort(rep(1:ncol(xyz.calpha),3)))
+write.pdb(xyz = c(xyz.calpha) ,b = MSDi.fit.nsT.cF.pdb*100, file = file.path(out.dir, paste(p.ref, ".theo.nsT.pdb", sep = "")))
+
+cF.exp.smooth.MSDi.pdb <- vec2resno(as.vector(cF.exp.smooth.MSDi[!is.na(cF.exp.smooth.MSDi)]),sort(rep(1:ncol(xyz.calpha),3)))
+write.pdb(xyz = c(xyz.calpha) ,b = cF.exp.smooth.MSDi.pdb*100, file = file.path(out.dir, paste(p.ref, ".exp.pdb", sep = "")))
+
+```
+
 ## Pn y Qn
 Las distribuciones de *Pn* y *Qn* de los conjuntos son las siguientes:
   
@@ -343,8 +216,6 @@ for (P in (1:n.exp)) {
 }
 m.nsF.cF.theo.Pn = m.nsF.cF.theo.Pn[as.vector(m.theo.index), ]
 m.nsT.cF.theo.Pn = m.nsT.cF.theo.Pn[as.vector(m.theo.index), ]
-m.nsF.cT.theo.Pn = m.nsF.cT.theo.Pn[as.vector(m.theo.index), ]
-m.nsT.cT.theo.Pn = m.nsT.cT.theo.Pn[as.vector(m.theo.index), ]
 
 # Calculate groups, means and quantiles.
 nsF.cF.theo.Pn.group = CalculateGroupsMeansQuantiles(m.nsF.cF.theo.Pn, n.mut.p, n.exp)
@@ -358,41 +229,6 @@ nsT.cF.theo.Pn.group.quantile1 = nsT.cF.theo.Pn.group$mean.quantile1.group
 nsT.cF.theo.Pn.group.quantile2 = nsT.cF.theo.Pn.group$mean.quantile2.group
 ```
 
-```{r, inlude = FALSE}
-
-nsF.cT.theo.Pn.group = CalculateGroupsMeansQuantiles(m.nsF.cT.theo.Pn, n.mut.p, n.exp)
-mean.nsF.cT.theo.Pn.group = nsF.cT.theo.Pn.group$mean.mean.group
-nsF.cT.theo.Pn.group.quantile1 = nsF.cT.theo.Pn.group$mean.quantile1.group
-nsF.cT.theo.Pn.group.quantile2 = nsF.cT.theo.Pn.group$mean.quantile2.group
-
-nsT.cT.theo.Pn.group = CalculateGroupsMeansQuantiles(m.nsT.cT.theo.Pn, n.mut.p, n.exp)
-mean.nsT.cT.theo.Pn.group = nsT.cT.theo.Pn.group$mean.mean.group
-nsT.cT.theo.Pn.group.quantile1 = nsT.cT.theo.Pn.group$mean.quantile1.group
-nsT.cT.theo.Pn.group.quantile2 = nsT.cT.theo.Pn.group$mean.quantile2.group
-```
-
-```{r, inlude = FALSE}
-
-nsF.cF.theo.Qn.group = CalculateGroupsMeansQuantiles(m.nsF.cF.theo.Qn, n.mut.p, n.exp)
-mean.nsF.cF.theo.Qn.group = nsF.cF.theo.Qn.group$mean.mean.group
-nsF.cF.theo.Qn.group.quantile1 = nsF.cF.theo.Qn.group$mean.quantile1.group
-nsF.cF.theo.Qn.group.quantile2 = nsF.cF.theo.Qn.group$mean.quantile2.group
-
-nsT.cF.theo.Qn.group = CalculateGroupsMeansQuantiles(m.nsT.cF.theo.Qn, n.mut.p, n.exp)
-mean.nsT.cF.theo.Qn.group = nsT.cF.theo.Qn.group$mean.mean.group
-nsT.cF.theo.Qn.group.quantile1 = nsT.cF.theo.Qn.group$mean.quantile1.group
-nsT.cF.theo.Qn.group.quantile2 = nsT.cF.theo.Qn.group$mean.quantile2.group
-
-nsF.cT.theo.Qn.group = CalculateGroupsMeansQuantiles(m.nsF.cT.theo.Qn, n.mut.p, n.exp)
-mean.nsF.cT.theo.Qn.group = nsF.cT.theo.Qn.group$mean.mean.group
-nsF.cT.theo.Qn.group.quantile1 = nsF.cT.theo.Qn.group$mean.quantile1.group
-nsF.cT.theo.Qn.group.quantile2 = nsF.cT.theo.Qn.group$mean.quantile2.group
-
-nsT.cT.theo.Qn.group = CalculateGroupsMeansQuantiles(m.nsT.cT.theo.Qn, n.mut.p, n.exp)
-mean.nsT.cT.theo.Qn.group = nsT.cT.theo.Qn.group$mean.mean.group
-nsT.cT.theo.Qn.group.quantile1 = nsT.cT.theo.Qn.group$mean.quantile1.group
-nsT.cT.theo.Qn.group.quantile2 = nsT.cT.theo.Qn.group$mean.quantile2.group
-```
 
 ```{r}
 
@@ -454,7 +290,6 @@ legend("bottomright", paste("MSE", signif(MSE.nsT.cF, digits = 2)), bty = "n", t
 
 keep.data = c(keep.data, R2.nsT.cF, MSE.nsT.cF)
 
-write.csv(keep.data, file = "cor_MSE.csv", appen = TRUE)
 ```
 
 ```{r}
@@ -474,19 +309,6 @@ for (i in (1:n.mut)) {
   nsT.cF.rho.t.3[i, ] <- cor(as.numeric(m.nsT.cF.theo.Pn[i, 1:nmodes3] * m.nsT.cF.theo.va[i, 1:nmodes3]), as.numeric(i.m.nsT.cF.theo.va[i, 1:nmodes3]), method = "pearson")	
 }
 
-nsF.cT.rho.t.1 <- matrix(0, nrow = n.mut, ncol = 1)
-nsF.cT.rho.t.3 <- matrix(0, nrow = n.mut, ncol = 1)
-for (i in (1:n.mut)) {
-  nsF.cT.rho.t.1[i, ] <- cor(as.numeric(m.nsF.cT.theo.Pn[i, 1:nmodes1] * m.nsF.cT.theo.va[i, 1:nmodes1]), as.numeric(i.m.nsF.cT.theo.va[i, 1:nmodes1]), method = "pearson")	
-  nsF.cT.rho.t.3[i, ] <- cor(as.numeric(m.nsF.cT.theo.Pn[i, 1:nmodes3] * m.nsF.cT.theo.va[i, 1:nmodes3]), as.numeric(i.m.nsF.cT.theo.va[i, 1:nmodes3]), method = "pearson")	
-}
-
-nsT.cT.rho.t.1 <- matrix(0, nrow = n.mut, ncol = 1)
-nsT.cT.rho.t.3 <- matrix(0, nrow = n.mut, ncol = 1)
-for (i in (1:n.mut)) {
-  nsT.cT.rho.t.1[i, ] <- cor(as.numeric(m.nsT.cT.theo.Pn[i, 1:nmodes1] * m.nsT.cT.theo.va[i, 1:nmodes1]), as.numeric(i.m.nsT.cT.theo.va[i, 1:nmodes1]), method = "pearson")	
-  nsT.cT.rho.t.3[i, ] <- cor(as.numeric(m.nsT.cT.theo.Pn[i, 1:nmodes3] * m.nsT.cT.theo.va[i, 1:nmodes3]), as.numeric(i.m.nsT.cT.theo.va[i, 1:nmodes3]), method = "pearson")	
-}
 
 cF.rho.e.1 <- matrix(0, nrow = n.exp, ncol = 1)
 cF.rho.e.3 <- matrix(0, nrow = n.exp, ncol = 1) 
@@ -495,57 +317,9 @@ for (i in (1:n.exp)) {
   cF.rho.e.3[i, ] <- cor(as.numeric(m.cF.exp.Pn[i, 1:nmodes3] * m.cF.exp.va[i, 1:nmodes3]), as.numeric(i.m.cF.exp.va[i, 1:nmodes3]), method = "pearson")
 }
 
-cT.rho.e.1 <- matrix(0, nrow = n.exp, ncol = 1)
-cT.rho.e.3 <- matrix(0, nrow = n.exp, ncol = 1) 
-for (i in (1:n.exp)) {
-  cT.rho.e.1[i, ] <- cor(as.numeric(m.cT.exp.Pn[i, 1:nmodes1] * m.cT.exp.va[i, 1:nmodes1]), as.numeric(i.m.cT.exp.va[i, 1:nmodes1]), method = "pearson")
-  cT.rho.e.3[i, ] <- cor(as.numeric(m.cT.exp.Pn[i, 1:nmodes3] * m.cT.exp.va[i, 1:nmodes3]), as.numeric(i.m.cT.exp.va[i, 1:nmodes3]), method = "pearson")
-}
 ```
 
-```{r, include = FALSE}
 
-# Calculate auc.
-nsF.cF.auc.t.1 <- matrix(0, nrow = n.mut, ncol = 1)
-nsF.cF.auc.t.3 <- matrix(0, nrow = n.mut, ncol = 1)
-for (i in (1:n.mut)) {
-  nsF.cF.auc.t.1[i, ] <- auc(seq(1:nmodes1), m.nsF.cF.theo.Qn[i,1:nmodes1])
-  nsF.cF.auc.t.3[i, ] <- auc(seq(1:nmodes3), m.nsF.cF.theo.Qn[i,1:nmodes3])
-}
-nsT.cF.auc.t.1 <- matrix(0, nrow = n.mut, ncol = 1)
-nsT.cF.auc.t.3 <- matrix(0, nrow = n.mut, ncol = 1)
-for (i in (1:n.mut)) {
-  nsT.cF.auc.t.1[i, ] <- auc(seq(1:nmodes1), m.nsT.cF.theo.Qn[i,1:nmodes1])
-  nsT.cF.auc.t.3[i, ] <- auc(seq(1:nmodes3), m.nsT.cF.theo.Qn[i,1:nmodes3])
-}
-
-cF.auc.e.1 <- matrix(0, nrow = n.exp, ncol = 1)
-cF.auc.e.3 <- matrix(0, nrow = n.exp, ncol = 1)
-for (i in (1:n.exp)) {
-  cF.auc.e.1[i, ] <- auc(seq(1:nmodes1), m.cF.exp.Qn[i, 1:nmodes1])
-  cF.auc.e.3[i, ] <- auc(seq(1:nmodes3), m.cF.exp.Qn[i, 1:nmodes3])
-}
-
-nsF.cT.auc.t.1 <- matrix(0, nrow = n.mut, ncol = 1)
-nsF.cT.auc.t.3 <- matrix(0, nrow = n.mut, ncol = 1)
-for (i in (1:n.mut)) {
-  nsF.cT.auc.t.1[i, ] <- auc(seq(1:nmodes1), m.nsF.cT.theo.Qn[i,1:nmodes1])
-  nsF.cT.auc.t.3[i, ] <- auc(seq(1:nmodes3), m.nsF.cT.theo.Qn[i,1:nmodes3])
-}
-nsT.cT.auc.t.1 <- matrix(0, nrow = n.mut, ncol = 1)
-nsT.cT.auc.t.3 <- matrix(0, nrow = n.mut, ncol = 1)
-for (i in (1:n.mut)) {
-  nsT.cT.auc.t.1[i, ] <- auc(seq(1:nmodes1), m.nsT.cT.theo.Qn[i,1:nmodes1])
-  nsT.cT.auc.t.3[i, ] <- auc(seq(1:nmodes3), m.nsT.cT.theo.Qn[i,1:nmodes3])
-}
-
-cT.auc.e.1 <- matrix(0, nrow = n.exp, ncol = 1)
-cT.auc.e.3 <- matrix(0, nrow = n.exp, ncol = 1)
-for (i in (1:n.exp)) {
-  cT.auc.e.1[i, ] <- auc(seq(1:nmodes1), m.cT.exp.Qn[i, 1:nmodes1])
-  cT.auc.e.3[i, ] <- auc(seq(1:nmodes3), m.cT.exp.Qn[i, 1:nmodes3])
-}
-``` 
 
 ### RHO
 Las distribuciones de *rho* para cada conjunto se muestran a continuacion 
@@ -558,13 +332,6 @@ plot(density(nsT.cF.rho.t.1), ylab = "Frecuencia", xlab = "rho", main = "Histogr
 points(x = c(cF.rho.e.1), y = rep(0, n.exp), col = "red")
 ```
 
-```{r, include = FALSE}
-plot(density(nsF.cT.rho.t.1), ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 10 modos ns = F, c = T")
-points(x = c(cT.rho.e.1), y = rep(0, n.exp), col = "red")
-plot(density(nsT.cT.rho.t.1), ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 10 modos ns = T, c = T")
-points(x = c(cT.rho.e.1), y = rep(0, n.exp), col = "red")
-
-```
 
 ```{r}
 layout(matrix(1:2, 1, 2, byrow = T))
@@ -574,220 +341,4 @@ plot(density(nsT.cF.rho.t.3), ylab = "Frecuencia", xlab = "rho", main = "Histogr
 points(x = c(cF.rho.e.3), y = rep(0, n.exp), col = "red")
 ```
 
-```{r, include = FALSE}
-plot(density(nsF.cT.rho.t.3), ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 50 modos ns = F, c = T")
-points(x = c(cT.rho.e.3), y = rep(0, n.exp), col = "red")
-plot(density(nsT.cT.rho.t.3), ylab = "Frecuencia", xlab = "rho", main = "Histograma rho 50 modos ns = T, c = T")
-points(x = c(cT.rho.e.3), y = rep(0, n.exp), col = "red")
 
-```
-
-```{r, include = FALSE}
-layout(matrix(1:4, 2, 2, byrow = T))
-plot(density(nsF.cF.auc.t.1), ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 10 modos ns = F, c = F")
-points(x = c(cF.auc.e.1), y = rep(0, n.exp), col = "red")
-plot(density(nsT.cF.auc.t.1), ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 10 modos ns = T, c = F")
-points(x = c(cF.auc.e.1), y = rep(0, n.exp), col = "red")
-plot(density(nsF.cT.auc.t.1), ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 10 modos ns = F, c = T")
-points(x = c(cT.auc.e.1), y = rep(0, n.exp), col = "red")
-plot(density(nsT.cT.auc.t.1), ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 10 modos ns = T, c = T")
-points(x = c(cT.auc.e.1), y = rep(0, n.exp), col = "red")
-
-```
-
-```{r, include = FALSE}
-layout(matrix(1:4, 2, 2, byrow = T))
-plot(density(nsF.cF.auc.t.3), ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 50 modos ns = F, c = F")
-points(x = c(cF.auc.e.3), y = rep(0, n.exp), col = "red")
-plot(density(nsT.cF.auc.t.3), ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 50 modos ns = T, c = F")
-points(x = c(cF.auc.e.3), y = rep(0, n.exp), col = "red")
-plot(density(nsF.cT.auc.t.3), ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 50 modos ns = F, c = T")
-points(x = c(cT.auc.e.3), y = rep(0, n.exp), col = "red")
-plot(density(nsT.cT.auc.t.3), ylab = "Frecuencia", xlab = "auc", main = "Histograma auc 50 modos ns = T, c = T")
-points(x = c(cT.auc.e.3), y = rep(0, n.exp), col = "red")
-
-```
-
-```{r, include = FALSE}
-
-plot(mean.nsF.cT.theo.Pn.group, 
-     main = "Pn promedio ns = F, C = T", 
-     xlab = "nmodo",
-     ylab = "Pn",
-     ylim = c(0, max(c(nsF.cT.theo.Pn.group.quantile2, mean.cT.exp.Pn))))
-lines(nsF.cT.theo.Pn.group.quantile1)
-lines(nsF.cT.theo.Pn.group.quantile2)
-points(mean.cT.exp.Pn, col = "red")
-lines(as.vector(cT.exp.Pn.quantile1), col = "red")
-lines(as.vector(cT.exp.Pn.quantile2), col = "red")
-
-plot(mean.nsT.cT.theo.Pn.group, 
-     main = "Pn promedio ns = T, C = T", 
-     xlab = "nmodo",
-     ylab = "Pn",
-     ylim = c(0, max(c(nsT.cT.theo.Pn.group.quantile2, mean.cT.exp.Pn))))
-lines(nsT.cT.theo.Pn.group.quantile1)
-lines(nsT.cT.theo.Pn.group.quantile2)
-points(mean.cT.exp.Pn, col = "red")
-lines(as.vector(cT.exp.Pn.quantile1), col = "red")
-lines(as.vector(cT.exp.Pn.quantile2), col = "red")
-```
-
-```{r, include = FALSE}
-
-layout(matrix(1:4, 2, 2, byrow = T)) 
-
-plot(mean.nsF.cF.theo.Qn.group, 
-     main = "Qn promedio ns = F, C = F", 
-     xlab = "nmodo", 
-     ylab = "Qn",
-     ylim = c(0, max(c(nsF.cF.theo.Qn.group.quantile2, mean.cF.exp.Qn))))
-lines(nsF.cF.theo.Qn.group.quantile1)
-lines(nsF.cF.theo.Qn.group.quantile2)
-points(mean.cF.exp.Qn, col = "red")
-lines(as.vector(cF.exp.Qn.quantile1), col = "red")
-lines(as.vector(cF.exp.Qn.quantile2), col = "red")
-
-plot(mean.nsT.cF.theo.Qn.group, 
-     main = "Qn promedio ns = T, C = F", 
-     xlab = "nmodo",     
-     ylab = "Qn",
-     ylim = c(0, max(c(nsT.cF.theo.Qn.group.quantile2, mean.cF.exp.Qn))))
-lines(nsT.cF.theo.Qn.group.quantile1)
-lines(nsT.cF.theo.Qn.group.quantile2)
-points(mean.cF.exp.Qn, col = "red")
-lines(as.vector(cF.exp.Qn.quantile1), col = "red")
-lines(as.vector(cF.exp.Qn.quantile2), col = "red")
-
-plot(mean.nsF.cT.theo.Qn.group, 
-     main = "Qn promedio ns = F, C = T", 
-     xlab = "nmodo",      
-     ylab = "Qn",
-     ylim = c(0, max(c(nsF.cT.theo.Qn.group.quantile2, mean.cT.exp.Qn))))
-lines(nsF.cT.theo.Qn.group.quantile1)
-lines(nsF.cT.theo.Qn.group.quantile2)
-points(mean.cT.exp.Qn, col = "red")
-lines(as.vector(cT.exp.Qn.quantile1), col = "red")
-lines(as.vector(cT.exp.Qn.quantile2), col = "red")
-
-plot(mean.nsT.cT.theo.Qn.group, 
-     main = "Qn promedio ns = T, C = T", 
-     xlab = "nmodo",     
-     ylab = "Qn",
-     ylim = c(0, max(c(nsT.cT.theo.Qn.group.quantile2, mean.cT.exp.Qn))))
-lines(nsT.cT.theo.Qn.group.quantile1)
-lines(nsT.cT.theo.Qn.group.quantile2)
-points(mean.cT.exp.Qn, col = "red")
-lines(as.vector(cT.exp.Qn.quantile1), col = "red")
-lines(as.vector(cT.exp.Qn.quantile2), col = "red")
-```
-
-```{r, include = FALSE}
-fit.nsF.cT = lm(mean.cT.exp.Pn ~ mean.nsF.cT.theo.Pn.group)
-Pn.fit.nsF.cT = fitted.values(fit.nsF.cT)
-R2.nsF.cT = cor(mean.cT.exp.Pn, Pn.fit.nsF.cT) ^ 2 
-MSE.nsF.cT = mean((Pn.fit.nsF.cT - mean.cT.exp.Pn) ^ 2)
-plot(Pn.fit.nsF.cT, mean.cT.exp.Pn, xlab = "Pn teorico", ylab = "Pn experimental", main = "ns = F c = T")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsF.cT, digits = 2)), bty = "n", text.col = "red") 
-legend("bottomright", paste("MSE", signif(MSE.nsF.cT, digits = 2)), bty = "n", text.col = "red")
-
-fit.nsT.cT = lm(mean.cT.exp.Pn ~ mean.nsT.cT.theo.Pn.group)
-Pn.fit.nsT.cT = fitted.values(fit.nsT.cT)
-R2.nsT.cT = cor(mean.cT.exp.Pn, Pn.fit.nsT.cT) ^ 2 
-MSE.nsT.cT = mean((Pn.fit.nsT.cT - mean.cT.exp.Pn) ^ 2)
-plot(Pn.fit.nsT.cT, mean.cT.exp.Pn, xlab = "Pn teorico", ylab = "Pn experimental", main = "ns = T c = T")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsT.cT, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsT.cT, digits = 2)), bty = "n", text.col = "red")
-
-```
-
-
-  
-```{r, include = F}
-layout(matrix(1:4, 2, 2, byrow = T)) 
-
-fit.nsF.cF = lm(cF.exp.MSDi ~ nsF.cF.theo.MSDi)
-MSDi.fit.nsF.cF = fitted.values(fit.nsF.cF)
-R2.nsF.cF = cor(rank(cF.exp.MSDi[!is.na(cF.exp.MSDi)]), rank(MSDi.fit.nsF.cF)) ^ 2 
-MSE.nsF.cF = mean((rank(MSDi.fit.nsF.cF - cF.exp.MSDi[!is.na(cF.exp.MSDi)])) ^ 2)
-plot(rank(MSDi.fit.nsF.cF), rank(cF.exp.MSDi[!is.na(cF.exp.MSDi)]), xlab = "MSDi teorico", ylab = "MSDi experimental", main = "ns = F c = F")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsF.cF, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsF.cF, digits = T)), bty = "n", text.col = "red")
-
-fit.nsT.cF = lm(cF.exp.MSDi ~ nsT.cF.theo.MSDi)
-MSDi.fit.nsT.cF = fitted.values(fit.nsT.cF)
-R2.nsT.cF = cor(rank(cF.exp.MSDi[!is.na(cF.exp.MSDi)]), rank(MSDi.fit.nsT.cF)) ^ 2 
-MSE.nsT.cF = mean((rank(MSDi.fit.nsT.cF) - rank(cF.exp.MSDi[!is.na(cF.exp.MSDi)])) ^ 2)
-plot(rank(MSDi.fit.nsT.cF), rank(cF.exp.MSDi[!is.na(cF.exp.MSDi)]), xlab = "MSDi teorico", ylab = "MSDi experimental", main = "ns = T c = F")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsT.cF, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsT.cF, digits = 2)), bty = "n", text.col = "red")
-```
-
-```{r, include = FALSE, include = FALSE}
-layout(matrix(1:4, 2, 2, byrow = T)) 
-
-fit.nsF.cF = lm(cF.exp.smooth.MSDi ~ nsF.cF.theo.smooth.MSDi)
-MSDi.fit.nsF.cF = fitted.values(fit.nsF.cF)
-R2.nsF.cF = cor(rank(cF.exp.smooth.MSDi[!is.na(cF.exp.smooth.MSDi)]), rank(MSDi.fit.nsF.cF)) ^ 2 
-MSE.nsF.cF = mean((rank(MSDi.fit.nsF.cF) - rank(cF.exp.smooth.MSDi[!is.na(cF.exp.smooth.MSDi)])) ^ 2)
-plot(rank(MSDi.fit.nsF.cF), rank(cF.exp.smooth.MSDi[!is.na(cF.exp.smooth.MSDi)]), xlab = "MSDi.smooth teorico", ylab = "MSDi.smooth experimental", main = "ns = F c = F")
-abline(0, 1) 
-legend("topleft", paste("R^2", round(R2.nsF.cF, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsF.cF, digits = T)), bty = "n", text.col = "red")
-
-fit.nsT.cF = lm(cF.exp.smooth.MSDi ~ nsT.cF.theo.smooth.MSDi)
-MSDi.fit.nsT.cF = fitted.values(fit.nsT.cF)
-R2.nsT.cF = cor(rank(cF.exp.smooth.MSDi[!is.na(cF.exp.smooth.MSDi)]), rank(MSDi.fit.nsT.cF)) ^ 2 
-MSE.nsT.cF = mean((rank(MSDi.fit.nsT.cF) - rank(cF.exp.smooth.MSDi[!is.na(cF.exp.smooth.MSDi)])) ^ 2)
-plot(rank(MSDi.fit.nsT.cF), rank(cF.exp.smooth.MSDi[!is.na(cF.exp.smooth.MSDi)]), xlab = "MSDi.smooth teorico", ylab = "MSDi.smooth experimental", main = "ns = T c = F")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsT.cF, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsT.cF, digits = 2)), bty = "n", text.col = "red")
-
-```
-  
-  
-```{r, include = FALSE}
-
-fit.nsF.cT = lm(cT.exp.MSDi ~ nsF.cT.theo.MSDi)
-MSDi.fit.nsF.cT = fitted.values(fit.nsF.cT)
-R2.nsF.cT = cor(cT.exp.MSDi[!is.na(cT.exp.MSDi)], MSDi.fit.nsF.cT) ^ 2 
-MSE.nsF.cT = mean((MSDi.fit.nsF.cT - cT.exp.MSDi[!is.na(cT.exp.MSDi)]) ^ 2)
-plot(MSDi.fit.nsF.cT, cT.exp.MSDi[!is.na(cT.exp.MSDi)], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "ns = F c = T")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsF.cT, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsF.cT, digits = 2)), bty = "n", text.col = "red")
-
-fit.nsT.cT = lm(cT.exp.MSDi ~ nsT.cT.theo.MSDi)
-MSDi.fit.nsT.cT = fitted.values(fit.nsT.cT)
-R2.nsT.cT = cor(cT.exp.MSDi[!is.na(cT.exp.MSDi)], MSDi.fit.nsT.cT) ^ 2 
-MSE.nsT.cT = mean((MSDi.fit.nsT.cT - cT.exp.MSDi[!is.na(cT.exp.MSDi)]) ^ 2)
-plot(MSDi.fit.nsT.cT, cT.exp.MSDi[!is.na(cT.exp.MSDi)], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "ns = T c = T")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsT.cT, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsT.cT, digits = 2)), bty = "n", text.col = "red")
-```
-
-```{r, include = FALSE}
-fit.nsF.cT = lm(cT.exp.smooth.MSDi ~ nsF.cT.theo.smooth.MSDi)
-MSDi.fit.nsF.cT = fitted.values(fit.nsF.cT)
-R2.nsF.cT = cor(cT.exp.smooth.MSDi[!is.na(cT.exp.smooth.MSDi)], MSDi.fit.nsF.cT) ^ 2 
-MSE.nsF.cT = mean((MSDi.fit.nsF.cT - cT.exp.smooth.MSDi[!is.na(cT.exp.smooth.MSDi)]) ^ 2)
-plot(MSDi.fit.nsF.cT, cT.exp.smooth.MSDi[!is.na(cT.exp.smooth.MSDi)], xlab = "MSDi.smooth teorico", ylab = "MSDi.smooth experimental", main = "ns = F c = T")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsF.cT, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsF.cT, digits = 2)), bty = "n", text.col = "red")
-
-fit.nsT.cT = lm(cT.exp.smooth.MSDi ~ nsT.cT.theo.smooth.MSDi)
-MSDi.fit.nsT.cT = fitted.values(fit.nsT.cT)
-R2.nsT.cT = cor(cT.exp.smooth.MSDi[!is.na(cT.exp.smooth.MSDi)], MSDi.fit.nsT.cT) ^ 2 
-MSE.nsT.cT = mean((MSDi.fit.nsT.cT - cT.exp.smooth.MSDi[!is.na(cT.exp.smooth.MSDi)]) ^ 2)
-plot(MSDi.fit.nsT.cT, cT.exp.smooth.MSDi[!is.na(cT.exp.smooth.MSDi)], xlab = "MSDi.smooth teorico", ylab = "MSDi.smooth experimental", main = "ns = T c = T")
-abline(0, 1)
-legend("topleft", paste("R^2", round(R2.nsT.cT, digits = 2)), bty = "n", text.col = "red")
-legend("bottomright", paste("MSE", signif(MSE.nsT.cT, digits = 2)), bty = "n", text.col = "red")
-```

@@ -79,8 +79,8 @@ input.fname <- file.path("input_MainProgram.csv")
 input <- read.csv(input.fname)
 
 for (a in (1:nrow(input))) { 
-  print(a)
   family <- as.character(input$family)[a]
+  print(family)
   p.ref <- as.character(input$p.ref)[a]
   exp.chain.p.ref <- as.character(input$exp.chain.p.ref)[a]
   mut.model = input$mut.model[a]

@@ -103,13 +103,11 @@ AnalyzeExperimentalTheoretical <- function(family,
   m.exp.Pn = matrix(nrow = n.prot, ncol = 3 * n.sites.p.ref)
   m.exp.va = matrix(nrow = n.prot, ncol = 3 * n.sites.p.ref)
   m.exp.dr.squarei = matrix(nrow = n.prot, ncol = n.sites.p.ref)
-  m.exp.dr.squarei.10.modes = matrix(nrow = n.prot, ncol = n.sites.p.ref)
   m.exp.smooth.dr.squarei = matrix(nrow = n.prot, ncol = n.sites.p.ref)
   
   m.theo.Pn = matrix(nrow = n.prot * n.mut.p, ncol = 3 * n.sites.p.ref)
   m.theo.va = matrix(nrow = n.prot * n.mut.p, ncol = 3 * n.sites.p.ref)
   m.theo.dr.squarei = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
-  m.theo.dr.squarei.10.modes = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
   m.theo.smooth.dr.squarei = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
   
   # Start a loop to evaluate each protein of the family.
@@ -170,13 +168,13 @@ AnalyzeExperimentalTheoretical <- function(family,
     for (i in (1:n.sites.p.ref)) {
       m.exp.dr.squarei[P, i] = matrix(exp.dr.squarei[ aligned.p.ref.index == i], nrow = 1, ncol = 1)
     }
-  
-    # Calculate smooth dr.squarei 1
+    
+    # Calculate smooth dr.squarei.
     kij = CalculateENMK(exp.r.p.ref, CalculateKij, R0, TOLERANCE)$kij
     m.exp.dr.squarei.0 = m.exp.dr.squarei[P, ]
     m.exp.dr.squarei.0[is.na(m.exp.dr.squarei.0)] = TOLERANCE
-    m.exp.smooth.dr.squarei[P, ] = (m.exp.dr.squarei[P, ] +  kij %*%  m.exp.dr.squarei.0) / rowSums(kij)
-    
+    m.exp.smooth.dr.squarei[P, ] = (m.exp.dr.squarei[P, ] +  (kij %*%  m.exp.dr.squarei.0)) / rowSums(kij[, !is.na(m.exp.dr.squarei[P, ])])
+    m.exp.smooth.dr.squarei[P, ] = m.exp.smooth.dr.squarei[P, ]/ sum(m.exp.smooth.dr.squarei[P, ], na.rm = T)
     for (mut in (1:n.mut.p)) {
     print(c(P, mut))
       
@@ -199,16 +197,14 @@ AnalyzeExperimentalTheoretical <- function(family,
       
       m.theo.va[P.mut, 1:length(theo.variability$va)] = theo.variability$va
       m.theo.Pn[P.mut, 1:length(theo.variability$Pn)] = theo.variability$Pn
-      theo.dr.squarei = theo.variability$dr.squarei
-      for (i in (1:n.sites.p.ref)) {
-        m.theo.dr.squarei[P.mut, i] = matrix(theo.dr.squarei[ aligned.p.ref.index == i], nrow = 1, ncol = 1)
-      }
+      m.theo.dr.squarei[P.mut, 1:length(theo.variability$dr.squarei)] = theo.variability$dr.squarei
       
-      # Calculate smooth dr.squarei
+      # Calculate smooth dr.squarei.
       kij = CalculateENMK(matrix(theo.r.p.ref, nrow = 3), CalculateKij, R0, TOLERANCE)$kij
       m.theo.dr.squarei.0 = m.theo.dr.squarei[P.mut, ]
       m.theo.dr.squarei.0[is.na(m.theo.dr.squarei.0)] = TOLERANCE
-      m.theo.smooth.dr.squarei[P.mut, ] = (m.theo.dr.squarei[P.mut, ] +  kij %*%  m.theo.dr.squarei.0) / rowSums(kij)
+      m.theo.smooth.dr.squarei[P.mut, ] = (m.theo.dr.squarei[P.mut, ] +  (kij %*%  m.theo.dr.squarei.0)) / rowSums(kij[, !is.na(m.theo.dr.squarei[P.mut, ])])
+      m.theo.smooth.dr.squarei[P.mut, ] = m.theo.smooth.dr.squarei[P.mut, ]/ sum(m.theo.smooth.dr.squarei[P.mut, ], na.rm = T)
     } 
   }
   

@@ -14,6 +14,7 @@ for (a in (1:nrow(input))) {
   n.mut.p = input$n.mut.p[a]
   R0 = input$R0[a]
   K.analysis = input$K.analysis[a]
+  exp.chain.p.ref = input$exp.chain.p.ref[a]
 
   # Generate a report.
   rmarkdown::render('MultipleReport.Rmd', 
