@@ -1,11 +1,13 @@
-# This function analyzes experimental and theoretical data calculating measures of variability 
-# of experimental proteins and simulated mutants respectibly. 
+# This function analyzes experimental and theoretical data calculating measures of variability in cartesian coordinates
+# and projected on normal modes of p.ref. 
 # 
 #  Args:
-#    family: the family of p.ref.
+#    family: the family of the protein to mutate. It can be "globins", "serinProteases", 
+#    "snakesToxin", "sh3", "fabp", "rrm", "phoslip" or "cys".
 #    exp.chain.p.ref: the chain of p.ref in the pdb file obtained from Homstrad.
-#    n.mut.p: the number of simulated mutants generated for each protein of the family.
-#    R0: cut-off for the ANM.
+#    n.mut.p: the number of mutants to generate for each member of the family. For example, if the family has 20 
+#    members, the program generates n.mut.p x 20 mutants.
+#    R0: the cut-off for the "ANM" (Anisotropic Network Model) that represents the proteins.
 #    rotate: it can be "TRUE" or "FALSE". If it is "TRUE", r.p.2 is rotaded in order to minimize RMSD with r.p.ref.
 #    core: it can be "TRUE" or "FALSE". If it is "TRUE", the program only considers the conserved core of 
 #    the alignment. If it is "FALSE", the program analyzes the whole alignment.

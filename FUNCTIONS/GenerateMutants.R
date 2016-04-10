@@ -3,17 +3,21 @@
 # - "MND" (Multivariate Normal Distribution), considering mu = dr expected value = 0 and Sigma = Cov.
 #
 #  Args:
-#    family: the family of the protein to mutate.
+#    family: the family of the protein to mutate. It can be "globins", "serinProteases", 
+#    "snakesToxin", "sh3", "fabp", "rrm", "phoslip" or "cys".
 #    exp.chain.p.ref: the chain of p.ref in the pdb file obtained from Homstrad.
-#    mut.model: mutational model. It can be "LFENM" or "MND".
-#    n.mut.p: the number of mutants to generate for each protein of the family.
+#    mut.model: mutational model. It can be "LFENM" (Linearly Forced - Elastic Network Model) or "MND" 
+#    (Multivariate Normal Distribution).
+#    n.mut.p: the number of mutants to generate for each member of the family. For example, if the family has 20 
+#    members, the program generates n.mut.p x 20 mutants.
 #    fmax: argument for "LFENM". It is the maximun value for the forces that model the mutations.
-#    R0: the cut-off for the ANM ("Anisotropic Network Model").
-#    heme: argument for "globins". It can be "TRUE" or "FALSE". If it is "TRUE" the program considers the heme group.
+#    R0: the cut-off for the "ANM" (Anisotropic Network Model) that represents the proteins.
+#    heme: argument for "globins". It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the heme group.
 #    natural.selection: It can be "TRUE" or "FALSE". If it is "TRUE", the mutants are calculated considering natural 
 #    selection. If it is "FALSE", the mutants are calculated in a random manner.
-#    data.dir: directory of the data.It must contain the output of the function AnalyzeFamily().
-#    out.dir: output directory.
+#    data.dir: directory of the data. It must contain the file the pdb file 
+#    obtained from Homstrad ("data.dir/family_coordinates.csv").
+#    out.dir: output directory. It must contain the output of the function AnalyzeFamily().
 #    mut.fname.id: ID for output filenames.
 #    TOLERANCE: 0 tolerance.
 #
@@ -42,8 +46,6 @@ GenerateMutants <- function(family,
   
   # Filenames.
   pdbs.fname <- file.path(data.dir, paste(family, "_coordinates.pdb", sep = "")) 
-  m.aligned.mut.p.ref.index.fname <- file.path(out.dir, paste(family, "_out_m.aligned.mut.p.ref.index.csv", sep = ""))
-  m.not.aligned.p.ref.index.fname <- file.path(out.dir, paste(family, "_out_m.not.aligned.p.ref.index.csv", sep = ""))
   m.identity.fname <- file.path(out.dir, paste(family, "_out_m.identity.csv", sep = ""))
   
   # Read PDB of p.ref.
@@ -59,56 +61,41 @@ GenerateMutants <- function(family,
   } else {
     n.sites = n.aa
   }
+  
+  # Enumerate sites of p.ref.
   sites = seq(1:n.sites)
   
   # Calculate K of p.ref.
   ENMK.p.ref = CalculateENMK(r.p.ref, CalculateKij, R0, TOLERANCE)
   
-  # Get mutated and not aligned sites of p.ref in the multiple alignment
-  #m.aligned.mut.p.ref.index = read.csv(m.aligned.mut.p.ref.index.fname)
-  #m.not.aligned.p.ref.index = read.csv(m.not.aligned.p.ref.index.fname)
-  
-  # Get the % sequence identity between p.ref and the other proteins, and the number of proteins.
+  # Get the % sequence identity between p.ref and the other proteins and get the number of proteins of the family.
   m.identity = read.csv(m.identity.fname)$V1
   n.prot = length(m.identity)
   
+  # Create a matrix to save coordinates of each mutant.
+  m.r.mut = matrix(0, nrow = 3 * n.sites, ncol = n.prot * n.mut.p)
+  
   # Calculate mutants using "LF-ENM".
   if (mut.model == "LFENM") {
-    
-    # Create a matrix to save coordinates of each generated mutant.
-    m.r.mut = matrix(nrow = 3 * n.sites, ncol = n.prot * n.mut.p)
 
-    # Start a loop to read mutated sites of p.ref for each P.
+    # Start a loop for each P.
     for (P in (1:n.prot)) {
       
-      #    # Get mutated and not aligned sites of p.ref for each P (natural.selection == TRUE).
-      #   if (natural.selection == "TRUE") {
-      #      aligned.mut.p.ref.index = m.aligned.mut.p.ref.index[P, ]
-      #      not.aligned.p.ref.index = m.not.aligned.p.ref.index[P, ]
-      #  
-      #      aligned.mut.p.ref.index = as.numeric(aligned.mut.p.ref.index[, !is.na(aligned.mut.p.ref.index)])
-      #      not.aligned.p.ref.index = as.numeric(not.aligned.p.ref.index[, !is.na(not.aligned.p.ref.index)])
-      #    
-      #      mutated.index = c(aligned.mut.p.ref.index, not.aligned.p.ref.index)
-      #    }
-         
-      # Decide which sites to mutate (natural.selection == TRUE).
-      if (natural.selection == "TRUE") {
+      # Get de sequence identity and the number of mutated sites of p.ref for P.
+      identity = m.identity[P]
+      n.sites.mut = (100 - (identity)) * n.aa / 100
       
-        # Calculate the probability of mutations.
-        identity = m.identity[P]
-        prob.mut = 1 - (identity / 100)
-        n.sites.mut = prob.mut * n.aa
+      # Decide which sites to mutate for natural.selection == "TRUE".
+      if (natural.selection == "TRUE") {
       
         # Calculate the number of contacts of each site.
         CN = ENMK.p.ref$kij
         CN.i = colSums(CN)
-        mean.CN = mean(CN.i)
+
+        # Calculate the probability of mutation of each site following the Stress Model (with beta = 1).
+        prob.i = 1 - CN.i
       
-        # Calculate beta and the probability of mutation of each site for the stress model.
-        beta = (1 - prob.mut) / mean.CN
-        prob.i = 1 - (beta * CN.i)
-      
+        # Get sites with more probability of mutation.
         decreasing.prob = order(prob.i, decreasing = T)
         mutated.index = decreasing.prob[1:n.sites.mut]
       }
@@ -117,9 +104,8 @@ GenerateMutants <- function(family,
       for(mut in seq(n.mut.p)) {
         print(c(P, mut))
         
-          # Get mutated sites of p.ref for each P (natural.selection == FALSE).
+        # Get mutated sites of p.ref for each P and for natural.selection == "FALSE".
         if (natural.selection == "FALSE") {
-          n.sites.mut = (100 - (m.identity[P])) * n.aa / 100
           mutated.index = sample(1:n.aa, replace = F)[1:n.sites.mut]
         }
         
@@ -145,9 +131,6 @@ GenerateMutants <- function(family,
     
     # Calculate the expected dr value for each site.
     dr = matrix(0, nrow = 1, ncol = 3 * n.sites)
-    
-    # Create a matrix to save coordinates of each mutant.
-    m.r.mut = matrix(0, nrow = 3 * n.sites, ncol = n.prot * n.mut.p)
     
     # Start a loop to calculate coordinates of the mutants.
     for (mut in seq(n.prot * n.mut.p)) {

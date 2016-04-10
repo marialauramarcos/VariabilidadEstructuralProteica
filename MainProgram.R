@@ -3,26 +3,26 @@
 # experimental data, compares them, and generates a report.
 # To run the program it is necessary to fill the input file ("input_MainProgram.csv") with the following information:
 #
-#    - family: the family of the protein to mutate. It can be "globins", "serinProteases", "plastocyanins", 
-#    "snakesToxin", "sh3", "lipocalin", "fabp", "kinase", "rrm", "phoslip", "gluts" and "ldh".
-#    - p.ref: the pdb code (pdbid) of the protein to mutate (example: "1a6m"). The protein must be a member of
+#    family: the family of the protein to mutate. It can be "globins", "serinProteases", 
+#    "snakesToxin", "sh3", "fabp", "rrm", "phoslip" or "cys".
+#    p.ref: the pdb code (pdbid) of the protein to mutate (example: "1a6m"). The protein must be a member of
 #    the selected family. This pdbid must not be included in the dataset ("DATA/family_dataset.csv").
-#    - exp.chain.p.ref: the chain of p.ref in the pdb file obtained from Homstrad.
-#    - mut.model: mutational model. It can be "LFENM" ("Linearly Forced - Elastic Network Model") or "MND" 
-#    ("Multivariate Normal Distribution").
-#    - n.mut.p: the number of mutants to generate for each member of the family. For example, if the family has 20 
+#    exp.chain.p.ref: the chain of p.ref in the pdb file obtained from Homstrad.
+#    mut.model: mutational model. It can be "LFENM" (Linearly Forced - Elastic Network Model) or "MND" 
+#    (Multivariate Normal Distribution).
+#    n.mut.p: the number of mutants to generate for each member of the family. For example, if the family has 20 
 #    members, the program generates n.mut.p x 20 mutants.
-#    - fmax: argument for "LFENM". It is the maximun value for the forces that model the mutations. 
-#    - R0: the cut-off for the ANM ("Anisotropic Network Model") that represents the proteins.
-#    - rotate: it can be "TRUE" or "FALSE". If it is "TRUE", r.p.2 is rotated in order to minimize RMSD with r.p.ref.
-#    - core: it can be "TRUE" or "FALSE". If it is "TRUE", the program only considers the conserved core of 
+#    fmax: argument for "LFENM". It is the maximun value for the forces that model the mutations. 
+#    R0: the cut-off for the "ANM" (Anisotropic Network Model) that represents the proteins.
+#    rotate: it can be "TRUE" or "FALSE". If it is "TRUE", r.p.2 is rotated in order to minimize RMSD with r.p.ref.
+#    core: it can be "TRUE" or "FALSE". If it is "TRUE", the program only considers the conserved core of 
 #    the alignment. If it is "FALSE", the program analyzes the whole alignment.
-#    - heme: argument for "globins". It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the heme group.
-#    - analyze.family: It can be "TRUE" or "FALSE". If it is "TRUE" the program analyzes the family.
-#    - generate.mutants: It can be "TRUE" or "FALSE". If it is "TRUE" the program generates new mutants.
-#    - natural.selection: It can be "TRUE" or "FALSE". If it is "TRUE", the mutants are calculated considering natural 
+#    heme: argument for "globins". It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the heme group.
+#    analyze.family: It can be "TRUE" or "FALSE". If it is "TRUE", the program analyzes the family.
+#    generate.mutants: It can be "TRUE" or "FALSE". If it is "TRUE", the program generates new mutants.
+#    natural.selection: It can be "TRUE" or "FALSE". If it is "TRUE", the mutants are calculated considering natural 
 #    selection. If it is "FALSE", the mutants are calculated in a random manner.
-#    - K.analysis: It can be "K" or "Keff". For "K" or "Keff", the analysis is based on normal modes of "K" or "Keff"
+#    K.analysis: It can be "K" or "Keff". For "K" or "Keff", the analysis is based on normal modes of "K" or "Keff"
 #    respectibly.
 
 # Remove objects.
@@ -78,6 +78,7 @@ source(CalculateVariability.fname)
 input.fname <- file.path("input_MainProgram.csv")
 input <- read.csv(input.fname)
 
+# Start a loop to analyze each row of the input.
 for (a in (1:nrow(input))) { 
   family <- as.character(input$family)[a]
   print(family)

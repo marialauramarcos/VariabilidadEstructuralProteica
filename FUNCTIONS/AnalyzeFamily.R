@@ -5,8 +5,10 @@
 #  - CORE = FALSE: all aligned and not aligned sites of p.ref and each p.2.
 #
 #  Args:
-#   family: the family of the reference protein.
-#   p.ref: the pdb code (pdbid) of the reference protein.
+#   family: the family of the protein to mutate. It can be "globins", "serinProteases", 
+#   "snakesToxin", "sh3", "fabp", "rrm", "phoslip" or "cys".
+#   p.ref:  the pdb code (pdbid) of the protein to mutate (example: "1a6m"). The protein must be a member of
+#   the selected family. This pdbid must not be included in the dataset ("DATA/family_dataset.csv").
 #   data.dir: directory of the data. It must contain a file with the alignment of the family ("data.dir/family_alignment.txt") and 
 #   a file with the dataset ("data.dir/family_dataset.csv").
 #   out.dir: output directory.
