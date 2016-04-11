@@ -40,7 +40,29 @@ V(r) = 1/2*(r-r_{0})^{T}K(r-r_{0})
 where, for a protein of $N$ sites, $r$ is a column vector with $3N$ elements: the $x$, $y$, $z$ coordinates of the $N$ $C_{\alpha}$, $r_{0}$ is the equilibrium structure, and $K$ is the ``stiffness'' matrix, which represents the network\textsc{\char13} s topology and spring force constants. 
 Specifically, we used the ``Anisotropic Network Model'' (ANM). Following this model, we gave a spring force constant of 1 to sites at a distance $\leq$ 10 \AA  and a spring force constant of 0 to sites at a distance > 10 \AA. We selected 10 \AA  as the cut off value after optimization using a range of values form 8 to 12 (data not shown). This cut off value is also the most commonly used. 
 
+{\bf LF-ENM model of mutant proteins:}
+
+To simulate mutants of each reference protein and thus to generate datasets of theoretical proteins, we used the ``Linearly Forced Elastic Network Model'' (LF - ENM). This model predicts the effect of a single mutation adding a linear perturbative term to the reference potential:
+
+Agregar formula
+
+where $f$ is a column vector with $3N$ elements that models the mutation. The equilibrium structure of the mutant $r^{0}_{mut}$ is the value of $r$ that minimizes $V_{mut}$. Using Eqs. (1) and (2) we find the structural variation due to the mutation:
+
+Agregar formula
+
+This equation shows that the structural perturbation introduced by a mutation is related to the mutation and to the network of oscillators, via $K^{1}$. We should note here that $K^{1}$ is actually the pseudo inverse, because $K$ has six zero eigenvalues, corresponding to translations and rotations, so that it is not invertible.
+
+{\bf Multiple-sites mutants: }
+In order to simulate adequately the experimental data, we did not simulated proteins with a single mutation, we did simulate proteins with multiple mutations. To do this, we considered additive mutations by the assumption that $K^{mut}$ \cong $K^{wt}$:
+
+\begin{equation}
+dr^{tot} = dr^{mut1}_{wt} + dr^{mut2}_{wt} + ... + dr^{mutNmut}_{wt} = K^{-1}_{wt} \times (fmut1+fmut2+...+fmutNmut) 
+\end{equation}
+
+Where $dr^{tot}$ is the total structural variation due the M mutations, dr^{mutm}_{wt} is the structural variation produced by the mutation $m$considering $K^{wt}$, and fmutn is the vector of force of $n$.
+
+\section{Results and discussion}
+
 \section{Conclusion}
-Not much of a paper, but it's a start.
 
 \end{document}
