@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.4.9)  11 APR 2016 15:16
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.4.9)  12 APR 2016 14:24
 entering extended mode
 **./paper.tex
 (paper.tex
@@ -113,94 +113,91 @@ LaTeX Font Info:    External font `lmex10' loaded for size
  [1
 
 {C:/Users/Usuario/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
-Overfull \hbox (80.33096pt too wide) in paragraph at lines 23--25
-\T1/lmr/m/n/10 mul-ti-ple struc-tural align-ments of ho-mol-o-gous HOM-STRAD (h
-ttp://mizuguchilab.org/homstrad/).
- []
-
-[2]
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 34.
+(Font)              <10> on input line 25.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 34.
+(Font)              <7> on input line 25.
 LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 34.
- [3]
+(Font)              <5> on input line 25.
+ [2]
 ! Missing $ inserted.
 <inserted text> 
                 $
-l.56 ...ons by the assumption that $K^{mut}$ \cong
-                                                   $K^{wt}$:
+l.50 ...e assumption that $\mathbf{K}^{mut}$ \cong
+                                                   $\mathbf{K}^{wt}$:
 I've inserted a begin-math/end-math symbol since I think
 you left one out. Proceed, with fingers crossed.
 
+
+! LaTeX Error: \mathbf allowed only in math mode.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.50 ...ion that $\mathbf{K}^{mut}$ \cong $\mathbf
+                                                  {K}^{wt}$:
+You're in trouble here.  Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
 ! Missing $ inserted.
 <inserted text> 
                 $
-l.56 ...by the assumption that $K^{mut}$ \cong $K^
+l.50 ...that $\mathbf{K}^{mut}$ \cong $\mathbf{K}^
                                                   {wt}$:
 I've inserted a begin-math/end-math symbol since I think
 you left one out. Proceed, with fingers crossed.
 
 
-Overfull \hbox (16.40927pt too wide) detected at line 60
-\OML/lmm/m/it/10 dr[] \OT1/lmr/m/n/10 = \OML/lmm/m/it/10 dr[] \OT1/lmr/m/n/10 +
- \OML/lmm/m/it/10 dr[] \OT1/lmr/m/n/10 + \OML/lmm/m/it/10 ::: \OT1/lmr/m/n/10 +
- \OML/lmm/m/it/10 dr[] \OT1/lmr/m/n/10 = \OML/lmm/m/it/10 K[] \OMS/lmsy/m/n/10 
- \OT1/lmr/m/n/10 (\OML/lmm/m/it/10 fmut\OT1/lmr/m/n/10 1 + \OML/lmm/m/it/10 fm
-ut\OT1/lmr/m/n/10 2 + \OML/lmm/m/it/10 ::: \OT1/lmr/m/n/10 + \OML/lmm/m/it/10 f
-mutNmut\OT1/lmr/m/n/10 )
+LaTeX Warning: Command \r invalid in math mode on input line 63.
+
+
+LaTeX Warning: Command \r invalid in math mode on input line 63.
+
+
+LaTeX Warning: Command \r invalid in math mode on input line 63.
+
+[3]
+Overfull \hbox (3.11832pt too wide) in paragraph at lines 68--70
+[]\T1/lmr/bx/n/10 Experimental dataset: \T1/lmr/m/n/10 We se-lected 8 fam-i-lie
+s of pro-teins from the database
  []
 
-! Missing $ inserted.
-<inserted text> 
-                $
-l.62 ...uctural variation due the M mutations, dr^
-                                                  {mutm}_{wt} is the structu...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
 
-! Missing $ inserted.
-<inserted text> 
-                $
-l.62 ...roduced by the mutation $m$considering $K^
-                                                  {wt}$, and fmutn is the ve...
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-
-Overfull \hbox (278.85829pt too wide) in paragraph at lines 62--63
-[]\T1/lmr/m/n/10 Where $\OML/lmm/m/it/10 dr[]$ \T1/lmr/m/n/10 is the to-tal str
-uc-tural vari-a-tion due the M mu-ta-tions, dr$[]\OML/lmm/m/it/10 isthestructur
-alvariationproducedbythemutation$\T1/lmr/m/n/10 m$\OML/lmm/m/it/10 considering$
-\T1/lmr/m/n/10 K$[]$,
+Overfull \hbox (90.60867pt too wide) in paragraph at lines 68--70
+\T1/lmr/m/n/10 of mul-ti-ple struc-tural align-ments of ho-mol-o-gous HOM-STRAD
+ (http://mizuguchilab.org/homstrad/).
  []
 
-[4] (paper.aux) ) 
+
+LaTeX Warning: Command \r invalid in math mode on input line 86.
+
+[4] [5] (paper.aux) ) 
 Here is how much of TeX's memory you used:
- 567 strings out of 493634
- 6901 string characters out of 3141309
+ 575 strings out of 493634
+ 6992 string characters out of 3141309
  62604 words of memory out of 3000000
- 3988 multiletter control sequences out of 15000+200000
- 47005 words of font info for 41 fonts, out of 3000000 for 9000
+ 3992 multiletter control sequences out of 15000+200000
+ 60089 words of font info for 45 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
  23i,8n,22p,2355b,198s stack positions out of 5000i,500n,10000p,200000b,50000s
-{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-maths
-y.enc}{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.enc}{C:/Progr
-am Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-rm.enc}{C:/Program Files (x86)/
-MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathit.enc}<C:/Program Files (x86)/MiKTeX 2.9/
-fonts/type1/public/lm/lmbx10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1
-/public/lm/lmbx12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/
-lmcsc10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi10.pfb
-><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi7.pfb><C:/Program
- Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr10.pfb><C:/Program Files (x86)
-/MiKTeX 2.9/fonts/type1/public/lm/lmr12.pfb><C:/Program Files (x86)/MiKTeX 2.9/
-fonts/type1/public/lm/lmr17.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/
-public/lm/lmr7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lms
-y10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmsy7.pfb>
-Output written on paper.pdf (4 pages, 203743 bytes).
+{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-e
+c.enc}{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/P
+rogram Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-rm.enc}{C:/Program Files (x
+86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathit.enc}<C:/Program Files (x86)/MiKTeX 
+2.9/fonts/type1/public/lm/lmbx10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/t
+ype1/public/lm/lmbx12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
+/lm/lmcsc10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi10
+.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi7.pfb><C:/Pro
+gram Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr10.pfb><C:/Program Files (
+x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr12.pfb><C:/Program Files (x86)/MiKTeX 
+2.9/fonts/type1/public/lm/lmr17.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/ty
+pe1/public/lm/lmr7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm
+/lmri10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmsy10.pfb
+><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmsy7.pfb>
+Output written on paper.pdf (5 pages, 227546 bytes).
 PDF statistics:
- 65 PDF objects out of 1000 (max. 8388607)
+ 74 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
