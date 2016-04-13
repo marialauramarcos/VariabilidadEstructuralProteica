@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.4.9)  12 APR 2016 14:24
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.4.9)  13 APR 2016 15:08
 entering extended mode
 **./paper.tex
 (paper.tex
@@ -123,8 +123,8 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 ! Missing $ inserted.
 <inserted text> 
                 $
-l.50 ...e assumption that $\mathbf{K}^{mut}$ \cong
-                                                   $\mathbf{K}^{wt}$:
+l.50 ...e assumption that $\mathbf{K}_{mut}$ \cong
+                                                   $\mathbf{K}_{wt}$:
 I've inserted a begin-math/end-math symbol since I think
 you left one out. Proceed, with fingers crossed.
 
@@ -135,15 +135,15 @@ See the LaTeX manual or LaTeX Companion for explanation.
 Type  H <return>  for immediate help.
  ...                                              
                                                   
-l.50 ...ion that $\mathbf{K}^{mut}$ \cong $\mathbf
-                                                  {K}^{wt}$:
+l.50 ...ion that $\mathbf{K}_{mut}$ \cong $\mathbf
+                                                  {K}_{wt}$:
 You're in trouble here.  Try typing  <return>  to proceed.
 If that doesn't work, type  X <return>  to quit.
 
 ! Missing $ inserted.
 <inserted text> 
                 $
-l.50 ...that $\mathbf{K}^{mut}$ \cong $\mathbf{K}^
+l.50 ...that $\mathbf{K}_{mut}$ \cong $\mathbf{K}_
                                                   {wt}$:
 I've inserted a begin-math/end-math symbol since I think
 you left one out. Proceed, with fingers crossed.
@@ -172,7 +172,23 @@ Overfull \hbox (90.60867pt too wide) in paragraph at lines 68--70
 
 LaTeX Warning: Command \r invalid in math mode on input line 86.
 
-[4] [5] (paper.aux) ) 
+[4]
+! Double superscript.
+l.107 ...^{0}_{i}\right\|^{2}=d\mathbf{x}^{0}_{i}^
+                                                  {2}+d\mathbf{y}^{0}_{i}^{2...
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+l.107 ...athbf{x}^{0}_{i}^{2}+d\mathbf{y}^{0}_{i}^
+                                                  {2}+d\mathbf{z}^{0}_{i}^{2}
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+! Double superscript.
+l.107 ...athbf{y}^{0}_{i}^{2}+d\mathbf{z}^{0}_{i}^
+                                                  {2}
+I treat `x^1^2' essentially like `x^1{}^2'.
+
+[5] [6] (paper.aux) ) 
 Here is how much of TeX's memory you used:
  575 strings out of 493634
  6992 string characters out of 3141309
@@ -181,23 +197,25 @@ Here is how much of TeX's memory you used:
  60089 words of font info for 45 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
  23i,8n,22p,2355b,198s stack positions out of 5000i,500n,10000p,200000b,50000s
-{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-e
-c.enc}{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/P
-rogram Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-rm.enc}{C:/Program Files (x
-86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathit.enc}<C:/Program Files (x86)/MiKTeX 
-2.9/fonts/type1/public/lm/lmbx10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/t
-ype1/public/lm/lmbx12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
-/lm/lmcsc10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi10
-.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi7.pfb><C:/Pro
-gram Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr10.pfb><C:/Program Files (
-x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr12.pfb><C:/Program Files (x86)/MiKTeX 
-2.9/fonts/type1/public/lm/lmr17.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/ty
-pe1/public/lm/lmr7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm
-/lmri10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmsy10.pfb
-><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmsy7.pfb>
-Output written on paper.pdf (5 pages, 227546 bytes).
+{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-m
+athex.enc}{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.enc}{C:/P
+rogram Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Program File
+s (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-rm.enc}{C:/Program Files (x86)/MiKTeX 
+2.9/fonts/enc/dvips/lm/lm-mathit.enc}<C:/Program Files (x86)/MiKTeX 2.9/fonts/t
+ype1/public/lm/lmbx10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
+/lm/lmbx12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmcsc10
+.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmex10.pfb><C:/Pr
+ogram Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi10.pfb><C:/Program Files
+ (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi7.pfb><C:/Program Files (x86)/MiKTe
+X 2.9/fonts/type1/public/lm/lmr10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/
+type1/public/lm/lmr12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
+/lm/lmr17.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr7.pfb
+><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmri10.pfb><C:/Progra
+m Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmsy10.pfb><C:/Program Files (x8
+6)/MiKTeX 2.9/fonts/type1/public/lm/lmsy7.pfb>
+Output written on paper.pdf (6 pages, 240242 bytes).
 PDF statistics:
- 74 PDF objects out of 1000 (max. 8388607)
+ 82 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 
