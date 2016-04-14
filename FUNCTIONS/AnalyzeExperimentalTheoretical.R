@@ -176,7 +176,8 @@ AnalyzeExperimentalTheoretical <- function(family,
     m.exp.dr.squarei.0 = m.exp.dr.squarei[P, ]
     m.exp.dr.squarei.0[is.na(m.exp.dr.squarei.0)] = TOLERANCE
     m.exp.smooth.dr.squarei[P, ] = (m.exp.dr.squarei[P, ] +  (kij %*%  m.exp.dr.squarei.0)) / rowSums(kij[, !is.na(m.exp.dr.squarei[P, ])])
-    m.exp.smooth.dr.squarei[P, ] = m.exp.smooth.dr.squarei[P, ]/ sum(m.exp.smooth.dr.squarei[P, ], na.rm = T)
+    m.exp.smooth.dr.squarei[P, ] = m.exp.smooth.dr.squarei[P, ]/ mean(m.exp.smooth.dr.squarei[P, ], na.rm = T)
+    
     for (mut in (1:n.mut.p)) {
     print(c(P, mut))
       
@@ -206,7 +207,7 @@ AnalyzeExperimentalTheoretical <- function(family,
       m.theo.dr.squarei.0 = m.theo.dr.squarei[P.mut, ]
       m.theo.dr.squarei.0[is.na(m.theo.dr.squarei.0)] = TOLERANCE
       m.theo.smooth.dr.squarei[P.mut, ] = (m.theo.dr.squarei[P.mut, ] +  (kij %*%  m.theo.dr.squarei.0)) / rowSums(kij[, !is.na(m.theo.dr.squarei[P.mut, ])])
-      m.theo.smooth.dr.squarei[P.mut, ] = m.theo.smooth.dr.squarei[P.mut, ]/ sum(m.theo.smooth.dr.squarei[P.mut, ], na.rm = T)
+      m.theo.smooth.dr.squarei[P.mut, ] = m.theo.smooth.dr.squarei[P.mut, ]/ mean(m.theo.smooth.dr.squarei[P.mut, ], na.rm = T)
     } 
   }
   

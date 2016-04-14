@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.4.9)  13 APR 2016 15:08
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.4.9)  14 APR 2016 10:35
 entering extended mode
 **./paper.tex
 (paper.tex
@@ -62,160 +62,77 @@ Package: fontenc 2005/09/27 v1.99g Standard LaTeX package
 ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\base\t1enc.def"
 File: t1enc.def 2005/09/27 v1.99g Standard LaTeX file
 LaTeX Font Info:    Redeclaring font encoding T1 on input line 48.
-)) (paper.aux)
-\openout1 = `paper.aux'.
-
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 8.
-LaTeX Font Info:    ... okay on input line 8.
-LaTeX Font Info:    Try loading font information for T1+lmr on input line 8.
-
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\t1lmr.fd"
-File: t1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
+))
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\tools\multicol.sty"
+Package: multicol 2015/08/19 v1.8n multicolumn formatting (FMi)
+\c@tracingmulticols=\count87
+\mult@box=\box26
+\multicol@leftmargin=\dimen103
+\c@unbalance=\count88
+\c@collectmore=\count89
+\doublecol@number=\count90
+\multicoltolerance=\count91
+\multicolpretolerance=\count92
+\full@width=\dimen104
+\page@free=\dimen105
+\premulticols=\dimen106
+\postmulticols=\dimen107
+\multicolsep=\skip43
+\multicolbaselineskip=\skip44
+\partial@page=\box27
+\last@line=\box28
+\maxbalancingoverflow=\dimen108
+\mult@rightbox=\box29
+\mult@grightbox=\box30
+\mult@gfirstbox=\box31
+\mult@firstbox=\box32
+\@tempa=\box33
+\@tempa=\box34
+\@tempa=\box35
+\@tempa=\box36
+\@tempa=\box37
+\@tempa=\box38
+\@tempa=\box39
+\@tempa=\box40
+\@tempa=\box41
+\@tempa=\box42
+\@tempa=\box43
+\@tempa=\box44
+\@tempa=\box45
+\@tempa=\box46
+\@tempa=\box47
+\@tempa=\box48
+\@tempa=\box49
+\c@columnbadness=\count93
+\c@finalcolumnbadness=\count94
+\last@try=\dimen109
+\multicolovershoot=\dimen110
+\multicolundershoot=\dimen111
+\mult@nat@firstbox=\box50
+\colbreak@box=\box51
+\mc@col@check@num=\count95
 )
-LaTeX Font Info:    Try loading font information for OT1+lmr on input line 11.
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\ot1lmr.fd"
-File: ot1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
-LaTeX Font Info:    Try loading font information for OML+lmm on input line 11.
+! LaTeX Error: File `vmargin.sty' not found.
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\omllmm.fd"
-File: omllmm.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
-LaTeX Font Info:    Try loading font information for OMS+lmsy on input line 11.
+Type X to quit or <RETURN> to proceed,
+or enter new name. (Default extension: sty)
 
+Enter file name: 
+! Emergency stop.
+<read *> 
+         
+l.6 \marginsize
+               {3.5cm}{2.5cm}{3cm}{3cm}
+*** (cannot \read from terminal in nonstop modes)
 
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\omslmsy.fd"
-File: omslmsy.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
-LaTeX Font Info:    Try loading font information for OMX+lmex on input line 11.
-
-
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\omxlmex.fd"
-File: omxlmex.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <12> on input line 11.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <8> on input line 11.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <6> on input line 11.
- [1
-
-{C:/Users/Usuario/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <10> on input line 25.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <7> on input line 25.
-LaTeX Font Info:    External font `lmex10' loaded for size
-(Font)              <5> on input line 25.
- [2]
-! Missing $ inserted.
-<inserted text> 
-                $
-l.50 ...e assumption that $\mathbf{K}_{mut}$ \cong
-                                                   $\mathbf{K}_{wt}$:
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-
-! LaTeX Error: \mathbf allowed only in math mode.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.50 ...ion that $\mathbf{K}_{mut}$ \cong $\mathbf
-                                                  {K}_{wt}$:
-You're in trouble here.  Try typing  <return>  to proceed.
-If that doesn't work, type  X <return>  to quit.
-
-! Missing $ inserted.
-<inserted text> 
-                $
-l.50 ...that $\mathbf{K}_{mut}$ \cong $\mathbf{K}_
-                                                  {wt}$:
-I've inserted a begin-math/end-math symbol since I think
-you left one out. Proceed, with fingers crossed.
-
-
-LaTeX Warning: Command \r invalid in math mode on input line 63.
-
-
-LaTeX Warning: Command \r invalid in math mode on input line 63.
-
-
-LaTeX Warning: Command \r invalid in math mode on input line 63.
-
-[3]
-Overfull \hbox (3.11832pt too wide) in paragraph at lines 68--70
-[]\T1/lmr/bx/n/10 Experimental dataset: \T1/lmr/m/n/10 We se-lected 8 fam-i-lie
-s of pro-teins from the database
- []
-
-
-Overfull \hbox (90.60867pt too wide) in paragraph at lines 68--70
-\T1/lmr/m/n/10 of mul-ti-ple struc-tural align-ments of ho-mol-o-gous HOM-STRAD
- (http://mizuguchilab.org/homstrad/).
- []
-
-
-LaTeX Warning: Command \r invalid in math mode on input line 86.
-
-[4]
-! Double superscript.
-l.107 ...^{0}_{i}\right\|^{2}=d\mathbf{x}^{0}_{i}^
-                                                  {2}+d\mathbf{y}^{0}_{i}^{2...
-I treat `x^1^2' essentially like `x^1{}^2'.
-
-! Double superscript.
-l.107 ...athbf{x}^{0}_{i}^{2}+d\mathbf{y}^{0}_{i}^
-                                                  {2}+d\mathbf{z}^{0}_{i}^{2}
-I treat `x^1^2' essentially like `x^1{}^2'.
-
-! Double superscript.
-l.107 ...athbf{y}^{0}_{i}^{2}+d\mathbf{z}^{0}_{i}^
-                                                  {2}
-I treat `x^1^2' essentially like `x^1{}^2'.
-
-[5] [6] (paper.aux) ) 
+ 
 Here is how much of TeX's memory you used:
- 575 strings out of 493634
- 6992 string characters out of 3141309
- 62604 words of memory out of 3000000
- 3992 multiletter control sequences out of 15000+200000
- 60089 words of font info for 45 fonts, out of 3000000 for 9000
+ 553 strings out of 493634
+ 5916 string characters out of 3141309
+ 56158 words of memory out of 3000000
+ 4014 multiletter control sequences out of 15000+200000
+ 4403 words of font info for 15 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
- 23i,8n,22p,2355b,198s stack positions out of 5000i,500n,10000p,200000b,50000s
-{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-m
-athex.enc}{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.enc}{C:/P
-rogram Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Program File
-s (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-rm.enc}{C:/Program Files (x86)/MiKTeX 
-2.9/fonts/enc/dvips/lm/lm-mathit.enc}<C:/Program Files (x86)/MiKTeX 2.9/fonts/t
-ype1/public/lm/lmbx10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
-/lm/lmbx12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmcsc10
-.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmex10.pfb><C:/Pr
-ogram Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi10.pfb><C:/Program Files
- (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi7.pfb><C:/Program Files (x86)/MiKTe
-X 2.9/fonts/type1/public/lm/lmr10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/
-type1/public/lm/lmr12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public
-/lm/lmr17.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr7.pfb
-><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmri10.pfb><C:/Progra
-m Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmsy10.pfb><C:/Program Files (x8
-6)/MiKTeX 2.9/fonts/type1/public/lm/lmsy7.pfb>
-Output written on paper.pdf (6 pages, 240242 bytes).
-PDF statistics:
- 82 PDF objects out of 1000 (max. 8388607)
- 0 named destinations out of 1000 (max. 500000)
- 1 words of extra memory for PDF output out of 10000 (max. 10000000)
-
+ 23i,0n,22p,135b,37s stack positions out of 5000i,500n,10000p,200000b,50000s
+!  ==> Fatal error occurred, no output PDF file produced!

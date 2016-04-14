@@ -128,15 +128,15 @@ All families fitted smooth normalized MSD profiles
 Without natural selection (ns = F)
 
 ```{r}
-plot(nsF.theo.MSDi.s, type = "l", xlab = "sitio", ylab = "Theoretical ns = F", ylim = c(0, 0.14))
+plot(nsF.theo.MSDi.s, type = "l", xlab = "site", ylab = "Theoretical NS = F", ylim = c(0, 0.14))
 ```
 
 ```{r}
-plot(exp.MSDi.s, type = "l", col = "red", ylab = "Experimental", ylim = c(0, 0.14))
+plot(exp.MSDi.s, type = "l", col = "red", xlab = "site",  ylab = "Experimental", ylim = c(0, 0.14))
 ```
 
 ```{r}
-plot(nsF.theo.MSDi.s, type = "l", ylab = "both", ylim = c(0, 0.14))
+plot(nsF.theo.MSDi.s, type = "l", xlab = "site", ylab = "Merge", ylim = c(0, 0.14))
 points(exp.MSDi.s, col = "red", type = "l")
 legend("topleft", paste("R^2", round(R2.nsF.cF.s, digits = 2), " ", "MSE", signif(MSE.nsF.cF.s, digits = 4)), bty = "n", text.col = "red")
 ```
@@ -144,15 +144,15 @@ legend("topleft", paste("R^2", round(R2.nsF.cF.s, digits = 2), " ", "MSE", signi
 With natural selection (ns = T)
 
 ```{r}
-plot(nsT.theo.MSDi.s, type="l", xlab = "sitio", ylab = "Theoretical ns = T", ylim = c(0, 0.14))
+plot(nsT.theo.MSDi.s, type="l", xlab = "sitie", ylab = "Theoretical NS = T", ylim = c(0, 0.14))
 ```
 
 ```{r}
-plot(exp.MSDi.s, type = "l", col = "red", ylab = "Experimental", ylim = c(0, 0.14))
+plot(exp.MSDi.s, type = "l", col = "red", xlab = "sitie", ylab = "Experimental", ylim = c(0, 0.14))
 ```
 
 ```{r}
-plot(nsT.theo.MSDi.s, type = "l", ylab = "both", ylim = c(0, 0.14))
+plot(nsT.theo.MSDi.s, type = "l", xlab = "sitie", ylab = "Merge", ylim = c(0, 0.14))
 points(exp.MSDi.s, col = "red", type = "l")
 legend("topleft", paste("R^2", round(R2.nsT.cF.s, digits = 2), " ", "MSE", signif(MSE.nsT.cF.s, digits = 2)), bty = "n", text.col = "red")
 ```

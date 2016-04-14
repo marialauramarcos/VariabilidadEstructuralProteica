@@ -1,0 +1,73 @@
+---
+output: html_document
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)
+```
+
+```{r}
+
+# Directories.
+out.dir <- "OUT"
+
+nsF.theo.MSDi.s = c()
+exp.MSDi.s = c()
+
+# Read input.
+input.fname <- file.path("input_MainMultipleReport.csv")
+input <- read.csv(input.fname)
+
+# Start a loop to read data for each family.
+for (a in (1:nrow(input))) { 
+  family <- as.character(input$family)[a]
+  mut.model = input$mut.model[a]
+  R0 = input$R0[a]
+  K.analysis = input$K.analysis[a]
+  
+  #Read experimental data.
+  analysis.fname.id <- paste(family, "_mut.model_", mut.model, "_naturalSelection_", "FALSE", "_R0_", R0, "_core_", "FALSE", "_K.analysis_", K.analysis, sep = "")
+  
+  m.cF.exp.smooth.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.dr.squarei.csv", sep = "")))
+  
+  cF.exp.MSDi.s = colMeans(m.cF.exp.smooth.dr.squarei, na.rm = T )
+  
+  #Read theoretical data#
+  m.nsF.cF.theo.smooth.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.dr.squarei.csv", sep = "")))
+  
+  nsF.cF.theo.MSDi.s = colMeans(m.nsF.cF.theo.smooth.dr.squarei, na.rm = T)
+  
+  ## Fit theoretical data with experimental data.
+  
+  fit.nsF.cF.s = lm(cF.exp.MSDi.s ~ nsF.cF.theo.MSDi.s)
+  fit.nsF.cF.MSDi.s = fitted.values(fit.nsF.cF.s)
+  
+  # Concatenate information.
+  
+  nsF.theo.MSDi.s = c(nsF.theo.MSDi.s, fit.nsF.cF.MSDi.s)
+
+  cF.exp.MSDi.s = cF.exp.MSDi.s[!is.na(cF.exp.MSDi.s)]
+  exp.MSDi.s = c(exp.MSDi.s, cF.exp.MSDi.s)
+}
+
+# Caluclate measures.
+
+R2.nsF.cF.s = cor(nsF.theo.MSDi.s, exp.MSDi.s) ^ 2
+
+MSE.nsF.cF.s = mean((nsF.theo.MSDi.s - exp.MSDi.s) ^ 2)
+
+```
+
+
+```{r}
+plot(nsF.theo.MSDi.s, type = "l", xlab = "site", ylab = "Theoretical MSDi NS = F", ylim = c(0, 0.14))
+```
+
+```{r}
+plot(exp.MSDi.s, type = "l", col = "red", xlab = "site",  ylab = "Experimental MSDi ", ylim = c(0, 0.14))
+```
+
+```{r}
+plot(nsF.theo.MSDi.s, type = "l", xlab = "site", ylab = "Merge", ylim = c(0, 0.14))
+points(exp.MSDi.s, col = "red", type = "l")
+legend("topleft", paste("R^2", round(R2.nsF.cF.s, digits = 2), " ", "MSE", signif(MSE.nsF.cF.s, digits = 4)), bty = "n", text.col = "red")
+```
