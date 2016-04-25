@@ -83,7 +83,7 @@ for (a in (1:nrow(input))) {
   family <- as.character(input$family)[a]
   print(family)
   p.ref <- as.character(input$p.ref)[a]
-  exp.chain.p.ref <- as.character(input$exp.chain.p.ref)[a]
+  chain.p.ref <- as.character(input$chain.p.ref)[a]
   mut.model = input$mut.model[a]
   n.mut.p = input$n.mut.p[a]
   fmax = input$fmax[a] 
@@ -98,8 +98,8 @@ for (a in (1:nrow(input))) {
   K.analysis <- input$K.analysis[a]
   
   # Generate ids for output filenames.
-  mut.fname.id <- paste(family, "_mut.model_", mut.model, "_naturalSelection_", natural.selection, "_R0_", R0, sep = "")
-  analysis.fname.id <- paste(mut.fname.id, "_core_", core, "_K.analysis_", K.analysis, sep = "")
+  mut.fname.id <- paste(family, "_R0_", R0, sep = "")
+  analysis.fname.id <- paste(mut.fname.id, "_K.analysis_", K.analysis, sep = "")
   
   # Analyze the alignment of the family.
   if (analyze.family == "TRUE") {
@@ -112,13 +112,11 @@ for (a in (1:nrow(input))) {
   # Generate mutants.
   if (generate.mutants == "TRUE") {
     GenerateMutants(family,
-                    exp.chain.p.ref, 
-                    mut.model,
+                    chain.p.ref, 
                     n.mut.p,
                     fmax, 
                     R0,
                     heme, 
-                    natural.selection,
                     data.dir,
                     out.dir,
                     mut.fname.id,
@@ -128,13 +126,11 @@ for (a in (1:nrow(input))) {
   # Analyze measures of variability of experimental proteins and simulated mutants.
   if (analyze.experimental.theoretical == "TRUE") {
     AnalyzeExperimentalTheoretical(family,
-                                   exp.chain.p.ref,
+                                   chain.p.ref,
                                    n.mut.p,
                                    R0, 
-                                   core,
                                    rotate,
                                    heme,
-                                   natural.selection,
                                    K.analysis,
                                    data.dir,
                                    out.dir,
@@ -144,10 +140,7 @@ for (a in (1:nrow(input))) {
   }
 }
 
-#  Generate a report.
-#  rmarkdown::render('Report.Rmd', 
-#                    output_file = paste("report_", analysis.fname.id, ".html", sep = ''))
-#}
+
 
 
   

@@ -7,7 +7,7 @@
 #  Returns:
 #    xyz.heme: Equilibrium coordinates of NA, NB, NC, ND and Fe of the Heme group.
 ReadHeme <- function(pdb.fname, chain) {
-  pdb <- read.pdb(file = pdb.fname, het2atom = TRUE)     
+  pdb <- read.pdb(file = pdb.fname, ATOM.only = TRUE)     
   selNA <- atom.select(pdb, chain = chain, elety = "NA") 
   selNB <- atom.select(pdb, chain = chain, elety = "NB")    
   selNC <- atom.select(pdb, chain = chain, elety = "NC")    
