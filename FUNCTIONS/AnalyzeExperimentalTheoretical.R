@@ -49,8 +49,9 @@ AnalyzeExperimentalTheoretical <- function(family,
                                            mut.fname.id, 
                                            analysis.fname.id,
                                            TOLERANCE) {
-  # FILENAMES.
-  # Experimental data.
+  ### EXPERIMENTAL ###
+  
+  # Filenames.
   dataset.fname <- file.path(data.dir, paste(family, "_dataset.csv", sep = ""))
   pdbs.fname <- file.path(data.dir, paste(family, "_coordinates.pdb", sep = "")) 
   
@@ -59,10 +60,6 @@ AnalyzeExperimentalTheoretical <- function(family,
   m.aligned.p.2.index.fname <- file.path(out.dir, paste(family, "_out_m.aligned.p.2.index.csv", sep = ""))
   m.not.aligned.p.ref.index.fname <- file.path(out.dir, paste(family, "_out_m.not.aligned.p.ref.index.csv", sep = ""))
   m.not.aligned.p.2.index.fname <- file.path(out.dir, paste(family, "_out_m.not.aligned.p.2.index.csv", sep = ""))
-
-  # Theoretical data.
-  theo.r.p.ref.fname <- file.path(out.dir, paste(mut.fname.id, "_out_r.p.ref.csv", sep = ""))
-  m.r.mut.fname <- file.path(out.dir, paste(mut.fname.id, "_out_m.r.mut.csv", sep = ""))
 
   # Read dataset.
   dataset <- read.csv(dataset.fname)
@@ -82,23 +79,12 @@ AnalyzeExperimentalTheoretical <- function(family,
   m.not.aligned.p.ref.index = read.csv(m.not.aligned.p.ref.index.fname)
   m.not.aligned.p.2.index = read.csv(m.not.aligned.p.2.index.fname)
   
-  # Read theo.p.ref and the simulated mutants.
-  m.r.mut = read.csv(m.r.mut.fname)
-  theo.r.p.ref = read.csv(theo.r.p.ref.fname)$x
-  n.sites.p.ref = length(theo.r.p.ref)/3
-  
   # Create matrices to save measures of variability of each mutant.
-  m.exp.Pn = matrix(nrow = n.prot, ncol = 3 * n.sites.p.ref)
-  m.exp.va = matrix(nrow = n.prot, ncol = 3 * n.sites.p.ref)
-  m.exp.dr.squarei = matrix(nrow = n.prot, ncol = n.sites.p.ref)
-  m.exp.smooth.dr.squarei = matrix(nrow = n.prot, ncol = n.sites.p.ref)
-  m.exp.smooth.norm.dr.squarei = matrix(nrow = n.prot, ncol = n.sites.p.ref)
-  
-  m.theo.Pn = matrix(nrow = n.prot * n.mut.p, ncol = 3 * n.sites.p.ref)
-  m.theo.va = matrix(nrow = n.prot * n.mut.p, ncol = 3 * n.sites.p.ref)
-  m.theo.dr.squarei = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
-  m.theo.smooth.dr.squarei = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
-  m.theo.smooth.norm.dr.squarei = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
+  m.exp.Pn = matrix(nrow = n.prot, ncol = 3 * (n.aa.p.ref + 4))
+  m.exp.va = matrix(nrow = n.prot, ncol = 3 * (n.aa.p.ref + 4))
+  m.exp.dr.squarei = matrix(nrow = n.prot, ncol = (n.aa.p.ref + 4))
+  m.exp.smooth.dr.squarei = matrix(nrow = n.prot, ncol = (n.aa.p.ref + 4))
+  m.exp.smooth.norm.dr.squarei = matrix(nrow = n.prot, ncol = (n.aa.p.ref + 4))
   
   # EXPERIMENTAL:
   
@@ -161,11 +147,32 @@ AnalyzeExperimentalTheoretical <- function(family,
     m.exp.smooth.norm.dr.squarei[P, ] = m.exp.smooth.dr.squarei[P, ]/ mean(m.exp.smooth.dr.squarei[P, ], na.rm = T)
   }  
   
-  # THEORETICAL:
+  # Create files to save the data.
+  write.csv(m.exp.va, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.va.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.Pn, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.Pn.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.smooth.norm.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.norm.dr.squarei.csv", sep = "")), row.names = FALSE)
+  
+  ### THEORETICAL ###
+  
+  # Filenames.
+  theo.r.p.ref.fname <- file.path(out.dir, paste(mut.fname.id, "_out_r.p.ref.csv", sep = ""))
+  m.r.mut.fname <- file.path(out.dir, paste(mut.fname.id, "_out_m.r.mut.csv", sep = ""))
+  
+  # Read theo.p.ref and the simulated mutants.
+  m.r.mut = read.csv(m.r.mut.fname)
+  theo.r.p.ref = read.csv(theo.r.p.ref.fname)$x
+  n.sites.p.ref = length(theo.r.p.ref)/3
+  
+  # Create matrices to save measures of variability of each mutant.
+  m.theo.Pn = matrix(nrow = n.prot * n.mut.p, ncol = 3 * n.sites.p.ref)
+  m.theo.va = matrix(nrow = n.prot * n.mut.p, ncol = 3 * n.sites.p.ref)
+  m.theo.dr.squarei = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
+  m.theo.smooth.dr.squarei = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
+  m.theo.smooth.norm.dr.squarei = matrix(nrow = n.prot * n.mut.p, ncol = n.sites.p.ref)
   
   # Start a loop to analyze each mutant.
   for (mut in (1:(n.prot * n.mut.p))) {
-  print(c(mut))
+    print(c(mut))
       
     # Get theo.r.p.2.
     theo.r.p.2 = m.r.mut[, mut]
@@ -173,7 +180,7 @@ AnalyzeExperimentalTheoretical <- function(family,
     # Calculate measures of variavility.
     theo.variability = CalculateVariability(as.vector(theo.r.p.ref), 
                                             as.vector(theo.r.p.2), 
-                                            seq(1, n.sites.p.ref), 
+                                            seq(1, n.sites.p.ref),                                               
                                             seq(1, n.sites.p.ref), 
                                             c(),
                                             c(),
@@ -190,17 +197,17 @@ AnalyzeExperimentalTheoretical <- function(family,
     kij = CalculateENMK(matrix(theo.r.p.ref, nrow = 3), CalculateKij, R0, TOLERANCE)$kij
     m.theo.dr.squarei.0 = m.theo.dr.squarei[P, ]
     m.theo.dr.squarei.0[is.na(m.theo.dr.squarei.0)] = TOLERANCE
-    m.theo.smooth.dr.squarei[mut, ] = (m.theo.dr.squarei[P, ] +  (kij %*%  m.theo.dr.squarei.0)) / (rowSums(kij[, !is.na(m.theo.dr.squarei[P, ])] + 1))
+    m.theo.smooth.dr.squarei[mut, ] = (m.theo.dr.squarei[P, ] +  (kij %*%  m.theo.dr.squarei.0)) / (rowSums(kij[, !is.na(m.theo.dr.squarei[P, ])] + 1))      
     m.theo.smooth.norm.dr.squarei[mut, ] = m.theo.smooth.dr.squarei[P, ]/ mean(m.theo.smooth.dr.squarei[P, ], na.rm = T)
   }
+  
   # Create files to save the data.
-  write.csv(m.exp.va, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.va.csv", sep = "")), row.names = FALSE)
-  write.csv(m.exp.Pn, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.Pn.csv", sep = "")), row.names = FALSE)
-  write.csv(m.exp.smooth.norm.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.norm.dr.squarei.csv", sep = "")), row.names = FALSE)
   write.csv(m.theo.va, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.va.csv", sep = "")), row.names = FALSE)
   write.csv(m.theo.Pn, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.Pn.csv", sep = "")), row.names = FALSE)
   write.csv(m.theo.smooth.norm.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.norm.dr.squarei.csv", sep = "")), row.names = FALSE)
 }
+
+
 
 
 

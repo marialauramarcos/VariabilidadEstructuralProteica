@@ -45,8 +45,7 @@ CalculateENMK <- function(r, CalculateKij, R0, TOLERANCE) {
   nmodes <- length(va)
   # Calculate covariance matrix of K.
   cov <-  ve %*% ((1 / va) * t(ve))
-  cov.10.modes <-  ve[, 1:10] %*% ((1 / va[1:10]) * t(ve[, 1:10]))
-  
-  output <- list("K" = K, "kij" = kij, "cov" = cov, "cov.10.modes" = cov.10.modes, "va" = va, "ve" = ve, "nmodes" = nmodes)
+
+  output <- list("K" = K, "kij" = kij, "cov" = cov, "va" = va, "ve" = ve, "nmodes" = nmodes)
   output
 }
