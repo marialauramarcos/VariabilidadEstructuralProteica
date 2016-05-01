@@ -36,6 +36,8 @@ CalculateBetas <- function(chain.p.ref,
                           betas.fname.id,
                           TOLERANCE) {
   
+  print("calculating betas...")
+  
   ### READ EXPERIMENTAL DATA ###
   
   # Filenames.
@@ -69,10 +71,10 @@ CalculateBetas <- function(chain.p.ref,
   f2 = mean((fmax * runif(1e6, -1, 1)) ^ 2)
   
   # Caculate betas for differente selection regimes.
-  beta.0.2 = - log(0.2) / (f2 * mean.CN) # Strong selection.
-  beta.0.5 = - log(0.5) / (f2 * mean.CN) # Medium.
-  beta.0.8 = - log(0.8) / (f2 * mean.CN) # Weak selection.
-  beta.1 = - log(1) / (f2 * mean.CN) # No selection.
+  beta.0.2 = round(- log(0.2) / (f2 * mean.CN), digits = 3) # Strong selection.
+  beta.0.5 = round(- log(0.5) / (f2 * mean.CN), digits = 3) # Medium.
+  beta.0.8 = round(- log(0.8) / (f2 * mean.CN), digits = 3) # Weak selection.
+  beta.1 = round(- log(1) / (f2 * mean.CN), digits = 3) # No selection.
   
   # Build a list with betas.
   all.betas = list("strong.sel" = beta.0.2, "medium.sel" = beta.0.5, "weak.sel" = beta.0.8, "no.sel" = beta.1) 

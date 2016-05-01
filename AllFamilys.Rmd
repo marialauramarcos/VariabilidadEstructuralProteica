@@ -12,14 +12,9 @@ knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)
 # Directories.
 out.dir <- "OUT"
 
-# Create matrixes.
-nsF.theo.MSDi = c()
-nsT.theo.MSDi = c()
-nsF.theo.MSDi.s = c()
-nsT.theo.MSDi.s = c()
-
-exp.MSDi = c()
-exp.MSDi.s = c()
+# Create vectors to keep data.
+v.theo.MSDi.s.n = c()
+v.exp.MSDi.s.n = c()
 
 # Read input.
 input.fname <- file.path("input_MainMultipleReport.csv")
@@ -31,129 +26,56 @@ print(input)
 # Start a loop to read data for each family.
 for (a in (1:nrow(input))) { 
   family <- as.character(input$family)[a]
-  mut.model = input$mut.model[a]
   R0 = input$R0[a]
   K.analysis = input$K.analysis[a]
   
   #Read experimental data.
-  analysis.fname.id <- paste(family, "_mut.model_", mut.model, "_naturalSelection_", "FALSE", "_R0_", R0, "_core_", "FALSE", "_K.analysis_", K.analysis, sep = "")
+  analysis.fname.id <- paste(family, "_R0_", R0,  "_beta_", beta, "_K.analysis_", K.analysis, sep = "")
   
-  m.cF.exp.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.dr.squarei.csv", sep = "")))
-  m.cF.exp.smooth.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.dr.squarei.csv", sep = "")))
+  m.exp.smooth.norm.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.norm.dr.squarei.csv", sep = "")))
   
+ exp.MSDi.s.n = colMeans(m.exp.smooth.norm.dr.squarei, na.rm = T )
   
-  cF.exp.MSDi = colMeans(m.cF.exp.dr.squarei, na.rm = T )
-  cF.exp.MSDi.s = colMeans(m.cF.exp.smooth.dr.squarei, na.rm = T )
+  # Read theoretical data#
+  m.theo.smooth.norm.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.norm.dr.squarei.csv", sep = "")))
   
-  #Read theoretical data#
-  
-  # natural selection (ns) = F.
-  m.nsF.cF.theo.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.dr.squarei.csv", sep = "")))
-  m.nsF.cF.theo.smooth.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.dr.squarei.csv", sep = "")))
-  
-  nsF.cF.theo.MSDi = colMeans(m.nsF.cF.theo.dr.squarei, na.rm = T)
-  nsF.cF.theo.MSDi.s = colMeans(m.nsF.cF.theo.smooth.dr.squarei, na.rm = T)
-  
-  # natural selection (ns) = T.
-  analysis.fname.id <- paste(family, "_mut.model_", mut.model, "_naturalSelection_", "TRUE", "_R0_", R0, "_core_", "FALSE", "_K.analysis_", K.analysis, sep = "")
-  
-  m.nsT.cF.theo.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.dr.squarei.csv", sep = "")))
-  m.nsT.cF.theo.smooth.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.dr.squarei.csv", sep = "")))
-  
-  nsT.cF.theo.MSDi = colMeans(m.nsT.cF.theo.dr.squarei, na.rm = T)
-  nsT.cF.theo.MSDi.s = colMeans(m.nsT.cF.theo.smooth.dr.squarei, na.rm = T)
+ theo.MSDi.s.n = colMeans(m.theo.smooth.norm.dr.squarei, na.rm = T)
   
   ## Fit theoretical data with experimental data.
-  fit.nsF.cF = lm(cF.exp.MSDi ~ nsF.cF.theo.MSDi)
-  fit.nsF.cF.MSDi = fitted.values(fit.nsF.cF)
   
-  fit.nsT.cF = lm(cF.exp.MSDi ~ nsT.cF.theo.MSDi)
-  fit.nsT.cF.MSDi = fitted.values(fit.nsT.cF)
+  fit.s.n = lm(exp.MSDi.s.n ~ theo.MSDi.s.n)
+  fit.MSDi.s.n = fitted.values(fit.s.n)
   
-  fit.nsF.cF.s = lm(cF.exp.MSDi.s ~ nsF.cF.theo.MSDi.s)
-  fit.nsF.cF.MSDi.s = fitted.values(fit.nsF.cF.s)
-  
-  fit.nsT.cF.s = lm(cF.exp.MSDi.s ~ nsT.cF.theo.MSDi.s)
-  fit.nsT.cF.MSDi.s = fitted.values(fit.nsT.cF.s)
   
   # Concatenate information.
-  nsF.theo.MSDi = c(nsF.theo.MSDi, fit.nsF.cF.MSDi)
-  nsT.theo.MSDi = c(nsT.theo.MSDi, fit.nsT.cF.MSDi)
-  nsF.theo.MSDi.s = c(nsF.theo.MSDi.s, fit.nsF.cF.MSDi.s)
-  nsT.theo.MSDi.s = c(nsT.theo.MSDi.s, fit.nsT.cF.MSDi.s)
+  v.theo.MSDi.s.n = c(v.theo.MSDi.s.n, fit.MSDi.s.n)
   
-  cF.exp.MSDi = cF.exp.MSDi[!is.na(cF.exp.MSDi)]
-  cF.exp.MSDi.s = cF.exp.MSDi.s[!is.na(cF.exp.MSDi.s)]
-  
-  exp.MSDi = c(exp.MSDi, cF.exp.MSDi)
-  exp.MSDi.s = c(exp.MSDi.s, cF.exp.MSDi.s)
+  exp.MSDi.s.n = exp.MSDi.s.n[!is.na(exp.MSDi.s.n)]
+  v.exp.MSDi.s.n = c(v.exp.MSDi.s.n, exp.MSDi.s.n)
 }
 
 # Caluclate measures.
-R2.nsF.cF = cor(nsF.theo.MSDi, exp.MSDi) ^ 2 
-R2.nsT.cF = cor(nsT.theo.MSDi, exp.MSDi) ^ 2 
-
-R2.nsF.cF.s = cor(nsF.theo.MSDi.s, exp.MSDi.s) ^ 2
-R2.nsT.cF.s = cor(nsT.theo.MSDi.s, exp.MSDi.s) ^ 2  
-
-MSE.nsF.cF = mean((nsF.theo.MSDi - exp.MSDi) ^ 2)
-MSE.nsT.cF = mean((nsT.theo.MSDi - exp.MSDi) ^ 2)
-
-MSE.nsF.cF.s = mean((nsF.theo.MSDi.s - exp.MSDi.s) ^ 2)
-MSE.nsT.cF.s = mean((nsT.theo.MSDi.s - exp.MSDi.s) ^ 2)
+R2.s.n = cor(theo.MSDi.s.n, exp.MSDi.s.n) ^ 2  
+MSE.s.n = mean((theo.MSDi.s.n - exp.MSDi.s.n) ^ 2)
 
 ```
 
-```{r, include = F}
-layout(matrix(1:3, 3, 1, byrow = F)) 
-
-plot(nsF.theo.MSDi, type = "l", xlab = "sitio", ylab = "Theoretical")
-plot(exp.MSDi, type = "l", col = "red", ylab = "Experimental")
-plot(nsF.theo.MSDi, type = "l", ylab = "both")
-points(exp.MSDi, col = "red", type = "l")
-legend("topleft", paste("R^2", round(R2.nsF.cF, digits = 2)), bty = "n", text.col = "red")
-
-```
-
-```{r, include = F}
-layout(matrix(1:3, 3, 1, byrow = F)) 
-plot(nsT.theo.MSDi, type="l", xlab = "sitio", ylab = "Theoretical")
-plot(exp.MSDi, type="l", col ="red", ylab = "Experimental")
-plot(nsT.theo.MSDi, type="l", ylab = "both")
-points(exp.MSDi, col = "red", type="l")
-legend("topleft", paste("R^2", round(R2.nsT.cF, digits = 2)), bty = "n", text.col = "red")
-```
-All families fitted smooth normalized MSD profiles 
-
-Without natural selection (ns = F)
+All families fitted smooth and normalized MSD profiles 
 
 ```{r}
-plot(nsF.theo.MSDi.s, type = "l", xlab = "site", ylab = "Theoretical NS = F", ylim = c(0, 0.14))
+plot(theo.MSDi.s.n, type = "l", xlab = "site", ylab = "Theoretical")
 ```
 
 ```{r}
-plot(exp.MSDi.s, type = "l", col = "red", xlab = "site",  ylab = "Experimental", ylim = c(0, 0.14))
+plot(exp.MSDi.s.n, type = "l", col = "red", xlab = "site",  ylab = "Experimental")
 ```
 
 ```{r}
-plot(nsF.theo.MSDi.s, type = "l", xlab = "site", ylab = "Merge", ylim = c(0, 0.14))
-points(exp.MSDi.s, col = "red", type = "l")
-legend("topleft", paste("R^2", round(R2.nsF.cF.s, digits = 2), " ", "MSE", signif(MSE.nsF.cF.s, digits = 4)), bty = "n", text.col = "red")
+plot(theo.MSDi.s.n, type = "l", xlab = "site", ylab = "Merge")
+points(exp.MSDi.s.n, col = "red", type = "l")
+legend("topleft", paste("R^2", round(R2.s.n, digits = 2), " ", "MSE", signif(MSE.s.n, digits = 4)), bty = "n", text.col = "red")
 ```
 
-With natural selection (ns = T)
 
-```{r}
-plot(nsT.theo.MSDi.s, type="l", xlab = "sitie", ylab = "Theoretical NS = T", ylim = c(0, 0.14))
-```
 
-```{r}
-plot(exp.MSDi.s, type = "l", col = "red", xlab = "sitie", ylab = "Experimental", ylim = c(0, 0.14))
-```
-
-```{r}
-plot(nsT.theo.MSDi.s, type = "l", xlab = "sitie", ylab = "Merge", ylim = c(0, 0.14))
-points(exp.MSDi.s, col = "red", type = "l")
-legend("topleft", paste("R^2", round(R2.nsT.cF.s, digits = 2), " ", "MSE", signif(MSE.nsT.cF.s, digits = 2)), bty = "n", text.col = "red")
-```
 
