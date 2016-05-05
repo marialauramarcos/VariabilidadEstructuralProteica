@@ -15,10 +15,12 @@ CalculateGroupsMeansQuantiles <- function(data, ngroups, length) {
   mean.group = matrix(0, ncol = ncol(data), nrow = ngroups)
   quantile1.group = matrix(0, ncol = ncol(data), nrow = ngroups)
   quantile2.group = matrix(0, ncol = ncol(data), nrow = ngroups)
+  quantile1.mean = matrix(0, ncol = ncol(data), nrow = 1)
+  quantile2.mean = matrix(0, ncol = ncol(data), nrow = 1)
   
   for (i in (1:ngroups)) {
     mean.group[i, ] = colMeans(data[((i * length) - (length - 1)):(i * length), ])
-    for (j in (1:ncol(data))){
+    for (j in (1:ncol(data))) {
       quantiles = as.vector(quantile((data[((i * length) - (length - 1)):(i * length), j]), probs = c(0.05, 0.95)))
       quantile1.group[i, j] = quantiles[1]
       quantile2.group[i, j] = quantiles[2]
@@ -28,10 +30,17 @@ CalculateGroupsMeansQuantiles <- function(data, ngroups, length) {
   mean.quantile1.group = colMeans(quantile1.group)
   mean.quantile2.group = colMeans(quantile2.group)
   
+  for (k in (1:ncol(data))){
+      quantiles.mean = as.vector(quantile(mean.group[, k], probs = c(0.05, 0.95)))
+      quantile1.mean[1, k] = quantiles.mean[1]
+      quantile2.mean[1, k] = quantiles.mean[2]
+  }
   
   output <- list("mean.group" = mean.group, 
                  "mean.mean.group" = mean.mean.group, 
                  "mean.quantile1.group" = mean.quantile1.group, 
-                 "mean.quantile2.group" = mean.quantile2.group)
+                 "mean.quantile2.group" = mean.quantile2.group,
+                 "quantile1.mean" = quantile1.mean, 
+                 "quantile2.mean" = quantile2.mean)
   output 
 }

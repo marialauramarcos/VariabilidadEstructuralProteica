@@ -9,23 +9,23 @@
 # heme = TRUE/FALSE, K.analysis, data.dir, out.dir, mut.fname.id,  analysis.fname.id, TOLERANCE)
 #
 #  Args:
-#    family: the family of the protein to mutate. It can be "globins", "serinProteases", 
+#    - family: the family of the protein to mutate. It can be "globins", "serinProteases", 
 #    "snakesToxin", "sh3", "fabp", "rrm", "phoslip" or "cys".
-#    chain.p.ref: the chain of p.ref in the pdb file obtained from Homstrad.
-#    n.mut.p: the number of mutants to generate for each member of the family. For example, if the family has 20 
+#    - chain.p.ref: the chain of p.ref in the pdb file obtained from Homstrad.
+#    - n.mut.p: the number of mutants to generate for each member of the family. For example, if the family has 20 
 #    members, the program generates n.mut.p x 20 mutants.
-#    R0: the cut-off for the ANM ("Anisotropic Network Model") that represents the proteins.
-#    rotate: it can be "TRUE" or "FALSE". If it is "TRUE", r.p.2 is rotaded in order to minimize RMSD with r.p.ref.
-#    heme: argument for globins. It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the heme group. 
-#    K.analysis: It can be "K" or "Keff". For "K" or "Keff", the analysis is based on normal modes of "K" or "Keff"
+#    - R0: the cut-off for the ANM ("Anisotropic Network Model") that represents the proteins.
+#    - rotate: it can be "TRUE" or "FALSE". If it is "TRUE", r.p.2 is rotaded in order to minimize RMSD with r.p.ref.
+#    - heme: argument for globins. It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the heme group. 
+#    - K.analysis: It can be "K" or "Keff". For "K" or "Keff", the analysis is based on normal modes of "K" or "Keff"
 #    respectibly.
-#    data.dir: directory of the data. It must contain the dataset ("data.dir/family_dataset.csv") and the pdb file 
+#    - data.dir: directory of the data. It must contain the dataset ("data.dir/family_dataset.csv") and the pdb file 
 #    obtained from Homstrad ("data.dir/family_coordinates.csv").
-#    out.dir: directory of the output. It must contain output files generated with AnalyzeFamily() and GenerateMutants().
+#    - out.dir: directory of the output. It must contain output files generated with AnalyzeFamily() and GenerateMutants().
 #    The output of this function is also saved in out.dir.
-#    mut.fname.id: ID of filnames of mutant proteins.
-#    analysis.fname.id: ID of output filenames.
-#    TOLERANCE: 0 tolerance.
+#    - mut.fname.id: ID of filnames of mutant proteins.
+#    - analysis.fname.id: ID of output filenames.
+#    - TOLERANCE: 0 tolerance.
 #
 #  Required libraries
 #    {Bio3d}

@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.4.9)  14 APR 2016 10:35
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.4.9)  2 MAY 2016 16:06
 entering extended mode
 **./paper.tex
 (paper.tex
@@ -111,28 +111,184 @@ Package: multicol 2015/08/19 v1.8n multicolumn formatting (FMi)
 \mult@nat@firstbox=\box50
 \colbreak@box=\box51
 \mc@col@check@num=\count95
+) (paper.aux)
+\openout1 = `paper.aux'.
+
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 9.
+LaTeX Font Info:    ... okay on input line 9.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 9.
+LaTeX Font Info:    ... okay on input line 9.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 9.
+LaTeX Font Info:    ... okay on input line 9.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 9.
+LaTeX Font Info:    ... okay on input line 9.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 9.
+LaTeX Font Info:    ... okay on input line 9.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 9.
+LaTeX Font Info:    ... okay on input line 9.
+LaTeX Font Info:    Try loading font information for T1+lmr on input line 9.
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\t1lmr.fd"
+File: t1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
+LaTeX Font Info:    Try loading font information for OT1+lmr on input line 12.
 
-! LaTeX Error: File `vmargin.sty' not found.
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\ot1lmr.fd"
+File: ot1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+LaTeX Font Info:    Try loading font information for OML+lmm on input line 12.
 
-Type X to quit or <RETURN> to proceed,
-or enter new name. (Default extension: sty)
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\omllmm.fd"
+File: omllmm.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+LaTeX Font Info:    Try loading font information for OMS+lmsy on input line 12.
 
-Enter file name: 
-! Emergency stop.
-<read *> 
-         
-l.6 \marginsize
-               {3.5cm}{2.5cm}{3cm}{3cm}
-*** (cannot \read from terminal in nonstop modes)
 
- 
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\omslmsy.fd"
+File: omslmsy.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+LaTeX Font Info:    Try loading font information for OMX+lmex on input line 12.
+
+
+("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\omxlmex.fd"
+File: omxlmex.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <12> on input line 12.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <8> on input line 12.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <6> on input line 12.
+ [1
+
+{C:/Users/Usuario/AppData/Local/MiKTeX/2.9/pdftex/config/pdftex.map}]
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <10> on input line 27.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <7> on input line 27.
+LaTeX Font Info:    External font `lmex10' loaded for size
+(Font)              <5> on input line 27.
+ [2]
+Underfull \hbox (badness 6094) in paragraph at lines 71--71
+\T1/lmr/bx/n/12 work Model with Stress
+ []
+
+[3]
+! Undefined control sequence.
+<recently read> \text 
+                      
+l.95 ... We calculated the logical variable $\text
+                                                  {Accept} = P_{accept} \ge ...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+! Undefined control sequence.
+l.95 ...able $\text{Accept} = P_{accept} \ge \text
+                                                  {runif(1,0,1)}$; Accept wi...
+The control sequence at the end of the top line
+of your error message was never \def'ed. If you have
+misspelled it (e.g., `\hobx'), type `I' and the correct
+spelling (e.g., `I\hbox'). Otherwise just continue,
+and I'll forget about whatever was undefined.
+
+
+Underfull \hbox (badness 5787) in paragraph at lines 95--96
+\T1/lmr/m/n/10 able $[] \OT1/lmr/m/n/10 = \OML/lmm/m/it/10 P[] \OMS/lmsy/m/n/10
+ 
+ []
+
+[4]
+
+LaTeX Warning: Command \r invalid in math mode on input line 107.
+
+
+LaTeX Warning: Command \r invalid in math mode on input line 107.
+
+
+LaTeX Warning: Command \r invalid in math mode on input line 107.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 107--111
+\T1/lmr/m/n/10 we must choose $\OT1/lmr/bx/n/10 K[]$ \T1/lmr/m/n/10 and $\OT1/l
+mr/bx/n/10 f$\T1/lmr/m/n/10 .
+ []
+
+
+Underfull \hbox (badness 5563) in paragraph at lines 107--111
+\T1/lmr/m/n/10 There are a num-ber of al-ter-na-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
+\T1/lmr/m/n/10 We se-lected 8 fam-i-lies of pro-
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
+\T1/lmr/m/n/10 teins from the database of
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
+\T1/lmr/m/n/10 mul-ti-ple struc-tural align-ments
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
+\T1/lmr/m/n/10 of ho-mol-o-gous HOM-STRAD
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 113--114
+\T1/lmr/m/n/10 (http://mizuguchilab.org/homstrad/).
+ []
+
+[5] [6]
+! Missing } inserted.
+<inserted text> 
+                }
+l.168 \end{multicols}
+                     
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+[7] (paper.aux) ) 
 Here is how much of TeX's memory you used:
- 553 strings out of 493634
- 5916 string characters out of 3141309
- 56158 words of memory out of 3000000
- 4014 multiletter control sequences out of 15000+200000
- 4403 words of font info for 15 fonts, out of 3000000 for 9000
+ 700 strings out of 493634
+ 8854 string characters out of 3141309
+ 65085 words of memory out of 3000000
+ 4114 multiletter control sequences out of 15000+200000
+ 58824 words of font info for 45 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
- 23i,0n,22p,135b,37s stack positions out of 5000i,500n,10000p,200000b,50000s
-!  ==> Fatal error occurred, no output PDF file produced!
+ 23i,6n,22p,2355b,270s stack positions out of 5000i,500n,10000p,200000b,50000s
+{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.en
+c}{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Progr
+am Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Program Files (x
+86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-rm.enc}{C:/Program Files (x86)/MiKTeX 2.9/
+fonts/enc/dvips/lm/lm-mathex.enc}<C:/Program Files (x86)/MiKTeX 2.9/fonts/type1
+/public/lm/lmbx10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/
+lmbx12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmbx7.pfb><
+C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmcsc10.pfb><C:/Program
+ Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmex10.pfb><C:/Program Files (x86
+)/MiKTeX 2.9/fonts/type1/public/lm/lmmi10.pfb><C:/Program Files (x86)/MiKTeX 2.
+9/fonts/type1/public/lm/lmmi5.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type
+1/public/lm/lmmi7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/
+lmr10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr12.pfb><C
+:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr17.pfb><C:/Program Fi
+les (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr5.pfb><C:/Program Files (x86)/MiK
+TeX 2.9/fonts/type1/public/lm/lmr7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts
+/type1/public/lm/lmsy10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/publ
+ic/lm/lmsy5.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmsy7.
+pfb>
+Output written on paper.pdf (7 pages, 272829 bytes).
+PDF statistics:
+ 99 PDF objects out of 1000 (max. 8388607)
+ 0 named destinations out of 1000 (max. 500000)
+ 1 words of extra memory for PDF output out of 10000 (max. 10000000)
+

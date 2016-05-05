@@ -22,7 +22,7 @@ As we said, the LF-ENM model has been successfully used to explain the observed 
 
 \section{Methods}
 
-{\bf ENM of a reference protein:} 
+{\subsection* {ENM of a reference protein:} 
 
 We considered the backbone fluctuations of the reference ``wilt type'' protein around its equilibrium conformation to be described by a coarse - grained ``Elastic Network Model'' (ENM), which represents a protein as a network of nodes placed at the alpha carbons ($C_{\alpha}$) connected by springs. In general, the ENM potential is of the form: 
 
@@ -32,7 +32,7 @@ V_{wt}(\mathbf{r}) = 1/2(\mathbf{r}-\mathbf{r}^{0}_{wt})^{T}\mathbf{K}_{wt}(\mat
 
 where, for a protein of $N$ sites, $\mathbf{r}$ is a column vector with $3N$ elements: the $x$, $y$, $z$ coordinates of the $N$ $C_{\alpha}$, $\mathbf{r}^{0}_{wt}$ is the equilibrium structure of the reference protein, and $\mathbf{K}_{wt}$ is the ``stiffness'' matrix, which represents the network\textsc{\char13} s topology and spring force constants.  
 
-{\bf LF-ENM model of mutant proteins:}
+\subsection*{LF-ENM model of mutant proteins:}
 
 To simulate mutants of each reference protein and thus to generate datasets of theoretical proteins, we used the ``Linearly Forced Elastic Network Model'' (LF - ENM). This model predicts the effect of a single mutation adding a linear perturbative term to the reference potential:
 
@@ -48,61 +48,80 @@ d\mathbf{r}^{0} \equiv  \mathbf{r}^{0}_{mut} - \mathbf{r}^{0}_{wt} = \mathbf{K}^
 
 This equation shows that the structural perturbation introduced by a mutation is related to the mutation and to the network of oscillators, via $\mathbf{K}^{-1}_{wt}$. We should note here that $\mathbf{K}^{-1}_{wt}$ is actually the pseudo inverse, because $\mathbf{K}_{wt}$ has six zero eigenvalues, corresponding to translations and rotations, so that it is not invertible.
 
-{\bf LF-ENM for multiple mutants: }
-To simulate proteins with not one but multiple mutations we considered additive mutations by the assumption that $\mathbf{K}_{mut}$ \cong $\mathbf{K}_{wt}$:
+\subsection*{Stress Model}
+The stress model is based on an Elastic Netowork Model in which mutations are modeled as perturbations to the spring lengths that connect the mutated site with its neighbors.
 
-\begin{equation}
-d\mathbf{r}^{0,tot} = d\mathbf{r}^{0,mut1}_{wt}+d\mathbf{r}^{0,mut2}_{wt}+ ...+d\mathbf{r}^{0,mutm}_{wt}+...+d\mathbf{r}^{0,mutNmut}_{wt}
+Let the ENM potential energy of the wild-type protein be:
+\begin{equation} \label{eq:Vwt}
+V_{wt} = \frac{1}{2} \sum_{i<j} k_{ij} (d_{ij}-d^0_{ij})^2
+\end{equation}
+We model the mutation by replacing perturbing the equilibrium lengths of the ENM springs: $d^0_{ij} \to d^0_{ij} + \Delta_{ij}$, where $\Delta_{ij}$ are picked independently for each of the contacts of the mutated site, from the same distribution, e.g. a uniform distribution, which satisfies $<\Delta_{ij}> = 0$ and $Var(\Delta_ij) = \sigma^2$, independent of $ij$. The mutant's potential is:
+\begin{equation} \label{eq:Vmut}
+V_{mut} = \frac{1}{2} \sum_{i<j} k_{ij} [d_{ij}-(d^0_{ij}+\Delta_{ij})]^2
+\end{equation}
+When the mutant adopts the wild-type structure $\mathbf{r^0}_{wt}$, $d_{ij} = d_{ij}^0$, and the mutant's energy is:
+\begin{equation} \label{eq:Vmut0}
+V_{mut}(\mathbf{r^0}_{wt}) = \frac{1}{2} \sum_{i<j} k_{ij} \Delta_{ij}^2
+\end{equation}
+The stress model poses that the probability of accepting such a mutant is:
+\begin{equation} \label{eq:Paccept}
+P_{accept} = e^{-\beta \frac{1}{2} \sum_{i<j} k_{ij} \Delta_{ij}^2}
 \end{equation}
 
-\begin{equation}
-d\mathbf{r}^{0,tot} =\mathbf{K}^{-1}_{wt}\times(\mathbf{f}_{mut1}+\mathbf{f}_{mut2}+...+\mathbf{f}_{mutm}+...+\mathbf{f}_{mutNmut}) 
+\subsection*{Linearly Forced Elastic Network Model with Stress Model}
+The linearly forced elastic network model is obtained from expanding Eq. \ref{eq:Vmut} up to second order. The potential is expressed in terms of "forces" directed along the contacts of the mutated site with lengths:
+\begin{equation} \label{eq:fij}
+f_{ij} = k_{ij} \Delta_{ij}
+\end{equation}
+Therefore, from Eq. \ref{eq:Paccept} and \ref{eq:fij} we find:
+\begin{equation} \label{eq:PacceptFij}
+P_{accept} = e^{-\beta \frac{1}{2} \sum_{i<j}  f_{ij}^2/k_{ij}}
 \end{equation}
 
-Where $d\mathbf{r}^{0,tot}$ is the total structural variation due the M mutations, $d\mathbf{r}^{0,mutm}_{wt}$ is the structural variation produced by the mutation $m$ (considering $\mathbf{K}_{wt}$), and $\mathbf{f}_mutm}$ is the vector of force of the $m$ mutation.
+For the ANM, $k_{ij}$ are either 0 or 1, and we get:
+\begin{equation} \label{eq:PacceptANM}
+P_{accept} = e^{-\beta \frac{1}{2} \sum_{j\sim i}  f_{ij}^2}
+\end{equation}
+Where the sum $j \sim i$ is over all $j$ that are in contact with the mutated site $i$ (i.e. for which $k_{ij} \ne 0$.
 
-{\bf Model parameters: }
+\subsection*{Evolutionary Simulation}
+
+\subsubsection*{One evolutionary step}
+Let us define a time-step such that the time-step when there is a single substitution event for the whole protein (a substitution is an accepted mutation). To simulate such an event we did the following:
+\begin{enumerate}
+\item We picked one random site $l$
+\item We introduced a "trial" mutation by obtaining a set of ${f_{lj}}$ for each of the contacts of site $l$
+\item We calculated the probability of accepting this trial mutation: $P_{accept} = e^{-\beta \frac{1}{2} \sum_{j\sim i}  f_{lj}^2}$
+\item We calculated the logical variable $\text{Accept} = P_{accept} \ge \text{runif(1,0,1)}$; Accept will be TRUE with probability $P_{accept}$, this is a way of implementing accepting mutations with this probability.
+\item If Accept is TRUE, we accepted the mutation (i.e. the new wild-type is the mutant) and the evolutionary step was finished (i.e. we found an accepted mutation: one substitution). Else, we rejected the trial mutation and tried again (i.e. went back to Step 1: picked a random site, etc.).
+\end{enumerate}
+For future reference, let's assume that we implement this single-step using a function oneSubstitution(sites) that returns the mutated site $l$, and the force that simulates the mutation ${f_{lj}}$ (or alternatively the force-vector $\mathbf{f}_l$). 
+
+\subsubsection*{An evolutionary path of N substitution at N different sites}
+We want to simulate a lineage (an evolutionary path) such that it starts at a known ancestor (our reference protein) and it ends when $N$ sites have accepted mutations. ($N \le L$, where $L$ is the sequence length). Briefly, we need to repeat the single evolutionary step of the previous paragraph $N$ times, making sure that the set of sites where we try mutations does not include sites that previously accepted mutations (this corresponds to sampling without replacement). The process would be, using pseudocode:
+
+\section*{Star tree}
+Our "experimental" data are sets of proteins one of which we consider as the "reference" protein. In principle, we should infer the phylogenetic tree and try to simulate structures with our model following a tree with the same topology. However, we assume that the results are not too sensitive with respect to tree topology so that we can approximate the tree by a "star tree". The common ancestor of all lineages of our star tree is our reference protein. Then, each lineage corresponds to a pair alignment of each protein with the reference. Thus, different lineages have different "branch lengths", were we assume the branch lengh is the number of sites in which the sequence of the (common) ancestor and the tip of the lineage differ. 
+
+\section*{Model parameters}
 To completely specify the model, we must choose $\mathbf{K}_{wt}$ and $\mathbf{f}$. There are a number of alternative ENMs.Specifically, we used the ``Anisotropic Network Model'' (ANM). Following this model, we gave a spring force constant of 1 to sites at a distance $\leq$ 10 $\AA$ and a spring force constant of 0 to sites at a distance > 10 $\AA$. We selected 10 $\AA$ as the cut off value after optimization using a range of values form 8 to 12 (data not shown). This cut off value is also the most commonly used.
 To calculate $\mathbf{f}$, given a mutation at a site $l$, each site $i$ in contact with $l$ is assigned a force directed along the $l-i$ contact and site $l$ is assigned a reaction force. To simulate random mutations, the magnitudes of $f_{li}$ were randomly picked from a uniform distribution in $[-f_{max},f_{max}]$. The forces for different contacts were picked independently. Since $f_{max}$ does not affect the results, we set
 $f_{max} = 2$. We can think of the range $[-f_{max}, f_{max}]$ as a continuous approximation of the perturbations introduced by the mutations, covering
 from mutations between physicochemically similar amino acids ($f \approx 0$) up to mutations between very different amino acids ($f \leq f_{max}$).
 
-{\bf Experimental dataset:}
+\subsection*{Experimental dataset:}
 We selected 8 families of proteins from the database of multiple structural alignments of homologous HOMSTRAD (http://mizuguchilab.org/homstrad/). In this dataset, there are representatives of the major structural classes: all alpha, all beta, alpha and beta, and small proteins. We looked for families that possess multiple structural alignments with more than 12 proteins and with an alignment length greater than 50 sites. The selected families and their characteristics are shown in Table 1.
 
-{\it Selection of the reference protein:}
+\subsubsection*{Selection of the reference protein:}
 For each family of the dataset we selected a reference ``wilt type'' protein, which we consider is the most structurally representative protein of the family. To get this protein, we first calculated the average structure of each multiple alignment. Then, we calculated the ``Mean Square Deviation'' (MSD) between the structure of each protein of the family and the obtained average structure. Finally, we selected as the reference protein the one with the lower value of MSD.
 
-{\it Alignments analysis:}
+\subsubsection*{Alignments analysis:}
 For each family of proteins, the reference protein was aligned with each of the other proteins of the family. Then, the aligned and nonaligned sites, their coordinates, and the sequence identity for each pair of proteins were obtained. 
 
-{\bf Theoretical datasets:}
-In order to study the effect of natural selection on structural divergence we generated two datasets of simulated mutants. In one dataset, we applied natural selection and, on the other dataset, we did not consider natural selection:
-
-{\it Mutants with natural selection (NS = T):} we applied natural selection at the sequence level of the reference protein of each family. To determine which sites to mutate accounting natural selection, we followed the stress model, by which probabilities of mutation are assigned for each site of the reference protein:
-
-\begin{equation}
-p^{mut}_{i} = 1 - (beta \times CN_{i})
-\end{equation}
-
-Were $CN_{i}$ is the number of contacts (sites with a distance $\leq$ 10 $\AA$ in this case) of site $i$. 
-To select the number of sites to mutate, we took information from the alignment of the correspondent family. For each pair comprising the reference protein and one of the other proteins of the family, we obtained the average sequence identity (\% ID) within the aligned region. Then, the number of mutated sites for this pair is: 
-
-\begin{equation}
-nsites^{mut} = (100 - \% ID) \times naa / 100
-\end{equation}
-
-Being $naa$ the number of aminoacids of the reference protein. 
-Then, for each of these pairs, we generated 10 mutants of $nsites^{mut}$, where the mutated sites are the ones with more probabilities to mutate following the stress model.
- 
-In this way, if the family has $P$ proteins (plus the reference protein), we obtained a simulated dataset of $10 \times P$  members. 
-
-{\it Mutants without natural selection (NS = F):} For each family and for each pair comprising the reference protein and one of the other proteins of the family, we obtained the number of sites to mutate as mentioned before and we mutated randomly this number of sites. For each of these pairs, we generated 10 mutants. Hence, again, if the family has $P$ proteins (plus the reference protein), we obtained a simulated dataset of  $10 \times P$  members.
-
-{\bf Structural variability measures:}
+\subsection*{ Structural variability measures:}
 We obtained the coordinates of the aligned sites of each protein. For the theoretical dataset we considered that there are not nonaligned sites. Then, structural variability measures were calculated in Cartesian coordinates and projected onto the normal modes coordinates:
 
-{\it Cartesian coordinates:}
+\subsubsection*{ Cartesian coordinates:}
 Structural variation of each protein was calculated relative to the reference protein into the aligned sites. To do this, for each aligned site, we calculated the square deviation:
  
 \begin{equation}
@@ -115,7 +134,7 @@ Formula
 
 Then, since we are only interested in the relative variability of different sites, deviations obtained using Eq. () were normalize so that they add up to 1.
 
-{\it Normal modes coordinates:}
+\subsubsection*{Normal modes coordinates:}
 Analysis of structural change of normal modes was calculated by projecting structural differences of aligned sites of each protein onto the normal modes of the reference protein. The normal modes were obtained by solving the equation:
   
 \begin{equation}
@@ -129,19 +148,19 @@ Then, for a protein with structural variation of the aligned sites $d\mathbf{r}^
 P_{n} \equiv \frac{(\mathbf{q}^{T}_{n}d\mathbf{r}^{0})^2}{\sum_{n}(\mathbf{q}^{T}_{n}d\mathbf{r}^{0})^2}
 \end{equation}
 
-{\bf Profile comparisons:}
+\subsection*{ Profile comparisons:}
 
-{\it Cartesian coordinates:} For the theoretical datasets and for the experimental dataset we averaged $\left\|d\mathbf{r}^{0}_{i}\right\|^{2}$ over each site $i$ of the reference protein of each family to obtain profiles of $MSD_{i}$. Then, the theoretical average profiles were fitted with the experimental profile. Lastly, for each dataset, we concatenated the profiles obtained for all of the families to obtain a sole profile.
+\subsubsection*{Cartesian coordinates:} For the theoretical datasets and for the experimental dataset we averaged $\left\|d\mathbf{r}^{0}_{i}\right\|^{2}$ over each site $i$ of the reference protein of each family to obtain profiles of $MSD_{i}$. Then, the theoretical average profiles were fitted with the experimental profile. Lastly, for each dataset, we concatenated the profiles obtained for all of the families to obtain a sole profile.
 
-{\it Normal modes coordinates:} For the theoretical datasets, with or without natural selection, the 10 x P profiles of $P_{n}$ of each family were split in 10 groups so that in all of them there was a simulated mutant that corresponded to an experimental pair of proteins of the family in means of the \% ID. Then we calculated, for these 10 groups, the average and 0.05 and 0.95 quantiles. Finally, we calculated the average of averages and the average of quantiles. 
+\subsubsection*{Normal modes coordinates:} For the theoretical datasets, with or without natural selection, the 10 x P profiles of $P_{n}$ of each family were split in 10 groups so that in all of them there was a simulated mutant that corresponded to an experimental pair of proteins of the family in means of the \% ID. Then we calculated, for these 10 groups, the average and 0.05 and 0.95 quantiles. Finally, we calculated the average of averages and the average of quantiles. 
 For the experimental dataset, the average and 0.05 and 0.95 quantile profiles of each family were calculated.
 
 \section{Results and discussion}
-{\it Cartesian coordinates:}
+\subsection*{Cartesian coordinates:}
 In order to analyze the effect of natural selection on the structural variability in cartesian coordinates we calculated unique per dataset $MSD_{i}$ profiles as explained in Methods. These profiles contain information of all of the families. Then, we calculated the $R^2$ and the $MSE$ between the experimental dataset compared with theoretical datasets (with and without natural selection). The results are shown in figure 1. 
 Figue 1 shows that the $R^2$ between the experimental dataset and theoretical datasets, with or without natural selection, is high, $\approx 0.8$, and that accounting for natural selection does not seem to improve the agreement. 
 
-{\it Normal modes coordinates:}
+\subsection*{Normal modes coordinates:}
 In order to analyze the effect of natural selection on the structural variability projected onto normal modes coordinates of the reference protein, we obtained average $P_{n}$ profiles and 0.05 and 0.95 quantiles profiles as explained in Methods. To compare the experimental dataset with the theoretical datasets we calculated the $R^2$ and the $MSE$ between them. The results are shown in Table 2 and figure 2. Table 1 and figure 2 show that, again, the $R^2$ between experimental data and theoretical data, with or without natural selection, is high, $\approx 0.7$ and that natural selection does not seem to improve the agreement with experimental data. 
 
 

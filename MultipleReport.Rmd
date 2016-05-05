@@ -65,9 +65,9 @@ points(exp.smooth.norm.MSDi[!is.na(exp.smooth.norm.MSDi)], col = "red")
 legend("topleft", paste("R^2", round(R2, digits = 2), " ", "MSE", signif(MSE, digits = 4)), bty = "n", text.col = "red")
 ```
 
-*negro:* teorico
+*negro:* Promedio teorico.
 
-*rojo:* experimental
+*rojo:* Promedio experimental.
 
 
 ### Pn y Qn
@@ -88,7 +88,8 @@ theo.Pn.group = CalculateGroupsMeansQuantiles(m.theo.Pn, n.mut.p, n.prot)
 mean.theo.Pn.group = theo.Pn.group$mean.mean.group
 theo.Pn.group.quantile1 = theo.Pn.group$mean.quantile1.group
 theo.Pn.group.quantile2 = theo.Pn.group$mean.quantile2.group
-
+theo.Pn.quantile1.mean = theo.Pn.group$quantile1.mean
+theo.Pn.quantile2.mean = theo.Pn.group$quantile2.mean
 ```
 
 
@@ -111,9 +112,26 @@ lines(as.vector(exp.Pn.quantile2), col = "red")
 
 *Negro*: Puntos: promedio de promedios teorico. Lineas: promedio de cuantiles 0.05 y 0.95 de `r n.mut.p` grupos de `r n.prot` mutantes teoricas.
 
-*Rojo*: Experimental. Puntos: promedio. Lineas: cuantiles 0.05 y 0.95.
+*Rojo*: Puntos: promedio experimental. Lineas: cuantiles 0.05 y 0.95 experimentales.
 
-Posteriormente, los perfiles de Pn teoricos fueron fiteados con los perfiles exterimentales. Se compararon y se calcularon R^2 y MSE. 
+```{r}
+
+# Graphics.
+
+plot(mean.theo.Pn.group, 
+     main = "Pn promedio", 
+     xlab = "nmodo",
+     ylab = "Pn",
+     ylim = c(0, max(c(theo.Pn.group.quantile2, mean.exp.Pn))))
+lines(as.vector(theo.Pn.quantile1.mean))
+lines(as.vector(theo.Pn.quantile2.mean))
+points(mean.exp.Pn, col = "red")
+
+```
+
+*Negro*: Puntos: promedio de promedios teorico. Lineas:  cuantiles 0.05 y 0.95 de promedios de `r n.mut.p` grupos de `r n.prot` mutantes teoricas.
+
+*Rojo*: Promedio experimental.
 
 ```{r}
 layout(matrix(1:2, 1, 2, byrow = T)) 
@@ -122,7 +140,7 @@ fit = lm(mean.exp.Pn ~ mean.theo.Pn.group)
 Pn.fit = fitted.values(fit)
 R2 = cor(mean.exp.Pn, Pn.fit) ^ 2 
 MSE = mean((Pn.fit - mean.exp.Pn) ^ 2)
-plot(Pn.fit, mean.exp.Pn, xlab = "Pn teorico", ylab = "Pn experimental", main = "Pn")
+plot(Pn.fit, mean.exp.Pn, xlab = "Pn promedio de promedios teorico", ylab = "Pn promedio experimental", main = "Pn")
 abline(0, 1)
 legend("topleft", paste("R^2", round(R2, digits = 2)), bty = "n", text.col = "red")
 legend("bottomright", paste("MSE", signif(MSE, digits = 2)), bty = "n", text.col = "red")
