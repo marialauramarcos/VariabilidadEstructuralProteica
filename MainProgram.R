@@ -1,9 +1,10 @@
 # Description:
 #
-# This is the main program of the project. The program simulates mutants of a given protein using different selection regimens 
-# , following the Stress Model, analyzes the multiple alignment of the family to which the protein belongs and calculates measures 
+# This is the main program of the project. The program simulates multiple mutants of a given protein using the "Linearly Forced - 
+# Elastic Network Model" (LFENM) and with different selection regimens according to the Stress Model. Then, the program
+# analyzes the multiple alignment of the family to which the protein belongs and calculates measures 
 # of variabilty of theoretical and experimental data.
-# To run the program it is necessary to fill the input file ("input_MainProgram.csv") with the following information:
+# To run the program it is necessary to fill the input ("input_MainProgram.csv") with the following information:
 #
 #    - family: The family of the protein to mutate. It can be "globins", "serinProteases", 
 #    "snakesToxin", "sh3", "fabp", "rrm", "phoslip" or "cys".
@@ -11,7 +12,7 @@
 #    the selected family. This pdbid must not be included in the dataset ("DATA/family_dataset.csv").
 #    - chain.p.ref: The chain of p.ref in the pdb file obtained from Homstrad.
 #    - n.mut.p: The number of mutants to generate for each member of the family. For example, if the family has 20 
-#    members, The program generates n.mut.p x 20 mutants.
+#    members, the program generates n.mut.p x 20 mutants.
 #    - fmax: Argument for "LFENM". It is the maximun value for the forces that model the mutations. 
 #    - R0: the Cut-off for the "ANM" (Anisotropic Network Model) that represents the proteins.
 #    - rotate: It can be "TRUE" or "FALSE". If it is "TRUE", r.p.2 is rotated in order to minimize RMSD with r.p.ref.
@@ -114,12 +115,13 @@ for (a in (1:nrow(input))) {
   
   # Read betas.
   all.betas <- read.csv(file.path(out.dir, paste(betas.fname.id, "_out_all.betas.csv", sep = "")))
+  regimens <- list("strong.sel", "medium.sel", "weak.sel", "no.sel")
   
   # Start a loop for each beta.
   for (beta in all.betas)  {
     
     # Generate ids for output filenames.
-    mut.fname.id <- paste(family, "_R0_", R0, "_beta_", beta, sep = "")
+    mut.fname.id <- paste(family, "_R0_", R0, "_beta_", regimens[all.betas == beta], sep = "")
     analysis.fname.id <- paste(mut.fname.id, "_K.analysis_", K.analysis, sep = "")
   
     # Generate mutants.

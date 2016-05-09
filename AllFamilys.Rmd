@@ -13,8 +13,10 @@ knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)
 out.dir <- "OUT"
 
 # Create vectors to keep data.
-v.theo.MSDi.s.n = c()
-v.exp.MSDi.s.n = c()
+v.v.theo.MSDi = c()
+v.v.exp.MSDi = c()
+v.R2 = c()
+v.MSE = c()
 
 # Read input.
 input.fname <- file.path("input_MainMultipleReport.csv")
@@ -23,59 +25,83 @@ input <- read.csv(input.fname)
 # Print the input in the html file.
 print(input)
 
-# Start a loop to read data for each family.
-for (a in (1:nrow(input))) { 
-  family <- as.character(input$family)[a]
-  R0 = input$R0[a]
-  K.analysis = input$K.analysis[a]
+# Create a list of selection regimens.
+all.betas <- list("strong.sel", "medium.sel", "weak.sel", "no.sel")
+
+# Start a loop for each beta.
+for (beta in (all.betas)) { 
   
-  #Read experimental data.
-  analysis.fname.id <- paste(family, "_R0_", R0,  "_beta_", beta, "_K.analysis_", K.analysis, sep = "")
+  # Create vectors to keep data.
+  v.theo.MSDi = c()
+  v.exp.MSDi = c()
+
+  # Start a loop to read data for each family.
+  for (a in (1:nrow(input))) { 
+    family <- as.character(input$family)[a]
+    R0 = input$R0[a]
+    K.analysis = input$K.analysis[a]
   
-  m.exp.smooth.norm.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.norm.dr.squarei.csv", sep = "")))
+    #Read experimental data.
+    analysis.fname.id <- paste(family, "_R0_", R0,  "_beta_", beta, "_K.analysis_", K.analysis, sep = "")
   
- exp.MSDi.s.n = colMeans(m.exp.smooth.norm.dr.squarei, na.rm = T )
+    m.exp.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.norm.dr.squarei.csv", sep = "")))
+    exp.MSDi = colMeans(m.exp.dr.squarei, na.rm = T)
   
-  # Read theoretical data#
-  m.theo.smooth.norm.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.norm.dr.squarei.csv", sep = "")))
+    # Read theoretical data#
+    m.theo.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.norm.dr.squarei.csv", sep = "")))
+    theo.MSDi = colMeans(m.theo.dr.squarei, na.rm = T)
   
- theo.MSDi.s.n = colMeans(m.theo.smooth.norm.dr.squarei, na.rm = T)
+    # Fit theoretical data with experimental data.
+    fit = lm(exp.MSDi ~ theo.MSDi)
+    fit.MSDi = fitted.values(fit)
   
-  ## Fit theoretical data with experimental data.
+    # Save and concatenale information.
+    v.theo.MSDi = c(v.theo.MSDi, fit.MSDi)
+    exp.MSDi = exp.MSDi[!is.na(exp.MSDi)]
+    v.exp.MSDi = c(v.exp.MSDi, exp.MSDi)
+
+  }
+
+  # Caluclate measures.
+  R2 = cor(v.theo.MSDi, v.exp.MSDi) ^ 2  
+  MSE = mean((v.theo.MSDi - v.exp.MSDi) ^ 2)
   
-  fit.s.n = lm(exp.MSDi.s.n ~ theo.MSDi.s.n)
-  fit.MSDi.s.n = fitted.values(fit.s.n)
-  
-  
-  # Concatenate information.
-  v.theo.MSDi.s.n = c(v.theo.MSDi.s.n, fit.MSDi.s.n)
-  
-  exp.MSDi.s.n = exp.MSDi.s.n[!is.na(exp.MSDi.s.n)]
-  v.exp.MSDi.s.n = c(v.exp.MSDi.s.n, exp.MSDi.s.n)
+  v.v.theo.MSDi = c(v.v.theo.MSDi, v.theo.MSDi)
+  v.v.exp.MSDi = c(v.v.exp.MSDi, v.exp.MSDi)
+
+  v.R2 = c(v.R2, R2)
+  v.MSE = c(v.MSE, MSE)
 }
 
-# Caluclate measures.
-R2.s.n = cor(theo.MSDi.s.n, exp.MSDi.s.n) ^ 2  
-MSE.s.n = mean((theo.MSDi.s.n - exp.MSDi.s.n) ^ 2)
-
+n.sites.all.families = length(v.v.theo.MSDi)/4
 ```
 
-All families fitted smooth and normalized MSD profiles 
+All families fitted smoothed and normalized MSD profiles with different selection regimens:
 
 ```{r}
-plot(theo.MSDi.s.n, type = "l", xlab = "site", ylab = "Theoretical")
-```
-
-```{r}
-plot(exp.MSDi.s.n, type = "l", col = "red", xlab = "site",  ylab = "Experimental")
+plot(v.v.theo.MSDi[1:n.sites.all.families], type = "l", main = " Strong selection", xlab = "site", ylab = "Merge")
+points(v.v.exp.MSDi[1:n.sites.all.families], col = "red", type = "l")
+legend("topleft", paste("R ^ 2", round(v.R2[1], digits = 3), "MSE", signif(v.MSE[1], digits = 4)), bty = "n", text.col = "red")
 ```
 
 ```{r}
-plot(theo.MSDi.s.n, type = "l", xlab = "site", ylab = "Merge")
-points(exp.MSDi.s.n, col = "red", type = "l")
-legend("topleft", paste("R^2", round(R2.s.n, digits = 2), " ", "MSE", signif(MSE.s.n, digits = 4)), bty = "n", text.col = "red")
+plot(v.v.theo.MSDi[(n.sites.all.families + 1):(2 * n.sites.all.families)], type = "l", main = " Medium selection", xlab = "site", ylab = "Merge")
+points(v.v.exp.MSDi[(n.sites.all.families + 1):(2 * n.sites.all.families)], col = "red", type = "l")
+legend("topleft", paste("R^2", round(v.R2[2], digits = 3), "MSE", signif(v.MSE[2], digits = 4)), bty = "n", text.col = "red")
 ```
 
+```{r}
+plot(v.v.theo.MSDi[((2 * n.sites.all.families) + 1):(3 * n.sites.all.families)], type = "l", main = " Weak selection", xlab = "site", ylab = "Merge")
+points(v.v.exp.MSDi[((2 * n.sites.all.families) + 1):(3 * n.sites.all.families)], col = "red", type = "l")
+legend("topleft", paste("R^2", round(v.R2[3], digits = 3), "MSE", signif(v.MSE[3], digits = 4)), bty = "n", text.col = "red")
+```
 
+```{r}
+plot(v.v.theo.MSDi[((3 * n.sites.all.families) + 1):(4 * n.sites.all.families)], type = "l", main = " No selection", xlab = "site", ylab = "Merge")
+points(v.v.exp.MSDi[((3 * n.sites.all.families) + 1):(4 * n.sites.all.families)], col = "red", type = "l")
+legend("topleft", paste("R^2", round(v.R2[4], digits = 3), "MSE", signif(v.MSE[4], digits = 4)), bty = "n", text.col = "red")
+```
 
+*Black:* Theoretical mean.
 
+*Red:* Experimental mean.

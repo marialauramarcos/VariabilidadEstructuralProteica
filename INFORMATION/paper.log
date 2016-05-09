@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.4.9)  2 MAY 2016 16:06
+This is pdfTeX, Version 3.14159265-2.6-1.40.16 (MiKTeX 2.9) (preloaded format=pdflatex 2016.4.9)  9 MAY 2016 11:01
 entering extended mode
 **./paper.tex
 (paper.tex
@@ -111,7 +111,11 @@ Package: multicol 2015/08/19 v1.8n multicolumn formatting (FMi)
 \mult@nat@firstbox=\box50
 \colbreak@box=\box51
 \mc@col@check@num=\count95
-) (paper.aux)
+) (paper.aux
+
+LaTeX Warning: Label `eq:PacceptFij' multiply defined.
+
+)
 \openout1 = `paper.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 9.
@@ -127,8 +131,7 @@ LaTeX Font Info:    ... okay on input line 9.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 9.
 LaTeX Font Info:    ... okay on input line 9.
 LaTeX Font Info:    Try loading font information for T1+lmr on input line 9.
-
-("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\t1lmr.fd"
+ ("C:\Program Files (x86)\MiKTeX 2.9\tex\latex\lm\t1lmr.fd"
 File: t1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
 )
 LaTeX Font Info:    Try loading font information for OT1+lmr on input line 12.
@@ -168,16 +171,35 @@ LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <7> on input line 27.
 LaTeX Font Info:    External font `lmex10' loaded for size
 (Font)              <5> on input line 27.
- [2]
-Underfull \hbox (badness 6094) in paragraph at lines 71--71
-\T1/lmr/bx/n/12 work Model with Stress
+ [2] [3]
+Underfull \hbox (badness 10000) in paragraph at lines 78--79
+\T1/lmr/m/n/10 We se-lected 8 fam-i-lies of pro-
  []
 
-[3]
+
+Underfull \hbox (badness 10000) in paragraph at lines 78--79
+\T1/lmr/m/n/10 teins from the database of
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 78--79
+\T1/lmr/m/n/10 mul-ti-ple struc-tural align-ments
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 78--79
+\T1/lmr/m/n/10 of ho-mol-o-gous HOM-STRAD
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 78--79
+\T1/lmr/m/n/10 (http://mizuguchilab.org/homstrad/).
+ []
+
 ! Undefined control sequence.
 <recently read> \text 
                       
-l.95 ... We calculated the logical variable $\text
+l.96 ... We calculated the logical variable $\text
                                                   {Accept} = P_{accept} \ge ...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -186,7 +208,7 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 ! Undefined control sequence.
-l.95 ...able $\text{Accept} = P_{accept} \ge \text
+l.96 ...able $\text{Accept} = P_{accept} \ge \text
                                                   {runif(1,0,1)}$; Accept wi...
 The control sequence at the end of the top line
 of your error message was never \def'ed. If you have
@@ -195,62 +217,184 @@ spelling (e.g., `I\hbox'). Otherwise just continue,
 and I'll forget about whatever was undefined.
 
 
-Underfull \hbox (badness 5787) in paragraph at lines 95--96
+Underfull \hbox (badness 5787) in paragraph at lines 96--97
 \T1/lmr/m/n/10 able $[] \OT1/lmr/m/n/10 = \OML/lmm/m/it/10 P[] \OMS/lmsy/m/n/10
  
  []
 
 [4]
 
-LaTeX Warning: Command \r invalid in math mode on input line 107.
+! LaTeX Error: Lonely \item--perhaps a missing list environment.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.106 \item N
+             o selection: Paccept \approx 1
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.106 \item No selection: Paccept \approx
+                                          1
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.107 
+      
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
 
 
-LaTeX Warning: Command \r invalid in math mode on input line 107.
+! LaTeX Error: Lonely \item--perhaps a missing list environment.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.108 \item W
+             eak selection: Paccept \approx 0.9
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.108 \item Weak selection: Paccept \approx
+                                            0.9
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.109 
+      
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
 
 
-LaTeX Warning: Command \r invalid in math mode on input line 107.
+! LaTeX Error: Lonely \item--perhaps a missing list environment.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.110 \item M
+             edium selection: Paccept \approx 0.5
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.110 \item Medium selection: Paccept \approx
+                                              0.5
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.111 
+      
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 107--111
-\T1/lmr/m/n/10 we must choose $\OT1/lmr/bx/n/10 K[]$ \T1/lmr/m/n/10 and $\OT1/l
-mr/bx/n/10 f$\T1/lmr/m/n/10 .
- []
+! LaTeX Error: Lonely \item--perhaps a missing list environment.
+
+See the LaTeX manual or LaTeX Companion for explanation.
+Type  H <return>  for immediate help.
+ ...                                              
+                                                  
+l.112 \item S
+             trong selection: Paccept \approx 0.1
+Try typing  <return>  to proceed.
+If that doesn't work, type  X <return>  to quit.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.112 \item Strong selection: Paccept \approx
+                                              0.1
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
+
+! Missing $ inserted.
+<inserted text> 
+                $
+l.113 
+      
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
 
 
-Underfull \hbox (badness 5563) in paragraph at lines 107--111
-\T1/lmr/m/n/10 There are a num-ber of al-ter-na-
- []
+LaTeX Warning: Command \r invalid in math mode on input line 126.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 113--114
-\T1/lmr/m/n/10 We se-lected 8 fam-i-lies of pro-
- []
+LaTeX Warning: Command \r invalid in math mode on input line 126.
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 113--114
-\T1/lmr/m/n/10 teins from the database of
- []
+LaTeX Warning: Command \r invalid in math mode on input line 126.
 
+[5]
+! Missing $ inserted.
+<inserted text> 
+                $
+l.144 
+      
+I've inserted a begin-math/end-math symbol since I think
+you left one out. Proceed, with fingers crossed.
 
-Underfull \hbox (badness 10000) in paragraph at lines 113--114
-\T1/lmr/m/n/10 mul-ti-ple struc-tural align-ments
- []
+! Display math should end with $$.
+<to be read again> 
+                   \par 
+l.144 
+      
+The `$' that I just saw supposedly matches a previous `$$'.
+So I shall assume that you typed `$$' both times.
 
+! You can't use `\eqno' in vertical mode.
+\endequation ->\eqno 
+                     \hbox {\@eqnnum }$$\@ignoretrue 
+l.145 \end{equation}
+                    
+Sorry, but I'm not programmed to handle this case;
+I'll just pretend that you didn't ask for it.
+If you're in the wrong mode, you might be able to
+return to the right one by typing `I}' or `I$' or `I\par'.
 
-Underfull \hbox (badness 10000) in paragraph at lines 113--114
-\T1/lmr/m/n/10 of ho-mol-o-gous HOM-STRAD
- []
+! Missing $ inserted.
+<inserted text> 
+                $
+l.145 \end{equation}
+                    
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
 
+! Display math should end with $$.
+<to be read again> 
+                   \endgroup 
+l.145 \end{equation}
+                    
+The `$' that I just saw supposedly matches a previous `$$'.
+So I shall assume that you typed `$$' both times.
 
-Underfull \hbox (badness 10000) in paragraph at lines 113--114
-\T1/lmr/m/n/10 (http://mizuguchilab.org/homstrad/).
- []
-
-[5] [6]
+[6]
 ! Missing } inserted.
 <inserted text> 
                 }
-l.168 \end{multicols}
+l.181 \end{multicols}
                      
 I've inserted something that you may have forgotten.
 (See the <inserted text> above.)
@@ -258,37 +402,50 @@ With luck, this will get me unwedged. But if you
 really didn't forget anything, try typing `2' now; then
 my insertion and my current dilemma will both disappear.
 
-[7] (paper.aux) ) 
+! Missing } inserted.
+<inserted text> 
+                }
+l.181 \end{multicols}
+                     
+I've inserted something that you may have forgotten.
+(See the <inserted text> above.)
+With luck, this will get me unwedged. But if you
+really didn't forget anything, try typing `2' now; then
+my insertion and my current dilemma will both disappear.
+
+[7] (paper.aux)
+
+LaTeX Warning: There were multiply-defined labels.
+
+ ) 
 Here is how much of TeX's memory you used:
  700 strings out of 493634
- 8854 string characters out of 3141309
- 65085 words of memory out of 3000000
- 4114 multiletter control sequences out of 15000+200000
- 58824 words of font info for 45 fonts, out of 3000000 for 9000
+ 8861 string characters out of 3141309
+ 68085 words of memory out of 3000000
+ 4115 multiletter control sequences out of 15000+200000
+ 56029 words of font info for 44 fonts, out of 3000000 for 9000
  1025 hyphenation exceptions out of 8191
- 23i,6n,22p,2355b,270s stack positions out of 5000i,500n,10000p,200000b,50000s
-{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.en
-c}{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Progr
-am Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Program Files (x
-86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-rm.enc}{C:/Program Files (x86)/MiKTeX 2.9/
-fonts/enc/dvips/lm/lm-mathex.enc}<C:/Program Files (x86)/MiKTeX 2.9/fonts/type1
-/public/lm/lmbx10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/
-lmbx12.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmbx7.pfb><
-C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmcsc10.pfb><C:/Program
- Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmex10.pfb><C:/Program Files (x86
-)/MiKTeX 2.9/fonts/type1/public/lm/lmmi10.pfb><C:/Program Files (x86)/MiKTeX 2.
-9/fonts/type1/public/lm/lmmi5.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type
-1/public/lm/lmmi7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/
-lmr10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr12.pfb><C
-:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr17.pfb><C:/Program Fi
-les (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr5.pfb><C:/Program Files (x86)/MiK
-TeX 2.9/fonts/type1/public/lm/lmr7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts
-/type1/public/lm/lmsy10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/publ
-ic/lm/lmsy5.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmsy7.
-pfb>
-Output written on paper.pdf (7 pages, 272829 bytes).
+ 23i,6n,22p,2354b,337s stack positions out of 5000i,500n,10000p,200000b,50000s
+{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-ec.enc}{C:/Program F
+iles (x86)/MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathsy.enc}{C:/Program Files (x86)/
+MiKTeX 2.9/fonts/enc/dvips/lm/lm-mathit.enc}{C:/Program Files (x86)/MiKTeX 2.9/
+fonts/enc/dvips/lm/lm-rm.enc}{C:/Program Files (x86)/MiKTeX 2.9/fonts/enc/dvips
+/lm/lm-mathex.enc}<C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmbx
+10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmbx12.pfb><C:/
+Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmex10.pfb><C:/Program Fil
+es (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmmi10.pfb><C:/Program Files (x86)/Mi
+KTeX 2.9/fonts/type1/public/lm/lmmi5.pfb><C:/Program Files (x86)/MiKTeX 2.9/fon
+ts/type1/public/lm/lmmi7.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/pub
+lic/lm/lmr10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr12
+.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr17.pfb><C:/Pro
+gram Files (x86)/MiKTeX 2.9/fonts/type1/public/lm/lmr5.pfb><C:/Program Files (x
+86)/MiKTeX 2.9/fonts/type1/public/lm/lmr7.pfb><C:/Program Files (x86)/MiKTeX 2.
+9/fonts/type1/public/lm/lmsy10.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/typ
+e1/public/lm/lmsy5.pfb><C:/Program Files (x86)/MiKTeX 2.9/fonts/type1/public/lm
+/lmsy7.pfb>
+Output written on paper.pdf (7 pages, 244664 bytes).
 PDF statistics:
- 99 PDF objects out of 1000 (max. 8388607)
+ 91 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  1 words of extra memory for PDF output out of 10000 (max. 10000000)
 

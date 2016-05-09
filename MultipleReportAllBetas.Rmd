@@ -7,7 +7,6 @@ knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)
 ```
 
 ```{r}
-
 # Source functions.
 source("FUNCTIONS/CalculateGroupsMeansQuantiles.R")
 
@@ -40,9 +39,8 @@ m.exp.Pn.quantile1 = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
 m.exp.Pn.quantile2 = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
 
 # Read betas.
-betas.fname.id <- paste(family, "_", p.ref, "_R0_", R0, sep = "")
-all.betas <- read.csv(file.path(out.dir, paste(betas.fname.id, "_out_all.betas.csv", sep = "")))
-  
+all.betas <- list("strong.sel", "medium.sel", "weak.sel", "no.sel")
+
   # Start a loop for each beta.
   for (beta in all.betas)  {
     
@@ -131,7 +129,7 @@ m.mean.exp.Pn[as.vector(all.betas == beta), 1:(length(mean.exp.Pn))] = mean.exp.
 
 ### MSDi
 
-Los perfiles teoricos suavizados y normalizados de MSDi fueron fiteados con los perfiles exterimentales. Se compararon y se calcularon R^2 y MSE. Se indica el regimen de selección usada.
+Los perfiles teoricos suavizados y normalizados de MSDi fueron fiteados con los perfiles exterimentales. Se compararon y se calcularon R^2 y MSE. Se indica el regimen de selecci?n usada.
 
 ```{r}
 
