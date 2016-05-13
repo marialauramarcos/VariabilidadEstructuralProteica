@@ -1,0 +1,434 @@
+---
+title: "Estudio variabilidad estructural proteica"
+output: html_document
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)
+```
+
+```{r}
+# Source functions.
+source("FUNCTIONS/CalculateGroupsMeansQuantiles.R")
+
+# Set directories.
+data.dir <- "DATA"
+out.dir <- "OUT"
+
+# p.ref.
+n.sites.p.ref = read.csv(file.path(out.dir, paste(family, "_out_m.n.sites.p.ref.csv", sep = "")))$V1[1]
+
+# Create matrices to save data.
+
+# MSDi #
+m.MSDi.fit = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.exp.MSDi = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.MSDi.R2 = matrix(nrow = 4, ncol = 1)
+m.MSDi.MSE = matrix(nrow = 4, ncol = 1)
+
+m.mean.theo.MSDi.group = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.theo.MSDi.group.quantile1 = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.theo.MSDi.group.quantile2 = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.theo.MSDi.quantile1.mean = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.theo.MSDi.quantile2.mean = matrix(nrow = 4, ncol = n.sites.p.ref)
+  
+m.mean.exp.MSDi = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.exp.MSDi.quantile1 = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.exp.MSDi.quantile2 = matrix(nrow = 4, ncol = n.sites.p.ref)
+ 
+# Pn # 
+m.Pn.fit = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.exp.Pn = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.Pn.R2 = matrix(nrow = 4, ncol = 1)
+m.Pn.MSE = matrix(nrow = 4, ncol = 1)
+
+m.mean.theo.Pn.group = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.theo.Pn.group.quantile1 = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.theo.Pn.group.quantile2 = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.theo.Pn.quantile1.mean = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.theo.Pn.quantile2.mean = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+  
+m.mean.exp.Pn = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.exp.Pn.quantile1 = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.exp.Pn.quantile2 = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+
+# Read betas.
+all.betas <- list("strong.sel", "medium.sel", "weak.sel", "no.sel")
+
+  # Start a loop for each beta.
+  for (beta in all.betas)  {
+    
+  ### Experimental ###
+  analysis.fname.id <- paste(family, "_R0_", R0, "_beta_", beta, "_K.analysis_", K.analysis, sep = "")
+
+  m.exp.Pn = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.Pn.csv", sep = "")))[, 1:100]
+  mean.exp.Pn = colMeans(m.exp.Pn)
+
+  n.prot = nrow(m.exp.Pn)
+
+  exp.Pn.quantile1 = matrix(ncol = ncol(m.exp.Pn), nrow = 1)
+  exp.Pn.quantile2 = matrix(ncol = ncol(m.exp.Pn), nrow = 1)
+
+  for (i in (1:ncol(m.exp.Pn))) {
+      exp.Pn.quantiles = as.vector(quantile((m.exp.Pn[, i]), probs = c(0.05, 0.95)))
+      exp.Pn.quantile1[1, i] = exp.Pn.quantiles[1]
+      exp.Pn.quantile2[1, i] = exp.Pn.quantiles[2]
+  }
+
+  m.mean.exp.Pn[as.vector(all.betas == beta), 1:length(mean.exp.Pn)] = mean.exp.Pn
+  m.exp.Pn.quantile1[as.vector(all.betas == beta), 1:length(exp.Pn.quantile1)] = exp.Pn.quantile1
+  m.exp.Pn.quantile2[as.vector(all.betas == beta), 1:length(exp.Pn.quantile2)] = exp.Pn.quantile2
+
+  m.exp.smooth.norm.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.norm.dr.squarei.csv", sep = "")))
+  exp.smooth.norm.MSDi = colMeans(m.exp.smooth.norm.dr.squarei, na.rm = T )
+
+  exp.MSDi.quantile1 = matrix(ncol = ncol(m.exp.MSDi), nrow = 1)
+  exp.MSDi.quantile2 = matrix(ncol = ncol(m.exp.MSDi), nrow = 1)
+
+  for (i in (1:n.sites.p.ref)) {
+      exp.smooth.norm.dr.squarei.quantiles = as.vector(quantile((m.exp.smooth.norm.dr.squarei[, i]), probs = c(0.05, 0.95), na.rm = T))
+      exp.MSDi.quantile1[1, i] = exp.smooth.norm.dr.squarei.quantiles[1]
+      exp.MSDi.quantile2[1, i] = exp.smooth.norm.dr.squarei.quantiles[2]
+  }
+
+  m.mean.exp.MSDi[as.vector(all.betas == beta), 1:n.sites.p.ref] = exp.smooth.norm.MSDi[1:n.sites.p.ref]
+  m.exp.MSDi.quantile1[as.vector(all.betas == beta), 1:length(exp.MSDi.quantile1)] = exp.MSDi.quantile1
+  m.exp.MSDi.quantile2[as.vector(all.betas == beta), 1:length(exp.MSDi.quantile2)] = exp.MSDi.quantile2
+  
+  ### Theoretical ###
+
+  m.theo.Pn = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.Pn.csv", sep = "")))[, 1:100]
+
+  n.mut = nrow(m.theo.Pn)
+
+  m.theo.smooth.norm.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.norm.dr.squarei.csv", sep = "")))
+  
+  theo.smooth.norm.MSDi = colMeans(m.theo.smooth.norm.dr.squarei, na.rm = T )
+
+  for (i in (1:n.sites.p.ref)) {
+    fit = lm(exp.smooth.norm.MSDi[1:n.sites.p.ref] ~ as.numeric(m.theo.smooth.norm.dr.squarei[i, 1:n.sites.p.ref]))
+    MSDi.fit = fitted.values(fit)
+    m.theo.smooth.norm.dr.squarei[i, 1:n.sites.p.ref] = MSDi.fit
+  }
+  
+  # Re-ordenate m.theo.smooth.norm.dr.squarei.
+  m.theo.index = matrix(ncol = 1, nrow = n.mut)
+  for (P in (1:n.prot)) {
+    for (mut in (1:n.mut.p)) {
+      m.theo.index[(P - 1) * n.mut.p + mut, ] = ((mut - 1) * 10 + P)
+    }
+  }
+  m.theo.smooth.norm.dr.squarei = m.theo.smooth.norm.dr.squarei[as.vector(m.theo.index), ]
+
+  # Calculate groups, means and quantiles.
+  theo.MSDi.group = CalculateGroupsMeansQuantiles(m.theo.smooth.norm.dr.squarei, n.mut.p, n.prot)
+  mean.theo.MSDi.group = theo.MSDi.group$mean.mean.group[1:n.sites.p.ref]
+  theo.MSDi.group.quantile1 = theo.MSDi.group$mean.quantile1.group[1:n.sites.p.ref]
+  theo.MSDi.group.quantile2 = theo.MSDi.group$mean.quantile2.group[1:n.sites.p.ref]
+  theo.MSDi.quantile1.mean = theo.MSDi.group$quantile1.mean[1:n.sites.p.ref]
+  theo.MSDi.quantile2.mean = theo.MSDi.group$quantile2.mean[1:n.sites.p.ref]
+
+  m.mean.theo.MSDi.group[as.vector(all.betas == beta), 1:length(mean.theo.MSDi.group)] = mean.theo.MSDi.group
+  m.theo.MSDi.group.quantile1[as.vector(all.betas == beta), 1:length(theo.MSDi.group.quantile1)] = theo.MSDi.group.quantile1
+  m.theo.MSDi.group.quantile2[as.vector(all.betas == beta), 1:length(theo.MSDi.group.quantile2)] = theo.MSDi.group.quantile2
+  m.theo.MSDi.quantile1.mean[as.vector(all.betas == beta), 1:length(theo.MSDi.quantile1.mean)] = theo.MSDi.quantile1.mean
+  m.theo.MSDi.quantile2.mean[as.vector(all.betas == beta), 1:length(theo.MSDi.quantile2.mean)] = theo.MSDi.quantile2.mean
+    
+  MSDi.R2 = cor(exp.smooth.norm.MSDi[!is.na(exp.smooth.norm.MSDi)], mean.theo.MSDi.group) ^ 2 
+    MSDi.MSE = mean((mean.theo.MSDi.group - exp.smooth.norm.MSDi[!is.na(exp.smooth.norm.MSDi)]) ^ 2)
+  exp.smooth.norm.MSDi = exp.smooth.norm.MSDi[!is.na(exp.smooth.norm.MSDi)]
+
+  m.MSDi.fit[as.vector(all.betas == beta), ] = mean.theo.MSDi.group
+  m.MSDi.R2[as.vector(all.betas == beta), ] = MSDi.R2
+  m.MSDi.MSE[as.vector(all.betas == beta), ] = MSDi.MSE
+  m.exp.MSDi[as.vector(all.betas == beta), ] = exp.smooth.norm.MSDi
+  
+
+  ### Pn ###
+
+  # Re-ordenate Pn.
+  m.theo.index = matrix(ncol = 1, nrow = n.mut)
+  for (P in (1:n.prot)) {
+    for (mut in (1:n.mut.p)) {
+      m.theo.index[(P - 1) * n.mut.p + mut, ] = ((mut - 1) * 10 + P)
+    }
+  }
+  m.theo.Pn = m.theo.Pn[as.vector(m.theo.index), ]
+
+  # Calculate groups, means and quantiles.
+  theo.Pn.group = CalculateGroupsMeansQuantiles(m.theo.Pn, n.mut.p, n.prot)
+  mean.theo.Pn.group = theo.Pn.group$mean.mean.group
+  theo.Pn.group.quantile1 = theo.Pn.group$mean.quantile1.group
+  theo.Pn.group.quantile2 = theo.Pn.group$mean.quantile2.group
+  theo.Pn.quantile1.mean = theo.Pn.group$quantile1.mean
+  theo.Pn.quantile2.mean = theo.Pn.group$quantile2.mean
+
+  m.mean.theo.Pn.group[as.vector(all.betas == beta), 1:length(mean.theo.Pn.group)] = mean.theo.Pn.group
+  m.theo.Pn.group.quantile1[as.vector(all.betas == beta), 1:length(theo.Pn.group.quantile1)] = theo.Pn.group.quantile1
+  m.theo.Pn.group.quantile2[as.vector(all.betas == beta), 1:length(theo.Pn.group.quantile2)] = theo.Pn.group.quantile2
+  m.theo.Pn.quantile1.mean[as.vector(all.betas == beta), 1:length(theo.Pn.quantile1.mean)] = theo.Pn.quantile1.mean
+  m.theo.Pn.quantile2.mean[as.vector(all.betas == beta), 1:length(theo.Pn.quantile2.mean)] = theo.Pn.quantile2.mean
+
+Pn.fit = lm(mean.exp.Pn ~  mean.theo.Pn.group)
+Pn.fit = fitted.values(Pn.fit)
+Pn.R2 = cor(mean.exp.Pn, Pn.fit) ^ 2 
+Pn.MSE = mean((Pn.fit - mean.exp.Pn) ^ 2)
+
+m.Pn.fit[as.vector(all.betas == beta), 1:(length(Pn.fit))] = Pn.fit
+m.Pn.R2[as.vector(all.betas == beta), ] = Pn.R2
+m.Pn.MSE[as.vector(all.betas == beta), ] = Pn.MSE
+m.mean.exp.Pn[as.vector(all.betas == beta), 1:(length(mean.exp.Pn))] = mean.exp.Pn
+}
+
+```
+
+### MSDi
+
+Los perfiles teoricos suavizados y normalizados de MSDi fueron fiteados con los perfiles exterimentales. Se compararon y se calcularon R^2 y MSE. Se indica el regimen de selecci?n usada.
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+plot(m.mean.theo.MSDi.group[1, ], 
+     main = "MSDi strong selection", 
+     xlab = "mode",
+     ylab = "MSDi",
+     ylim = c(0, max(c(m.theo.MSDi.group.quantile2, m.mean.exp.MSDi))))
+lines(m.theo.MSDi.group.quantile1[1, ])
+lines(m.theo.MSDi.group.quantile2[1, ])
+points(m.mean.exp.MSDi[1, ], col = "red")
+lines(as.vector(m.exp.MSDi.quantile1[1, ]), col = "red")
+lines(as.vector(m.exp.MSDi.quantile2[1, ]), col = "red")
+
+plot(m.mean.theo.MSDi.group[2, ], 
+     main = "MSDi medium selection", 
+     xlab = "mode",
+     ylab = "MSDi",
+     ylim = c(0, max(c(m.theo.MSDi.group.quantile2[2,], m.mean.exp.MSDi[2,]))))
+lines(m.theo.MSDi.group.quantile1[2, ])
+lines(m.theo.MSDi.group.quantile2[2, ])
+points(m.mean.exp.MSDi[2, ], col = "red")
+lines(as.vector(m.exp.MSDi.quantile1[2, ]), col = "red")
+lines(as.vector(m.exp.MSDi.quantile2[2, ]), col = "red")
+
+plot(m.mean.theo.MSDi.group[3, ], 
+     main = "MSDi weak selection", 
+     xlab = "mode",
+     ylab = "MSDi",
+     ylim = c(0, max(c(m.theo.MSDi.group.quantile2[3, ], m.mean.exp.MSDi[3, ]))))
+lines(m.theo.MSDi.group.quantile1[3, ])
+lines(m.theo.MSDi.group.quantile2[3, ])
+points(m.mean.exp.MSDi[3, ], col = "red")
+lines(as.vector(m.exp.MSDi.quantile1[3, ]), col = "red")
+lines(as.vector(m.exp.MSDi.quantile2[3, ]), col = "red")
+
+plot(m.mean.theo.MSDi.group[4, ], 
+     main = "MSDi no selection", 
+     xlab = "mode",
+     ylab = "MSDi",
+     ylim = c(0, max(c(m.theo.MSDi.group.quantile2[4, ], m.mean.exp.MSDi[4, ]))))
+lines(m.theo.MSDi.group.quantile1[4, ])
+lines(m.theo.MSDi.group.quantile2[4, ])
+points(m.mean.exp.MSDi[4, ], col = "red")
+lines(as.vector(m.exp.MSDi.quantile1[4, ]), col = "red")
+lines(as.vector(m.exp.MSDi.quantile2[4, ]), col = "red")
+
+```
+
+*Negro*: Puntos: promedio de promedios teorico. Lineas: promedio de cuantiles 0.05 y 0.95 de `r n.mut.p` grupos de `r n.prot` mutantes teoricas.
+
+*Rojo*: Puntos: promedio experimental. Lineas: cuantiles 0.05 y 0.95 experimentales.
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+plot(m.mean.theo.MSDi.group[1, ], 
+     main = "MSDi strong selection", 
+     xlab = "mode",
+     ylab = "MSDi",
+     ylim = c(0, max(c(m.theo.MSDi.group.quantile2[1, ], m.mean.exp.MSDi[1, ]))))
+lines(as.vector(m.theo.MSDi.quantile1.mean[1, ]))
+lines(as.vector(m.theo.MSDi.quantile2.mean[1, ]))
+points(m.mean.exp.MSDi[1, ], col = "red")
+
+plot(m.mean.theo.MSDi.group[2, ], 
+     main = "MSDi medium selection", 
+     xlab = "mode",
+     ylab = "MSDi",
+     ylim = c(0, max(c(m.theo.MSDi.group.quantile2[2, ], m.mean.exp.MSDi[2, ]))))
+lines(as.vector(m.theo.MSDi.quantile1.mean[2, ]))
+lines(as.vector(m.theo.MSDi.quantile2.mean[2, ]))
+points(m.mean.exp.MSDi[2, ], col = "red")
+
+plot(m.mean.theo.MSDi.group[3, ], 
+     main = "MSDi weak selection", 
+     xlab = "mode",
+     ylab = "MSDi",
+     ylim = c(0, max(c(m.theo.MSDi.group.quantile2[3, ], m.mean.exp.MSDi[3, ]))))
+lines(as.vector(m.theo.MSDi.quantile1.mean[3, ]))
+lines(as.vector(m.theo.MSDi.quantile2.mean[3, ]))
+points(m.mean.exp.MSDi[3, ], col = "red")
+
+plot(m.mean.theo.MSDi.group[4, ], 
+     main = "MSDi no selection", 
+     xlab = "mode",
+     ylab = "MSDi",
+     ylim = c(0, max(c(m.theo.MSDi.group.quantile2[4, ], m.mean.exp.MSDi[4, ]))))
+lines(as.vector(m.theo.MSDi.quantile1.mean[4, ]))
+lines(as.vector(m.theo.MSDi.quantile2.mean[4, ]))
+points(m.mean.exp.MSDi[4, ], col = "red")
+
+```
+
+*Negro*: Puntos: promedio de promedios teorico. Lineas:  cuantiles 0.05 y 0.95 de promedios de `r n.mut.p` grupos de `r n.prot` mutantes teoricas.
+
+*Rojo*: Promedio experimental.
+
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+plot(m.mean.theo.MSDi.group[1, ], m.mean.exp.MSDi[1, ], xlab = "<<MSDi>> teorico", ylab = "<MSDi> experimental", main = "MSDi strong selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[1, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[1, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.mean.theo.MSDi.group[2, ], m.mean.exp.MSDi[2, ], xlab = "<<MSDi>> teorico", ylab = "<MSDi> experimental", main = "MSDi medium selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[2, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[2, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.mean.theo.MSDi.group[3, ], m.mean.exp.MSDi[3, ], xlab = "<<MSDi>> teorico", ylab = "<MSDi> experimental", main = "MSDi weak selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[3, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[3, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.mean.theo.MSDi.group[4, ], m.mean.exp.MSDi[4, ], xlab = "<<MSDi>> teorico", ylab = "<MSDi> experimental", main = "MSDi no selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[4, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[4, ], digits = 2)), bty = "n", text.col = "red")
+
+```
+
+### Pn y Qn
+Las distribuciones de *Pn* y *Qn* de los conjuntos son las siguientes:
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+plot(m.mean.theo.Pn.group[1, 1:100], 
+     main = "Pn strong selection", 
+     xlab = "site",
+     ylab = "Pn",
+     ylim = c(0, max(c(m.theo.Pn.group.quantile2[1, 1:100], m.mean.exp.Pn[1, 1:100]))))
+lines(m.theo.Pn.group.quantile1[1, ])
+lines(m.theo.Pn.group.quantile2[1, ])
+points(m.mean.exp.Pn[1, ], col = "red")
+lines(as.vector(m.exp.Pn.quantile1[1, ]), col = "red")
+lines(as.vector(m.exp.Pn.quantile2[1, ]), col = "red")
+
+plot(m.mean.theo.Pn.group[2, 1:100], 
+     main = "Pn medium selection", 
+     xlab = "site",
+     ylab = "Pn",
+     ylim = c(0, max(c(m.theo.Pn.group.quantile2[2, 1:100], m.mean.exp.Pn[2, 1:100]))))
+lines(m.theo.Pn.group.quantile1[2, ])
+lines(m.theo.Pn.group.quantile2[2, ])
+points(m.mean.exp.Pn[2, ], col = "red")
+lines(as.vector(m.exp.Pn.quantile1[2, ]), col = "red")
+lines(as.vector(m.exp.Pn.quantile2[2, ]), col = "red")
+
+plot(m.mean.theo.Pn.group[3, 1:100], 
+     main = "Pn weak selection", 
+     xlab = "site",
+     ylab = "Pn",
+     ylim = c(0, max(c(m.theo.Pn.group.quantile2[3, 1:100], m.mean.exp.Pn[3, 1:100]))))
+lines(m.theo.Pn.group.quantile1[3, ])
+lines(m.theo.Pn.group.quantile2[3, ])
+points(m.mean.exp.Pn[3, ], col = "red")
+lines(as.vector(m.exp.Pn.quantile1[3, ]), col = "red")
+lines(as.vector(m.exp.Pn.quantile2[3, ]), col = "red")
+
+plot(m.mean.theo.Pn.group[4, 1:100], 
+     main = "Pn no selection", 
+     xlab = "site",
+     ylab = "Pn",
+     ylim = c(0, max(c(m.theo.Pn.group.quantile2[4, 1:100], m.mean.exp.Pn[4, 1:100]))))
+lines(m.theo.Pn.group.quantile1[4, ])
+lines(m.theo.Pn.group.quantile2[4, ])
+points(m.mean.exp.Pn[4, ], col = "red")
+lines(as.vector(m.exp.Pn.quantile1[4, ]), col = "red")
+lines(as.vector(m.exp.Pn.quantile2[4, ]), col = "red")
+
+```
+
+*Negro*: Puntos: promedio de promedios teorico. Lineas: promedio de cuantiles 0.05 y 0.95 de `r n.mut.p` grupos de `r n.prot` mutantes teoricas.
+
+*Rojo*: Puntos: promedio experimental. Lineas: cuantiles 0.05 y 0.95 experimentales.
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+plot(m.mean.theo.Pn.group[1, 1:100], 
+     main = "Pn strong selection", 
+     xlab = "site",
+     ylab = "Pn",
+     ylim = c(0, max(c(m.theo.Pn.group.quantile2[1, 1:100], m.mean.exp.Pn[1, 1:100]))))
+lines(as.vector(m.theo.Pn.quantile1.mean[1, ]))
+lines(as.vector(m.theo.Pn.quantile2.mean[1, ]))
+points(m.mean.exp.Pn[1, ], col = "red")
+
+plot(m.mean.theo.Pn.group[2, 1:100], 
+     main = "Pn medium selection", 
+     xlab = "site",
+     ylab = "Pn",
+     ylim = c(0, max(c(m.theo.Pn.group.quantile2[2, 1:100], m.mean.exp.Pn[2, 1:100]))))
+lines(as.vector(m.theo.Pn.quantile1.mean[2, ]))
+lines(as.vector(m.theo.Pn.quantile2.mean[2, ]))
+points(m.mean.exp.Pn[2, ], col = "red")
+
+plot(m.mean.theo.Pn.group[3, 1:100], 
+     main = "Pn weak selection", 
+     xlab = "site",
+     ylab = "Pn",
+     ylim = c(0, max(c(m.theo.Pn.group.quantile2[3, 1:100], m.mean.exp.Pn[3, 1:100]))))
+lines(as.vector(m.theo.Pn.quantile1.mean[3, ]))
+lines(as.vector(m.theo.Pn.quantile2.mean[3, ]))
+points(m.mean.exp.Pn[3, ], col = "red")
+
+plot(m.mean.theo.Pn.group[4, 1:100], 
+     main = "Pn no selection", 
+     xlab = "site",
+     ylab = "Pn",
+     ylim = c(0, max(c(m.theo.Pn.group.quantile2[4, 1:100], m.mean.exp.Pn[4, 1:100]))))
+lines(as.vector(m.theo.Pn.quantile1.mean[4, ]))
+lines(as.vector(m.theo.Pn.quantile2.mean[4, ]))
+points(m.mean.exp.Pn[4, ], col = "red")
+
+```
+
+*Negro*: Puntos: promedio de promedios teorico. Lineas:  cuantiles 0.05 y 0.95 de promedios de `r n.mut.p` grupos de `r n.prot` mutantes teoricas.
+
+*Rojo*: Promedio experimental.
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+plot(m.mean.theo.Pn.group[1, ], m.mean.exp.Pn[1, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn strong selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[1, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[1, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.mean.theo.Pn.group[2, ], m.mean.exp.Pn[2, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn medium selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[2, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[2, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.mean.theo.Pn.group[3, ], m.mean.exp.Pn[3, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn weak selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[3, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[3, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.mean.theo.Pn.group[4, ], m.mean.exp.Pn[4, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn no selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[4, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[4, ], digits = 2)), bty = "n", text.col = "red")
+
+```
