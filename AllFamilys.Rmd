@@ -1,7 +1,7 @@
 ---
 title: "MSDi for all families together"
 author: "Maria Laura Marcos"
-output: html_document
+output: pdf_document
 ---
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)

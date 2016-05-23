@@ -132,10 +132,10 @@ pdb = ReadCA(pdbs.fname, as.character(chain.p.ref))
 xyz.calpha = pdb$xyz.calpha
 
 MSDi.fit.pdb <- vec2resno(as.vector(MSDi.fit), sort(rep(1:ncol(xyz.calpha),3)))
-write.pdb(xyz = c(xyz.calpha), b = MSDi.fit.pdb * 100, file = file.path(out.dir, paste(family, "_", p.ref, "_beta_", beta, ".pdb", sep = "")))
+write.pdb(xyz = c(xyz.calpha), b = MSDi.fit.pdb, file = file.path(out.dir, paste(family, "_", p.ref, "_beta_", beta, ".pdb", sep = "")))
 
 MSDi.exp.pdb <- vec2resno(as.vector(exp.smooth.norm.MSDi), sort(rep(1:ncol(xyz.calpha),3)))
-write.pdb(xyz = c(xyz.calpha), b = MSDi.exp.pdb * 100, file = file.path(out.dir, paste(family, "_", p.ref, "_exp", ".pdb", sep = "")))
+write.pdb(xyz = c(xyz.calpha), b = MSDi.exp.pdb, file = file.path(out.dir, paste(family, "_", p.ref, "_exp", ".pdb", sep = "")))
 }
 
 
