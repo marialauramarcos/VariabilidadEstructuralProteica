@@ -1,9 +1,2 @@
 family  ,p.ref,chain.p.ref,n.mut.p,fmax,R0,rotate,heme,calculate.betas,analyze.family,generate.mutants,analyze.experimental.theoretical,K.analysis
 globins,1a6m,g,50,2,10,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,Keff
-sh3,1lcka,F,50,2,10,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
-fabp,1hmt,D,50,2,10,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
-rrm,1fxla2,G,50,2,10,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
-phoslip,1jiaa,L,50,2,10,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
-cys,1cqd,H,50,2,10,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
-serinProteases,1mcta,G,50,2,10,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
-snakesToxin,1ntx,S,50,2,10,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff

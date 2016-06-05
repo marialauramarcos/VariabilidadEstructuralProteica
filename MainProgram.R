@@ -1,9 +1,10 @@
 # Description:
 #
 # This is the main program of the project. The program simulates multiple mutants of a given protein using the "Linearly Forced - 
-# Elastic Network Model" (LFENM) and with different selection regimens according to the Stress Model. Then, the program
+# Elastic Network Model" (LFENM) and with different selection regimens according to the "Stress Model". The program also
 # analyzes the multiple alignment of the family to which the protein belongs and calculates measures 
 # of variabilty of theoretical and experimental data.
+#
 # To run the program it is necessary to fill the input ("input_MainProgram.csv") with the following information:
 #
 #    - family: The family of the protein to mutate. It can be "globins", "serinProteases", 
