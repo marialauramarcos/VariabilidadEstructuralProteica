@@ -1,0 +1,383 @@
+---
+title: "Estudio variabilidad estructural proteica"
+output: html_document
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)
+```
+
+```{r}
+# Load packages.
+library(bio3d)
+library(ggplot2)
+
+# Source functions.
+source("FUNCTIONS/CalculateGroupsMeansQuantiles.R")
+
+# Set directories.
+data.dir <- "DATA"
+out.dir <- "OUT"
+
+# p.ref.
+n.sites.p.ref = read.csv(file.path(out.dir, paste(family, "_out_m.n.sites.p.ref.csv", sep = "")))$V1[1]
+
+# Create matrices to save data.
+m.MSDi.fit = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.exp.MSDi = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.exp.MSDi.sd = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.MSDi.R2 = matrix(nrow = 4, ncol = 1)
+m.MSDi.MSE = matrix(nrow = 4, ncol = 1)
+  
+m.Pn.fit = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.exp.Pn = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.Pn.R2 = matrix(nrow = 4, ncol = 1)
+m.Pn.MSE = matrix(nrow = 4, ncol = 1)
+
+m.mean.theo.Pn.group = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.mean.exp.Pn = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.exp.Pn.sd = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+
+# Read betas.
+all.betas <- list("strong.sel", "medium.sel", "weak.sel", "no.sel")
+
+  # Start a loop for each beta.
+  for (beta in all.betas)  {
+    
+    ### Experimental ###
+    
+    gaps = c(18, 19, 47, 48, 49, 50, 51, 52, 53, 54, 55, 148, 149, 150, 151)
+    active = c(28, 29, 32, 64, 68, 93, 107)
+
+    analysis.fname.id <- paste(family, "_R0_", R0, "_beta_", beta, "_K.analysis_", K.analysis, sep = "")
+
+    m.exp.Pn = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.Pn.csv", sep = "")))[, 1:100]
+    n.prot = nrow(m.exp.Pn)
+
+    mean.exp.Pn = colMeans(m.exp.Pn)
+    exp.Pn.sd = apply(m.exp.Pn, 2, sd, na.rm = T)/sqrt(n.prot) * 1.96
+    m.mean.exp.Pn[as.vector(all.betas == beta), 1:length(mean.exp.Pn)] = mean.exp.Pn
+
+    m.exp.smooth.norm.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.norm.dr.squarei.csv", sep = "")))
+    no.gaps = colSums(matrix(as.numeric(!is.na(m.exp.smooth.norm.dr.squarei)), nrow = n.prot))
+    exp.smooth.norm.MSDi = colMeans(m.exp.smooth.norm.dr.squarei, na.rm = T )
+    exp.smooth.norm.MSDi.sd = apply(m.exp.smooth.norm.dr.squarei, 2, sd, na.rm = T)/sqrt(no.gaps) * 1.96
+    
+    ### Theoretical ###
+
+    m.theo.Pn = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.Pn.csv", sep = "")))[, 1:100]
+
+    m.theo.smooth.norm.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.norm.dr.squarei.csv", sep = "")))
+    
+    theo.smooth.norm.MSDi = colMeans(m.theo.smooth.norm.dr.squarei, na.rm = T )
+
+    n.mut = nrow(m.theo.Pn)
+
+    fit = lm(exp.smooth.norm.MSDi ~ theo.smooth.norm.MSDi )
+    MSDi.fit = fitted.values(fit)
+    MSDi.R2 = cor(exp.smooth.norm.MSDi[!is.na(exp.smooth.norm.MSDi)], MSDi.fit) ^ 2 
+    MSDi.MSE = mean((MSDi.fit - exp.smooth.norm.MSDi[!is.na(exp.smooth.norm.MSDi)]) ^ 2)
+    exp.smooth.norm.MSDi = exp.smooth.norm.MSDi[!is.na(exp.smooth.norm.MSDi)]
+
+    m.MSDi.fit[as.vector(all.betas == beta), ] = MSDi.fit
+    m.MSDi.R2[as.vector(all.betas == beta), ] = MSDi.R2
+    m.MSDi.MSE[as.vector(all.betas == beta), ] = MSDi.MSE
+    m.exp.MSDi[as.vector(all.betas == beta), ] = exp.smooth.norm.MSDi
+    m.exp.MSDi.sd[as.vector(all.betas == beta), ] = exp.smooth.norm.MSDi.sd[!is.na(exp.smooth.norm.MSDi.sd)]
+ 
+    ### Pn ###
+
+  # Calculate groups, means and quantiles.
+  theo.Pn.group = CalculateGroupsMeansQuantiles(m.theo.Pn, n.mut.p, n.prot)
+  mean.theo.Pn.group = theo.Pn.group$mean.mean.group
+
+  m.mean.theo.Pn.group[as.vector(all.betas == beta), 1:length(mean.theo.Pn.group)] = mean.theo.Pn.group
+  
+  Pn.fit = lm(mean.exp.Pn ~  mean.theo.Pn.group)
+  Pn.fit = fitted.values(Pn.fit)
+  Pn.R2 = cor(mean.exp.Pn, Pn.fit) ^ 2 
+  Pn.MSE = mean((Pn.fit - mean.exp.Pn) ^ 2)
+
+  m.Pn.fit[as.vector(all.betas == beta), 1:(length(Pn.fit))] = Pn.fit
+  m.Pn.R2[as.vector(all.betas == beta), ] = Pn.R2
+  m.Pn.MSE[as.vector(all.betas == beta), ] = Pn.MSE
+  m.mean.exp.Pn[as.vector(all.betas == beta), 1:(length(mean.exp.Pn))] = mean.exp.Pn
+  m.exp.Pn.sd[as.vector(all.betas == beta), 1:(length(exp.Pn.sd))] = exp.Pn.sd
+
+  # Write pdb files for MSDi.
+  pdbs.fname <- file.path(data.dir, paste("1a6m.pdb", sep = ""))
+  
+  pdb <- read.pdb(pdbs.fname, ATOM.only = T)
+  sel <- atom.select(pdb)
+  b.factor <- pdb$atom$b
+  site = as.numeric(pdb$atom[sel$atom, c("resno")])[1:1203]
+  MSDi.fit.pdb <- vec2resno(as.vector(MSDi.fit), site)
+  exp.MSDi.pdb <- vec2resno(as.vector(exp.smooth.norm.MSDi), site)
+  b.factor.fit = b.factor
+  b.factor.exp = b.factor
+  
+  b.factor.fit[1:1203] = MSDi.fit.pdb * 100
+  b.factor.exp[1:1203] = exp.MSDi.pdb * 100
+
+  write.pdb(pdb = pdb, b = b.factor.fit, file = file.path(out.dir, paste(family, "_", p.ref, "_beta_", beta, ".pdb", sep = "")))
+  
+  write.pdb(pdb = pdb, b = b.factor.exp, file = file.path(out.dir, paste(family, "_", p.ref, "_exp", ".pdb", sep = "")))
+  
+  
+}
+
+```
+
+### MSDi
+
+Los perfiles teoricos suavizados y normalizados de MSDi fueron fiteados con los perfiles exterimentales. Se compararon y se calcularon R^2 y MSE. Se indica el regimen de seleccion usada.
+
+```{r}
+
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+MSDi.exp = m.exp.MSDi[1, ]
+MSDi.theo = m.MSDi.fit[1, ]
+MSDi.exp.sd = m.exp.MSDi.sd[1, ]
+
+data.MSDi = data.frame("MSDi.exp" = MSDi.exp, "MSDi.theo" = MSDi.theo, "sites" = seq(1:length(MSDi.exp)), "MSDi.exp.sd" = MSDi.exp.sd, "type" = active.sites$type)
+
+ggplot(data = data.MSDi, aes(x = sites)) + 
+  geom_errorbar(aes(y = MSDi.exp, ymin = MSDi.exp - MSDi.exp.sd, ymax = MSDi.exp + MSDi.exp.sd), width = 0, col = gray(0.5)) +
+  geom_line(aes(y = MSDi.theo, colour = "MSDi.theo"), col = "black") +
+  geom_point(aes(y = MSDi.exp, colour = type), size = 1.5) + 
+  ylab("MSDi strong selection") +
+  scale_color_manual(values=c("green", "yellow", "red", "black"))
+  
+MSDi.exp = m.exp.MSDi[2, ]
+MSDi.theo = m.MSDi.fit[2, ]
+MSDi.exp.sd = m.exp.MSDi.sd[2, ]
+
+data.MSDi = data.frame("MSDi.exp" = MSDi.exp, "MSDi.theo" = MSDi.theo, "sites" = seq(1:length(MSDi.exp)), "MSDi.exp.sd" = MSDi.exp.sd, "type" = active.sites$type)
+
+ggplot(data = data.MSDi, aes(x = sites)) + 
+  geom_errorbar(aes(y = MSDi.exp, ymin = MSDi.exp - MSDi.exp.sd, ymax = MSDi.exp + MSDi.exp.sd), width = 0, col = gray(0.5)) +
+  geom_line(aes(y = MSDi.theo, colour = "MSDi.theo"), col = "black") +
+  geom_point(aes(y = MSDi.exp, colour = type), size = 1.5) + 
+  ylab("MSDi medium selection") +
+  scale_color_manual(values=c("green", "yellow", "red", "black"))
+  
+
+MSDi.exp = m.exp.MSDi[3, ]
+MSDi.theo = m.MSDi.fit[3, ]
+MSDi.exp.sd = m.exp.MSDi.sd[3, ]
+
+data.MSDi = data.frame("MSDi.exp" = MSDi.exp, "MSDi.theo" = MSDi.theo, "sites" = seq(1:length(MSDi.exp)), "MSDi.exp.sd" = MSDi.exp.sd, "type" = active.sites$type)
+
+ggplot(data = data.MSDi, aes(x = sites)) + 
+  geom_errorbar(aes(y = MSDi.exp, ymin = MSDi.exp - MSDi.exp.sd, ymax = MSDi.exp + MSDi.exp.sd), width = 0, col = gray(0.5)) +
+  geom_line(aes(y = MSDi.theo, colour = "MSDi.theo"), col = "black") +
+  geom_point(aes(y = MSDi.exp, colour = type), size = 1.5) + 
+  ylab("MSDi weak selection") +
+  scale_color_manual(values=c("green", "yellow", "red", "black"))
+
+MSDi.exp = m.exp.MSDi[4, ]
+MSDi.theo = m.MSDi.fit[4, ]
+MSDi.exp.sd = m.exp.MSDi.sd[4, ]
+
+data.MSDi = data.frame("MSDi.exp" = MSDi.exp, "MSDi.theo" = MSDi.theo, "sites" = seq(1:length(MSDi.exp)), "MSDi.exp.sd" = MSDi.exp.sd, "type" = active.sites$type)
+
+ggplot(data = data.MSDi, aes(x = sites)) + 
+  geom_errorbar(aes(y = MSDi.exp, ymin = MSDi.exp - MSDi.exp.sd, ymax = MSDi.exp + MSDi.exp.sd), width = 0, col = gray(0.5)) +
+  geom_line(aes(y = MSDi.theo, colour = "MSDi.theo"), col = "black") +
+  geom_point(aes(y = MSDi.exp, colour = type), size = 1.5) + 
+  ylab("MSDi no selection") +
+  scale_color_manual(values=c("green", "yellow", "red", "black")) 
+  
+```
+
+*Linea negra:* Promedio teorico.
+*Puntos rojos:* Promedio experimental gaps. 
+*Puntos verdes:* Promedio experimental sitio activo.
+*Puntos amarillos:* Promedio experimental sitios en contacto con el sitio activo.
+*Puntos negros:* Promedio experimental otros sitios.
+*Barras grises:* intervalo Sd/sqrt(n.prot)*1.96.
+
+
+```{r}
+layout(matrix(1:2, 1, 2, byrow = T)) 
+par(pty = "s")
+plot(m.MSDi.fit[1, ], m.exp.MSDi[1, ], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "MSDi strong selection", xlim = c(0.3, 3.5), ylim = c(0.3, 3.5), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[1, ], digits = 2)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[1, ], digits = 2)), bty = "n", cex = 0.7)
+points(m.MSDi.fit[1, contacts.active],m.exp.MSDi[1, contacts.active], col = "yellow")
+points(m.MSDi.fit[1, gaps],m.exp.MSDi[1, gaps], col = "red")
+points(m.MSDi.fit[1, active],m.exp.MSDi[1, active], col = "green")
+
+plot(m.MSDi.fit[2, ], m.exp.MSDi[2, ], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "MSDi medium selection", xlim = c(0.3, 3.5), ylim = c(0.3, 3.5), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[2, ], digits = 2)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[2, ], digits = 2)), bty = "n", cex = 0.7)
+points(m.MSDi.fit[2, contacts.active],m.exp.MSDi[2, contacts.active], col = "yellow")
+points(m.MSDi.fit[2, gaps],m.exp.MSDi[2, gaps], col = "red")
+points(m.MSDi.fit[2, active],m.exp.MSDi[2, active], col = "green")
+
+plot(m.MSDi.fit[3, ], m.exp.MSDi[3, ], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "MSDi weak selection", xlim = c(0.3, 3.5), ylim = c(0.3, 3.5), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[3, ], digits = 2)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[3, ], digits = 2)), bty = "n", cex = 0.7)
+points(m.MSDi.fit[3, contacts.active],m.exp.MSDi[3, contacts.active], col = "yellow")
+points(m.MSDi.fit[3, gaps],m.exp.MSDi[3, gaps] , col = "red") 
+points(m.MSDi.fit[3, active],m.exp.MSDi[3, active] , col = "green") 
+
+plot(m.MSDi.fit[4, ], m.exp.MSDi[4, ], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "MSDi no selection", xlim = c(0.3, 3.5), ylim = c(0.3, 3.5), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[4, ], digits = 2)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[4, ], digits = 2)), bty = "n", cex = 0.7)
+points(m.MSDi.fit[4, contacts.active],m.exp.MSDi[4, contacts.active], col = "yellow")
+points(m.MSDi.fit[4, gaps],m.exp.MSDi[4, gaps] , col = "red")
+points(m.MSDi.fit[4, active],m.exp.MSDi[4, active] , col = "green")
+```
+
+```{r}
+layout(matrix(1:2, 1, 2, byrow = T)) 
+
+par(pty = "s")
+plot(m.MSDi.fit[1, ], m.MSDi.fit[2, ], xlab = "MSDi strong selection", ylab = "MSDi medium selection", xlim = c(0.3, 3.5), ylim = c(0.3, 3.5), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(cor(m.MSDi.fit[1, ], m.MSDi.fit[2, ]), digits = 4)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(mean((m.MSDi.fit[1, ] - m.MSDi.fit[2, ])^2), digits = 2)), bty = "n", cex = 0.7)
+points(m.MSDi.fit[1, contacts.active],m.MSDi.fit[2, contacts.active], col = "yellow")
+points(m.MSDi.fit[1, gaps],m.MSDi.fit[2, gaps], col = "red")
+points(m.MSDi.fit[1, active],m.MSDi.fit[2, active], col = "green")
+
+plot(m.MSDi.fit[1, ], m.MSDi.fit[3, ], xlab = "MSDi strong selection", ylab = "MSDi weak selection", xlim = c(0.3, 3.5), ylim = c(0.3, 3.5), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(cor(m.MSDi.fit[1, ], m.MSDi.fit[3, ]), digits = 4)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(mean((m.MSDi.fit[1, ] - m.MSDi.fit[3, ])^2), digits = 2)), bty = "n", cex = 0.7)
+points(m.MSDi.fit[1, contacts.active],m.MSDi.fit[3, contacts.active], col = "yellow")
+points(m.MSDi.fit[1, gaps],m.MSDi.fit[3, gaps], col = "red")
+points(m.MSDi.fit[1, active],m.MSDi.fit[3, active], col = "green")
+
+plot(m.MSDi.fit[1, ], m.MSDi.fit[4, ], xlab = "MSDi strong selection", ylab = "MSDi no selection", xlim = c(0.3, 3.5), ylim = c(0.3, 3.5), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(cor(m.MSDi.fit[1, ], m.MSDi.fit[4, ]), digits = 4)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(mean((m.MSDi.fit[1, ] - m.MSDi.fit[4, ])^2), digits = 2)), bty = "n", cex = 0.7)
+points(m.MSDi.fit[1, contacts.active],m.MSDi.fit[4, contacts.active], col = "yellow")
+points(m.MSDi.fit[1, gaps],m.MSDi.fit[4, gaps], col = "red")
+points(m.MSDi.fit[1, active],m.MSDi.fit[4, active], col = "green")
+
+plot(m.MSDi.fit[2, ], m.MSDi.fit[3, ], xlab = "MSDi medium selection", ylab = "MSDi weak selection", xlim = c(0.3, 3.5), ylim = c(0.3, 3.5), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(cor(m.MSDi.fit[2, ], m.MSDi.fit[3, ]), digits = 4)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(mean((m.MSDi.fit[2, ] - m.MSDi.fit[3, ])^2), digits = 2)), bty = "n", cex = 0.7)
+points(m.MSDi.fit[2, contacts.active],m.MSDi.fit[3, contacts.active], col = "yellow")
+points(m.MSDi.fit[2, gaps],m.MSDi.fit[3, gaps], col = "red")
+points(m.MSDi.fit[2, active],m.MSDi.fit[3, active], col = "green")
+
+plot(m.MSDi.fit[2, ], m.MSDi.fit[4, ], xlab = "MSDi medium selection", ylab = "MSDi no selection", xlim = c(0.3, 3.5), ylim = c(0.3, 3.5), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(cor(m.MSDi.fit[2, ], m.MSDi.fit[4, ]), digits = 4)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(mean((m.MSDi.fit[2, ] - m.MSDi.fit[4, ])^2), digits = 2)), bty = "n", cex = 0.7)
+points(m.MSDi.fit[2, contacts.active],m.MSDi.fit[4, contacts.active], col = "yellow")
+points(m.MSDi.fit[2, gaps],m.MSDi.fit[4, gaps], col = "red")
+points(m.MSDi.fit[2, active],m.MSDi.fit[4, active], col = "green")
+
+plot(m.MSDi.fit[3, ], m.MSDi.fit[4, ], xlab = "MSDi weak selection", ylab = "MSDi no selection", xlim = c(0.3, 3.5), ylim = c(0.3, 3.5), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(cor(m.MSDi.fit[3, ], m.MSDi.fit[4, ]), digits = 4)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(mean((m.MSDi.fit[3, ] - m.MSDi.fit[4, ])^2), digits = 2)), bty = "n", cex = 0.7)
+points(m.MSDi.fit[3, contacts.active],m.MSDi.fit[4, contacts.active], col = "yellow")
+points(m.MSDi.fit[3, gaps],m.MSDi.fit[4, gaps], col = "red")
+points(m.MSDi.fit[3, active],m.MSDi.fit[4, active], col = "green")
+```
+
+*Rojo:* Gaps. 
+*Verde:* Sitio activo.
+*Amarillo:* Sitios en contacto con el sitio activo.
+*Negro:* Otros sitios.
+
+### Pn y Qn
+Las distribuciones de *Pn* y *Qn* de los conjuntos son las siguientes:
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+Pn.exp = m.mean.exp.Pn[1, 1:100]
+Pn.theo = m.mean.theo.Pn.group[1, 1:100]
+Pn.exp.sd = m.exp.Pn.sd[1, 1:100]
+
+data.Pn = data.frame("Pn.exp" = Pn.exp, "Pn.theo" = Pn.theo, "modes" = seq(1:length(Pn.exp)), "Pn.exp.sd" = Pn.exp.sd)
+ggplot(data = data.Pn, aes(x = modes)) + 
+  geom_point(aes(y = Pn.exp, colour = "Pn.exp")) + 
+  geom_line(aes(y = Pn.theo, colour = "Pn.theo"), col = "black") +
+  ylab("Pn strong selecion") + 
+  geom_errorbar(aes(y = Pn.exp, ymin = Pn.exp - Pn.exp.sd, ymax = Pn.exp + Pn.exp.sd), width = 0, col = "red") +
+geom_smooth(aes(y = Pn.exp), colour = "red", span = 0.4)
+
+Pn.exp = m.mean.exp.Pn[2, 1:100]
+Pn.theo = m.mean.theo.Pn.group[2, 1:100]
+Pn.exp.sd = m.exp.Pn.sd[2, 1:100]
+
+data.Pn = data.frame("Pn.exp" = Pn.exp, "Pn.theo" = Pn.theo, "modes" = seq(1:length(Pn.exp)), "Pn.exp.sd" = Pn.exp.sd)
+ggplot(data = data.Pn, aes(x = modes)) + 
+  geom_point(aes(y = Pn.exp, colour = "Pn.exp")) + 
+  geom_line(aes(y = Pn.theo, colour = "Pn.theo"), col = "black") +
+  ylab("Pn medium selecion") + 
+  geom_errorbar(aes(y = Pn.exp, ymin = Pn.exp - Pn.exp.sd, ymax = Pn.exp + Pn.exp.sd), width = 0, col = "red") +
+geom_smooth(aes(y = Pn.exp), colour = "red", span = 0.4)
+
+Pn.exp = m.mean.exp.Pn[3, 1:100]
+Pn.theo = m.mean.theo.Pn.group[3, 1:100]
+Pn.exp.sd = m.exp.Pn.sd[3, 1:100]
+
+data.Pn = data.frame("Pn.exp" = Pn.exp, "Pn.theo" = Pn.theo, "modes" = seq(1:length(Pn.exp)), "Pn.exp.sd" = Pn.exp.sd)
+ggplot(data = data.Pn, aes(x = modes)) + 
+  geom_point(aes(y = Pn.exp, colour = "Pn.exp")) + 
+  geom_line(aes(y = Pn.theo, colour = "Pn.theo"), col = "black") +
+  ylab("Pn weak selecion") + 
+  geom_errorbar(aes(y = Pn.exp, ymin = Pn.exp - Pn.exp.sd, ymax = Pn.exp + Pn.exp.sd), width = 0, col = "red") +
+  geom_smooth(aes(y = Pn.exp), colour = "red", span = 0.4)
+
+
+Pn.exp = m.mean.exp.Pn[4, 1:100]
+Pn.theo = m.mean.theo.Pn.group[4, 1:100]
+Pn.exp.sd = m.exp.Pn.sd[4, 1:100]
+
+data.Pn = data.frame("Pn.exp" = Pn.exp, "Pn.theo" = Pn.theo, "modes" = seq(1:length(Pn.exp)), "Pn.exp.sd" = Pn.exp.sd)
+ggplot(data = data.Pn, aes(x = modes)) + 
+  geom_point(aes(y = Pn.exp, colour = "Pn.exp")) + 
+  geom_line(aes(y = Pn.theo, colour = "Pn.theo"), col = "black") +
+  ylab("Pn no selecion") + 
+  geom_errorbar(aes(y = Pn.exp, ymin = Pn.exp - Pn.exp.sd, ymax = Pn.exp + Pn.exp.sd), width = 0, col = "red") + 
+  geom_smooth(aes(y = Pn.exp), colour = "red", span = 0.4)
+
+
+```
+
+*Linea negra*: Promedio teorico.
+*Puntos rojos*: Promedio experimental.
+*Barras rojas:* intervalo Sd/sqrt(n.prot)*1.96.
+*Liena roja y banda gris:* geom_smooth experimental con span = 0.4
+
+
+```{r}
+layout(matrix(1:2, 1, 2, byrow = T)) 
+par(pty = "s")
+
+plot(m.mean.theo.Pn.group[1, ], m.mean.exp.Pn[1, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn strong selection", xlim = c(0, 0.04), ylim = c(0, 0.04), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[1, ], digits = 2)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[1, ], digits = 2)), bty = "n", cex = 0.7)
+
+plot(m.mean.theo.Pn.group[2, ], m.mean.exp.Pn[2, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn medium selection", xlim = c(0, 0.04), ylim = c(0, 0.04), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[2, ], digits = 2)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[2, ], digits = 2)), bty = "n", cex = 0.7)
+
+plot(m.mean.theo.Pn.group[3, ], m.mean.exp.Pn[3, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn weak selection", xlim = c(0, 0.04), ylim = c(0, 0.04), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[3, ], digits = 2)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[3, ], digits = 2)), bty = "n", cex = 0.7)
+
+plot(m.mean.theo.Pn.group[4, ], m.mean.exp.Pn[4, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn no selection", xlim = c(0, 0.04), ylim = c(0, 0.04), cex.main = 1, cex.lab = 1)
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[4, ], digits = 2)), bty = "n", cex = 0.7)
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[4, ], digits = 2)), bty = "n", cex = 0.7)
+
+```

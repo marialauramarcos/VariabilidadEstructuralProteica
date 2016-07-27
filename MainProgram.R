@@ -1,11 +1,11 @@
 # Description:
 #
 # This is the main program of the project. The program simulates multiple mutants of a given protein using the "Linearly Forced - 
-# Elastic Network Model" (LFENM) and with different selection regimens according to the "Stress Model". The program also
+# Elastic Network Model" (LF-ENM) with different selection regimens according to the "Stress Model". The program also
 # analyzes the multiple alignment of the family to which the protein belongs and calculates measures 
 # of variabilty of theoretical and experimental data.
 #
-# To run the program it is necessary to fill the input ("input_MainProgram.csv") with the following information:
+# To run the program it is necessary to previously fill the input ("input_MainProgram.csv") with the following information:
 #
 #    - family: The family of the protein to mutate. It can be "globins", "serinProteases", 
 #    "snakesToxin", "sh3", "fabp", "rrm", "phoslip" or "cys".
@@ -24,23 +24,23 @@
 #    - K.analysis: It can be "K" or "Keff". For "K" or "Keff", the analysis is based on normal modes of "K" or "Keff"
 #    respectibly.
 
-# Remove objects.
+# Remove objects from the workspace
 rm(list = ls())
 
-# Load packages.
+# Load packages
 library(bio3d) 
 library(seqinr) 
 
-# Data dir.
+# Data dir
 data.dir <- "DATA"
 
-# Output dir.
-out.dir <- "OUT"
+# Output dir
+out.dir <- "OUT/out_subset_CA"
 
-# General parameters.
-TOLERANCE = 1e-10
+# General parameters
+tolerance = 1e-10
 
-# Functions filenames.
+# Function filenames
 AnalyzeExperimentalTheoretical.fname <- "FUNCTIONS/AnalyzeExperimentalTheoretical.R"
 AnalyzeFamily.fname <- "FUNCTIONS/AnalyzeFamily.R"
 AnalyzeAlignment.fname <- "FUNCTIONS/AnalyzeAlignment.R"
@@ -55,7 +55,7 @@ CalculateKij.fname <- "FUNCTIONS/CalculateKij.R"
 CalculateForce.fname <- "FUNCTIONS/CalculateForce.R"
 CalculateVariability.fname <- "FUNCTIONS/CalculateVariability.R"
 
-# Source functions.
+# Source functions
 source(AnalyzeExperimentalTheoretical.fname)
 source(AnalyzeFamily.fname)
 source(AnalyzeAlignment.fname)
@@ -70,28 +70,29 @@ source(CalculateKij.fname)
 source(CalculateForce.fname)
 source(CalculateVariability.fname)
 
-# Read input.
+# Read input
 input.fname <- file.path("input_MainProgram.csv")
 input <- read.csv(input.fname)
 
-# Start a loop to analyze each family.
-for (a in (1:nrow(input))) { 
-  family <- as.character(input$family)[a]
-  print(family)
-  p.ref <- as.character(input$p.ref)[a]
-  chain.p.ref <- as.character(input$chain.p.ref)[a]
-  n.mut.p = input$n.mut.p[a]
-  fmax = input$fmax[a] 
-  R0 = input$R0[a]
-  rotate <- input$rotate[a]
-  heme <- input$heme[a]
-  calculate.betas <- input$calculate.betas[a]
-  analyze.family <- input$analyze.family[a]
-  generate.mutants <- input$generate.mutants[a]
-  analyze.experimental.theoretical <- input$analyze.experimental.theoretical[a]
-  K.analysis <- input$K.analysis[a]
+# Start a loop to analyze each family
+for (f in (1:nrow(input))) { 
+  family <- as.character(input$family)[f]
+  p.ref <- as.character(input$p.ref)[f]
+  chain.p.ref <- as.character(input$chain.p.ref)[f]
+  n.mut.p = input$n.mut.p[f]
+  fmax = input$fmax[f] 
+  R0 = input$R0[f]
+  rotate <- input$rotate[f]
+  heme <- input$heme[f]
+  calculate.betas <- input$calculate.betas[f]
+  analyze.family <- input$analyze.family[f]
+  generate.mutants <- input$generate.mutants[f]
+  analyze.experimental.theoretical <- input$analyze.experimental.theoretical[f]
+  K.analysis <- input$K.analysis[f]
   
-  # Analyze the alignment of the family.
+  print(family)
+  
+  # Analyze the alignment of the family
   if (analyze.family == "TRUE") {
     AnalyzeFamily(family,
                   p.ref, 
@@ -99,10 +100,10 @@ for (a in (1:nrow(input))) {
                   out.dir)
   }
 
-  # Generate id for betas output filename.
+  # Generate id for betas output filename
   betas.fname.id <- paste(family, "_", p.ref, "_R0_", R0, sep = "")
   
-  # Calculate betas for the "Stress Model".
+  # Calculate betas of the "Stress Model"
   if (calculate.betas == "TRUE") {
     CalculateBetas(chain.p.ref,
                    fmax, 
@@ -111,36 +112,36 @@ for (a in (1:nrow(input))) {
                    data.dir,
                    out.dir,
                    betas.fname.id,
-                   TOLERANCE)
+                   tolerance)
   }
   
-  # Read betas.
+  # Read betas and stablish selection regimens
   all.betas <- read.csv(file.path(out.dir, paste(betas.fname.id, "_out_all.betas.csv", sep = "")))
-  regimens <- list("strong.sel", "medium.sel", "weak.sel", "no.sel")
+  regimens <- c("strong.sel", "medium.sel", "weak.sel", "no.sel")
   
-  # Start a loop for each beta.
-  for (beta in all.betas)  {
+  # Start a loop for each beta
+  for (b in all.betas)  {
     
-    # Generate ids for output filenames.
-    mut.fname.id <- paste(family, "_R0_", R0, "_beta_", regimens[all.betas == beta], sep = "")
+    # Generate ids for output filenames
+    mut.fname.id <- paste(family, "_R0_", R0, "_beta_", regimens[all.betas == b], sep = "")
     analysis.fname.id <- paste(mut.fname.id, "_K.analysis_", K.analysis, sep = "")
   
-    # Generate mutants.
+    # Generate mutants
     if (generate.mutants == "TRUE") {
       GenerateMutants(family,
                       chain.p.ref, 
                       n.mut.p,
                       fmax, 
                       R0,
-                      beta,
+                      b,
                       heme, 
                       data.dir,
                       out.dir,
                       mut.fname.id,
-                      TOLERANCE)
+                      tolerance)
     }
   
-    # Analyze measures of variability of experimental proteins and simulated mutants.
+    # Calculate measures of variability of theoretical and experimental proteins
     if (analyze.experimental.theoretical == "TRUE") {
       AnalyzeExperimentalTheoretical(family,
                                      chain.p.ref,
@@ -153,7 +154,7 @@ for (a in (1:nrow(input))) {
                                      out.dir,
                                      mut.fname.id, 
                                      analysis.fname.id,
-                                     TOLERANCE)
+                                     tolerance)
     }
   }
 }

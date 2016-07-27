@@ -1,2 +1,2 @@
 family  ,p.ref,chain.p.ref,n.mut.p,fmax,R0,rotate,heme,calculate.betas,analyze.family,generate.mutants,analyze.experimental.theoretical,K.analysis
-globins,1a6m,g,50,2,10,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,Keff
+globins,1a6m,g,5,2,10,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,Keff

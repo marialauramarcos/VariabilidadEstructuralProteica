@@ -1,13 +1,13 @@
 # This function reads a pdb file and returns CA equilibrium coordinates, sites and nsites.
 #
 #  Args:
-#    pdb.fname: pdb file name.
-#    chain: chain to read.
+#    - pdb.fname: pdb filename.
+#    - chain: chain to read.
 #
 #  Returns:
 #    xyz.calpha: Equilibrium coordinates of CAs.
 #    site: A vector with the sites.
-#    nsites: length(site).
+#    n.sites: length(site).
 ReadCA <- function(pdb.fname, chain) {
   pdb <- read.pdb(file = pdb.fname)     
   sel <- atom.select(pdb, chain = chain, elety = "CA")    

@@ -1,0 +1,276 @@
+---
+title: "Estudio variabilidad estructural proteica"
+output: html_document
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(warning = FALSE, echo = FALSE, message = FALSE)
+```
+
+```{r}
+# Load packages.
+library(bio3d)
+
+# Source functions.
+source("FUNCTIONS/CalculateGroupsMeansQuantiles.R")
+
+# Set directories.
+data.dir <- "DATA"
+out.dir <- "OUT"
+
+# p.ref.
+n.sites.p.ref = read.csv(file.path(out.dir, paste(family, "_out_m.n.sites.p.ref.csv", sep = "")))$V1[1]
+
+# Create matrices to save data.
+m.MSDi.fit = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.exp.MSDi = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.exp.MSDi.sd = matrix(nrow = 4, ncol = n.sites.p.ref)
+m.MSDi.R2 = matrix(nrow = 4, ncol = 1)
+m.MSDi.MSE = matrix(nrow = 4, ncol = 1)
+  
+m.Pn.fit = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.exp.Pn = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.Pn.R2 = matrix(nrow = 4, ncol = 1)
+m.Pn.MSE = matrix(nrow = 4, ncol = 1)
+
+m.mean.theo.Pn.group = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.mean.exp.Pn = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+m.exp.Pn.sd = matrix(nrow = 4, ncol = 3 * n.sites.p.ref)
+
+# Read betas.
+all.betas <- list("strong.sel", "medium.sel", "weak.sel", "no.sel")
+
+  # Start a loop for each beta.
+  for (beta in all.betas)  {
+    
+    ### Experimental ###
+    analysis.fname.id <- paste(family, "_R0_", R0, "_beta_", beta, "_K.analysis_", K.analysis, sep = "")
+
+    m.exp.Pn = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.Pn.csv", sep = "")))[, 1:100]
+    n.prot = nrow(m.exp.Pn)
+
+    mean.exp.Pn = colMeans(m.exp.Pn)
+    exp.Pn.sd = apply(m.exp.Pn, 2, sd, na.rm = T)
+
+    m.mean.exp.Pn[as.vector(all.betas == beta), 1:length(mean.exp.Pn)] = mean.exp.Pn
+
+    m.exp.smooth.norm.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.norm.dr.squarei.csv", sep = "")))
+    exp.smooth.norm.MSDi = colMeans(m.exp.smooth.norm.dr.squarei, na.rm = T )
+    
+    exp.smooth.norm.MSDi = (exp.smooth.norm.MSDi - mean(sqrt(exp.smooth.norm.MSDi)))/sd(sqrt(exp.smooth.norm.MSDi)) 
+                                                                        
+    exp.smooth.norm.MSDi.sd = apply(m.exp.smooth.norm.dr.squarei, 2, sd, na.rm = T)  
+  
+    ### Theoretical ###
+
+    m.theo.Pn = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.Pn.csv", sep = "")))[, 1:100]
+
+    m.theo.smooth.norm.dr.squarei = read.csv(file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.norm.dr.squarei.csv", sep = "")))
+    theo.smooth.norm.MSDi = colMeans(m.theo.smooth.norm.dr.squarei, na.rm = T )
+    theo.smooth.norm.MSDi = (theo.smooth.norm.MSDi - mean(sqrt(theo.smooth.norm.MSDi)))/sd(sqrt(theo.smooth.norm.MSDi)) 
+                                                                        
+    n.mut = nrow(m.theo.Pn)
+
+    fit = lm(exp.smooth.norm.MSDi ~ theo.smooth.norm.MSDi )
+    MSDi.fit = fitted.values(fit)
+    MSDi.R2 = cor(exp.smooth.norm.MSDi[!is.na(exp.smooth.norm.MSDi)], MSDi.fit) ^ 2 
+    MSDi.MSE = mean((MSDi.fit - exp.smooth.norm.MSDi[!is.na(exp.smooth.norm.MSDi)]) ^ 2)
+    exp.smooth.norm.MSDi = exp.smooth.norm.MSDi[!is.na(exp.smooth.norm.MSDi)]
+
+    m.MSDi.fit[as.vector(all.betas == beta), ] = MSDi.fit
+    m.MSDi.R2[as.vector(all.betas == beta), ] = MSDi.R2
+    m.MSDi.MSE[as.vector(all.betas == beta), ] = MSDi.MSE
+    m.exp.MSDi[as.vector(all.betas == beta), ] = exp.smooth.norm.MSDi
+    m.exp.MSDi.sd[as.vector(all.betas == beta), ] = exp.smooth.norm.MSDi.sd[!is.na(exp.smooth.norm.MSDi.sd)]
+ 
+    ### Pn ###
+
+  # Calculate groups, means and quantiles.
+  theo.Pn.group = CalculateGroupsMeansQuantiles(m.theo.Pn, n.mut.p, n.prot)
+  mean.theo.Pn.group = theo.Pn.group$mean.mean.group
+
+  m.mean.theo.Pn.group[as.vector(all.betas == beta), 1:length(mean.theo.Pn.group)] = mean.theo.Pn.group
+  
+  Pn.fit = lm(mean.exp.Pn ~  mean.theo.Pn.group)
+  Pn.fit = fitted.values(Pn.fit)
+  Pn.R2 = cor(mean.exp.Pn, Pn.fit) ^ 2 
+  Pn.MSE = mean((Pn.fit - mean.exp.Pn) ^ 2)
+
+  m.Pn.fit[as.vector(all.betas == beta), 1:(length(Pn.fit))] = Pn.fit
+  m.Pn.R2[as.vector(all.betas == beta), ] = Pn.R2
+  m.Pn.MSE[as.vector(all.betas == beta), ] = Pn.MSE
+  m.mean.exp.Pn[as.vector(all.betas == beta), 1:(length(mean.exp.Pn))] = mean.exp.Pn
+  m.exp.Pn.sd[as.vector(all.betas == beta), 1:(length(exp.Pn.sd))] = exp.Pn.sd
+
+  # Write pdb files for MSDi.
+  pdbs.fname <- file.path(data.dir, paste(family, "_coordinates.pdb", sep = ""))
+  pdb = ReadCA(pdbs.fname, as.character(chain.p.ref))
+  xyz.calpha = pdb$xyz.calpha
+
+  MSDi.fit.pdb <- vec2resno(as.vector(MSDi.fit), sort(rep(1:ncol(xyz.calpha),3)))
+  write.pdb(xyz = c(xyz.calpha), b = MSDi.fit.pdb, file = file.path(out.dir, paste(family, "_", p.ref, "_beta_", beta, ".pdb", sep = "")))
+
+  MSDi.exp.pdb <- vec2resno(as.vector(exp.smooth.norm.MSDi), sort(rep(1:ncol(xyz.calpha),3)))
+  write.pdb(xyz = c(xyz.calpha), b = MSDi.exp.pdb, file = file.path(out.dir, paste(family, "_", p.ref, "_exp", ".pdb", sep ="")))
+}
+
+```
+
+### MSDi
+
+Los perfiles teoricos suavizados y normalizados de MSDi fueron fiteados con los perfiles exterimentales. Se compararon y se calcularon R^2 y MSE. Se indica el regimen de seleccion usada.
+
+```{r}
+
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+MSDi.exp = m.exp.MSDi[1, ]
+MSDi.theo = m.MSDi.fit[1, ]
+MSDi.exp.sd = m.exp.MSDi.sd[1, ]
+
+data.MSDi = data.frame("MSDi.exp" = MSDi.exp, "MSDi.theo" = MSDi.theo, "sites" = seq(1:length(MSDi.exp)), "MSDi.exp.sd" = MSDi.exp.sd)
+ggplot(data = data.MSDi, aes(x = sites)) + 
+  geom_point(aes(y = MSDi.exp, colour = "MSDi.exp")) + 
+  geom_line(aes(y = MSDi.theo, colour = "MSDi.theo"), col = "black") +
+  ylab("MSDi strong selecion") + 
+  geom_errorbar(aes(y = MSDi.exp, ymin = MSDi.exp - MSDi.exp.sd, ymax = MSDi.exp + MSDi.exp.sd), width = 0, col = "red")
+
+MSDi.exp = m.exp.MSDi[2, ]
+MSDi.theo = m.MSDi.fit[2, ]
+MSDi.exp.sd = m.exp.MSDi.sd[2, ]
+
+data.MSDi = data.frame("MSDi.exp" = MSDi.exp, "MSDi.theo" = MSDi.theo, "sites" = seq(1:length(MSDi.exp)), "MSDi.exp.sd" = MSDi.exp.sd)
+ggplot(data = data.MSDi, aes(x = sites)) + 
+  geom_point(aes(y = MSDi.exp, colour = "MSDi.exp")) + 
+  geom_line(aes(y = MSDi.theo, colour = "MSDi.theo"), col = "black") +
+  ylab("MSDi medium selecion") + 
+  geom_errorbar(aes(y = MSDi.exp, ymin = MSDi.exp - MSDi.exp.sd, ymax = MSDi.exp + MSDi.exp.sd), width = 0, col = "red")
+
+MSDi.exp = m.exp.MSDi[3, ]
+MSDi.theo = m.MSDi.fit[3, ]
+MSDi.exp.sd = m.exp.MSDi.sd[3, ]
+
+data.MSDi = data.frame("MSDi.exp" = MSDi.exp, "MSDi.theo" = MSDi.theo, "sites" = seq(1:length(MSDi.exp)), "MSDi.exp.sd" = MSDi.exp.sd)
+ggplot(data = data.MSDi, aes(x = sites)) + 
+  geom_point(aes(y = MSDi.exp, colour = "MSDi.exp")) + 
+  geom_line(aes(y = MSDi.theo, colour = "MSDi.theo"), col = "black") +
+  ylab("MSDi weak selecion") + 
+  geom_errorbar(aes(y = MSDi.exp, ymin = MSDi.exp - MSDi.exp.sd, ymax = MSDi.exp + MSDi.exp.sd), width = 0, col = "red")
+
+MSDi.exp = m.exp.MSDi[4, ]
+MSDi.theo = m.MSDi.fit[4, ]
+MSDi.exp.sd = m.exp.MSDi.sd[4, ]
+
+data.MSDi = data.frame("MSDi.exp" = MSDi.exp, "MSDi.theo" = MSDi.theo, "sites" = seq(1:length(MSDi.exp)), "MSDi.exp.sd" = MSDi.exp.sd)
+ggplot(data = data.MSDi, aes(x = sites)) + 
+  geom_point(aes(y = MSDi.exp, colour = "MSDi.exp")) + 
+  geom_line(aes(y = MSDi.theo, colour = "MSDi.theo"), col = "black") +
+  ylab("MSDi no selecion") + 
+  geom_errorbar(aes(y = MSDi.exp, ymin = MSDi.exp - MSDi.exp.sd, ymax = MSDi.exp + MSDi.exp.sd), width = 0, col = "red")
+```
+
+*Linea negra:* Promedio teorico.
+*Puntos rojos:* Promedio experimental.
+
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+plot(m.MSDi.fit[1, ], m.exp.MSDi[1, ], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "MSDi strong selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[1, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[1, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.MSDi.fit[2, ], m.exp.MSDi[2, ], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "MSDi medium selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[2, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[2, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.MSDi.fit[3, ], m.exp.MSDi[3, ], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "MSDi weak selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[3, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[3, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.MSDi.fit[4, ], m.exp.MSDi[4, ], xlab = "MSDi teorico", ylab = "MSDi experimental", main = "MSDi no selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.MSDi.R2[4, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.MSDi.MSE[4, ], digits = 2)), bty = "n", text.col = "red")
+
+```
+### Pn y Qn
+Las distribuciones de *Pn* y *Qn* de los conjuntos son las siguientes:
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+
+Pn.exp = m.mean.exp.Pn[1, 1:100]
+Pn.theo = m.mean.theo.Pn.group[1, 1:100]
+Pn.exp.sd = m.exp.Pn.sd[1, 1:100]
+
+data.Pn = data.frame("Pn.exp" = Pn.exp, "Pn.theo" = Pn.theo, "modes" = seq(1:length(Pn.exp)), "Pn.exp.sd" = Pn.exp.sd)
+ggplot(data = data.Pn, aes(x = modes)) + 
+  geom_point(aes(y = Pn.exp, colour = "Pn.exp")) + 
+  geom_line(aes(y = Pn.theo, colour = "Pn.theo"), col = "black") +
+  ylab("Pn strong selecion") + 
+  geom_errorbar(aes(y = Pn.exp, ymin = Pn.exp - Pn.exp.sd, ymax = Pn.exp + Pn.exp.sd), width = 0, col = "red")
+
+Pn.exp = m.mean.exp.Pn[2, 1:100]
+Pn.theo = m.mean.theo.Pn.group[2, 1:100]
+Pn.exp.sd = m.exp.Pn.sd[2, 1:100]
+
+data.Pn = data.frame("Pn.exp" = Pn.exp, "Pn.theo" = Pn.theo, "modes" = seq(1:length(Pn.exp)), "Pn.exp.sd" = Pn.exp.sd)
+ggplot(data = data.Pn, aes(x = modes)) + 
+  geom_point(aes(y = Pn.exp, colour = "Pn.exp")) + 
+  geom_line(aes(y = Pn.theo, colour = "Pn.theo"), col = "black") +
+  ylab("Pn medium selecion") + 
+  geom_errorbar(aes(y = Pn.exp, ymin = Pn.exp - Pn.exp.sd, ymax = Pn.exp + Pn.exp.sd), width = 0, col = "red")
+
+Pn.exp = m.mean.exp.Pn[3, 1:100]
+Pn.theo = m.mean.theo.Pn.group[3, 1:100]
+Pn.exp.sd = m.exp.Pn.sd[3, 1:100]
+
+data.Pn = data.frame("Pn.exp" = Pn.exp, "Pn.theo" = Pn.theo, "modes" = seq(1:length(Pn.exp)), "Pn.exp.sd" = Pn.exp.sd)
+ggplot(data = data.Pn, aes(x = modes)) + 
+  geom_point(aes(y = Pn.exp, colour = "Pn.exp")) + 
+  geom_line(aes(y = Pn.theo, colour = "Pn.theo"), col = "black") +
+  ylab("Pn weak selecion") + 
+  geom_errorbar(aes(y = Pn.exp, ymin = Pn.exp - Pn.exp.sd, ymax = Pn.exp + Pn.exp.sd), width = 0, col = "red")
+
+Pn.exp = m.mean.exp.Pn[4, 1:100]
+Pn.theo = m.mean.theo.Pn.group[4, 1:100]
+Pn.exp.sd = m.exp.Pn.sd[4, 1:100]
+
+data.Pn = data.frame("Pn.exp" = Pn.exp, "Pn.theo" = Pn.theo, "modes" = seq(1:length(Pn.exp)), "Pn.exp.sd" = Pn.exp.sd)
+ggplot(data = data.Pn, aes(x = modes)) + 
+  geom_point(aes(y = Pn.exp, colour = "Pn.exp")) + 
+  geom_line(aes(y = Pn.theo, colour = "Pn.theo"), col = "black") +
+  ylab("Pn no selecion") + 
+  geom_errorbar(aes(y = Pn.exp, ymin = Pn.exp - Pn.exp.sd, ymax = Pn.exp + Pn.exp.sd), width = 0, col = "red")
+
+```
+
+*Linea negra*: Promedio teorico.
+*Puntos rojos*: Promedio experimental.
+
+```{r}
+layout(matrix(1:4, 2, 2, byrow = T)) 
+plot(m.mean.theo.Pn.group[1, ], m.mean.exp.Pn[1, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn strong selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[1, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[1, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.mean.theo.Pn.group[2, ], m.mean.exp.Pn[2, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn medium selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[2, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[2, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.mean.theo.Pn.group[3, ], m.mean.exp.Pn[3, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn weak selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[3, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[3, ], digits = 2)), bty = "n", text.col = "red")
+
+plot(m.mean.theo.Pn.group[4, ], m.mean.exp.Pn[4, ], xlab = "<<Pn>> teorico", ylab = "<Pn> experimental", main = "Pn no selection")
+abline(0, 1)
+legend("topleft", paste("R^2", round(m.Pn.R2[4, ], digits = 2)), bty = "n", text.col = "red")
+legend("bottomright", paste("MSE", signif(m.Pn.MSE[4, ], digits = 2)), bty = "n", text.col = "red")
+
+```
