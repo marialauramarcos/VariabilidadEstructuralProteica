@@ -191,7 +191,7 @@ AnalyzeExperimentalTheoreticalCM <- function(family,
     # Add indexes of CMs to not aligned
     not.aligned.p.ref.index <- c(not.aligned.p.ref.index, t(seq((n.sites.p.ref + 1), n.sites.tot)))
 
-    # Calculate measures of variavility
+    # Calculate measures of variability
     exp.variability = CalculateVariability(as.vector(exp.r.p.ref), 
                                            as.vector(exp.r.p.2), 
                                            aligned.p.ref.index, 

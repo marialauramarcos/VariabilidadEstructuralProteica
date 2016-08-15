@@ -128,9 +128,13 @@ AnalyzeExperimentalTheoretical <- function(family,
   ### EXPERIMENTAL ###
   
   # Read pdb of exp.p.ref
-  exp.pdb.p.ref = ReadCA(pdbs.fname, chain.p.ref)
-  exp.r.p.ref = exp.pdb.p.ref$xyz.calpha
-  n.aa.p.ref = exp.pdb.p.ref$n.sites
+  exp.r.p.ref = theo.r.p.ref
+  
+  if(heme == "TRUE") {
+    n.aa.p.ref = n.sites.p.ref - 5 
+  } else {
+    n.aa.p.ref = n.sites.p.ref
+  }
   
   # Read indexes files
   m.n.aligned = read.csv(m.n.aligned.fname)
@@ -166,11 +170,6 @@ AnalyzeExperimentalTheoretical <- function(family,
     
     # Calculate heme coordinates, add them to CA´s coordinates and calculate the number of sites and not aligned indexes
     if (heme == "TRUE") {
-      if (P == 1) {
-        exp.r.heme.p.ref = ReadHeme(pdbs.fname, chain.p.ref)
-        exp.r.p.ref = cbind(exp.r.p.ref, exp.r.heme.p.ref)
-        n.sites.p.ref = ncol(exp.r.p.ref)
-      }
       exp.r.heme.p.2 = ReadHeme(pdbs.fname, chain.p.2)
       exp.r.p.2 = cbind(exp.r.p.2, exp.r.heme.p.2)
       exp.n.sites.p.2 = ncol(exp.r.p.2)
@@ -179,7 +178,7 @@ AnalyzeExperimentalTheoretical <- function(family,
       aligned.p.2.index <- c(aligned.p.2.index, t(seq((exp.n.aa.p.2 + 1), exp.n.sites.p.2)))
     }
     
-    # Calculate measures of variavility
+    # Calculate measures of variability
     exp.variability = CalculateVariability(as.vector(exp.r.p.ref), 
                                            as.vector(exp.r.p.2), 
                                            aligned.p.ref.index, 
@@ -202,7 +201,6 @@ AnalyzeExperimentalTheoretical <- function(family,
     m.exp.norm.dr.squarei[P, ] = m.exp.dr.squarei[P, ]/ mean(m.exp.dr.squarei[P, ], na.rm = T)
     
     # Calculate smooth.norm.dr.squarei
-    kij = CalculateENMK(exp.r.p.ref, CalculateKij, R0, tolerance)$kij
     m.exp.dr.squarei.0 = m.exp.dr.squarei[P, ]
     m.exp.dr.squarei.0[is.na(m.exp.dr.squarei.0)] = tolerance
     m.exp.smooth.dr.squarei[P, ] = (m.exp.dr.squarei[P, ] + (kij %*%  m.exp.dr.squarei.0)) / (rowSums(kij[, !is.na(m.exp.dr.squarei[P, ])]) + 1)

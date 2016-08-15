@@ -84,6 +84,10 @@ GenerateMutantsCM <- function(family,
   # Bind CA and CM coorrdinates
   r.p.ref = cbind(r.ca.p.ref, r.CM.p.ref)
   n.sites.tot = ncol(r.p.ref)
+
+  # Get the minimun sequence identity 
+  identity = min(m.identity)
+  n.sites.mut = as.integer((100 - (identity)) * n.aa / 100)
   
   ### CALCULATE ENM OF THE REFERENCE PROTEIN ###
   
@@ -107,12 +111,8 @@ GenerateMutantsCM <- function(family,
   # Sart a counter for simulated proteins
   run = 0
   
-  # Start a loop for each protein of the family to crate a lineage
+  # Start a loop for each protein of the family
   for (P in (1:n.prot)) {
-    
-    # Get de sequence identity and the number of mutated sites of "p.ref" for "P"
-    identity = m.identity[P]
-    n.sites.mut = as.integer((100 - (identity)) * n.aa / 100)
       
     # Start a loop to generate "n.mut.p" mutants for P
     for(mut in seq(1:n.mut.p)) {

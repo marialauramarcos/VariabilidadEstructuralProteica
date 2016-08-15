@@ -31,11 +31,15 @@ rm(list = ls())
 library(bio3d) 
 library(seqinr) 
 
+# Set Elastic Network Model: "ANM" or "pfANM"
+model <- "pfANM"
+
 # Data dir
 data.dir <- "DATA"
 
 # Output dir
-out.dir <- "OUT/out_subset_CM"
+if (model == "ANM") out.dir <- "OUT/out_subset_CM_ANM"
+if (model == "pfANM") out.dir <- "OUT/out_subset_CM_pfANM"
 
 # General parameters
 tolerance = 1e-10
@@ -48,13 +52,22 @@ GenerateMutantsCM.fname <- "FUNCTIONS/GenerateMutantsCM.R"
 ReadFasta.fname <- "FUNCTIONS/ReadFasta.R"
 ReadCA.fname <- "FUNCTIONS/ReadCA.R"
 ReadHeme.fname <- "FUNCTIONS/ReadHeme.R"
-CalculateBetasCM.fname <- "FUNCTIONS/CalculateBetasCM.R"
 CalculateSideChainCM.fname <- "FUNCTIONS/CalculateSideChainCM.R"
 CalculateENMKeff.fname <- "FUNCTIONS/CalculateENMKeff.R"
 CalculateENMK.fname <- "FUNCTIONS/CalculateENMK.R"
-CalculateKij.fname <- "FUNCTIONS/CalculateKij.R"
-CalculateForce.fname <- "FUNCTIONS/CalculateForce.R"
 CalculateVariability.fname <- "FUNCTIONS/CalculateVariability.R"
+
+if (model == "ANM") {
+  CalculateBetasCM.fname <- "FUNCTIONS/CalculateBetasCM.R"
+  CalculateKij.fname <- "FUNCTIONS/CalculateKij.R"
+  CalculateForce.fname <- "FUNCTIONS/CalculateForce.R"
+}
+
+if (model == "pfANM") {
+  CalculateBetasCM.fname <- "FUNCTIONS/CalculateBetasCMPFANM.R"
+  CalculateKij.fname <- "FUNCTIONS/CalculateKijPFANM.R"
+  CalculateForce.fname <- "FUNCTIONS/CalculateForcePFANM.R"
+}
 
 # Source functions
 source(AnalyzeExperimentalTheoreticalCM.fname)
@@ -65,12 +78,13 @@ source(ReadFasta.fname)
 source(ReadCA.fname) 
 source(ReadHeme.fname)
 source(CalculateSideChainCM.fname)
-source(CalculateBetasCM.fname)
 source(CalculateENMKeff.fname)
 source(CalculateENMK.fname)
+source(CalculateVariability.fname)
+
+source(CalculateBetasCM.fname)
 source(CalculateKij.fname)
 source(CalculateForce.fname)
-source(CalculateVariability.fname)
 
 # Read input
 input.fname <- file.path("input_MainProgram.csv")
