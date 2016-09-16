@@ -1,0 +1,20 @@
+setup	
+load_libraries	
+set_my_colors	myColors
+set_run_variables	f95	f99	f999
+set_file_names	dri2.exp.fname	dri2.mut.fname	dri2.strong.fname	energy.exp.fname	energy.mut.fname	energy.strong.fname	Pn.exp.fname	Pn.mut.fname	Pn.strong.fname	protein_list.fname	reference.fname	site.info.fname
+set_reference_protein	reference
+set_experimental_protein_names	protein.exp
+set_up_site_info	AA	cmap.ca	CN	d	inds	pdb.info	ref.pdb	ref.pdb.ca	reference.pdb.fname	resno	site.info
+read_experimental_data	dri2.exp	energy.exp	Pn.exp	site
+read_and_set_data_mut	dri2.mut	energy.mut	Pn.mut	site
+read_and_set_data_strong	dri2.strong	energy.strong	Pn.strong	site
+prepare-site-data	siteComparison.all.datasets	siteComparison.exp	siteComparison.mut	siteComparison.strong	tdri2.exp	tdri2.mut	tdri2.strong
+mean-z-RSD-vs-site	active.sites	d	dat	m.min.da.CM	p	p.facet	z.RSD.exp	z.RSD.mut	z.RSD.strong
+unnamed-chunk-1	cor.df	d	dat	dat.exp	dat.mut	dat.strong	dd	mean.exp.z.RSD.pdb	mean.mut.z.RSD.pdb	mean.strong.z.RSD.pdb	pdb	r	r.exp.mut	r.exp.strong	r.mut.strong
+prepare-mode-data	energy.exp.long	energy.mut.long	energy.strong.long	mode	modeComparison.exp	modeComparison.mut	modeComparison.strong	Pn.exp.long	Pn.mut.long	Pn.strong.long	tenergy.exp	tenergy.mut	tenergy.strong	tPn.exp	tPn.mut	tPn.strong
+unnamed-chunk-2	fit.exp.rq.05	fit.exp.rq.5	fit.exp.rq.95	fit.mut.rq.05	fit.mut.rq.5	fit.mut.rq.95	fit.strong.rq.05	fit.strong.rq.5	fit.strong.rq.95	modeComparison.all.datasets	modeComparison.exp	modeComparison.mut	modeComparison.strong
+Pn-vs-mode-energy	dat	p	p.facet	p.points.rq
+median-Pn-vs-mode-energy	dat	p	p.facet
+unnamed-chunk-3	cor.df	dat	dat.exp	dat.mut	dat.strong	r.exp.mut	r.exp.strong	r.mut.strong
+write-data-to-output	

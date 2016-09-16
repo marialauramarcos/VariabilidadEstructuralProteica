@@ -1,18 +1,16 @@
 # Description:
-#
-# This function analyzes a multiple alignment of a family of proteins comparing a reference protein "p.ref" with the other proteins. 
+# This function analyzes a multiple sequence alignment of a family of proteins comparing a reference protein "p.ref" with the other proteins. 
 #
 # Usage:
-#
 # AnalyzeFamily(family, p.ref, data.dir, out.dir)
 #
 #  Args:
-#   - family: the family of the protein to mutate. It can be "globins", "serinProteases", 
-#   "snakesToxin", "sh3", "fabp", "rrm", "phoslip" or "cys".
-#   - p.ref:  the pdb code (pdbid) of the protein to mutate (example: "1a6m"). The protein must be a member of
+#   - family: the name of the family. It can be "globins", "serinProteases", "snakesToxin", "sh3", "fabp", "rrm", "phoslip" or "cys".
+#   - p.ref:  the pdb code (pdbid) of the protein to mutate (example: "1a6ma"). The protein must be a member of
 #   the selected family. This pdbid must not be included in the dataset ("DATA/family_dataset.csv").
-#   - data.dir: directory of the data. It must contain a file with the alignment of the family ("data.dir/family_alignment.txt") and 
-#   a file with the dataset ("data.dir/family_dataset.csv").
+#   - data.dir: directory of the data. It must contain a file with the alignment of the family ("data.dir/family_alignment.txt") as obtanied
+#   from Homstrad and a file with the dataset ("data.dir/family_dataset.csv"), containing in rows pdbids and chains in the multiple
+#   pdb file obtained from Homstrad.
 #   - out.dir: output directory.
 #
 #  Required functions:
@@ -28,22 +26,22 @@ AnalyzeFamily <- function(family,
   
   print("analyzing families...")
   
-  # Data filenames
+  # data filenames
   dataset.fname <- file.path(data.dir, paste(family, "_dataset.csv", sep = ""))  
   alignment.fname <- file.path(data.dir, paste(family, "_alignment.txt", sep = ""))  
   
-  # Read the dataset
+  # read the dataset
   dataset <- read.csv(dataset.fname)
   pdbid.dataset <- as.character(dataset$pdbid) 
   n.prot = length(pdbid.dataset)
   
-  # Read the alignment
+  # read the alignment
   alignment.id <- ReadFasta(alignment.fname)
-  alignment <- alignment.id$ali[, -ncol(alignment.id$ali)]  # The last column is "*"
+  alignment <- alignment.id$ali[, -ncol(alignment.id$ali)]  # the last column is "*"
   l.alignment = ncol(alignment)
   pdbid.alignment <- alignment.id$id
   
-  # Create matrices to save data
+  # create matrices to save data
   m.n.sites.p.ref = matrix(nrow = n.prot, ncol = 1)
   m.n.sites.p.2 = matrix(nrow = n.prot, ncol = 1)
   m.n.aligned = matrix(nrow = n.prot, ncol = 1)
@@ -55,14 +53,14 @@ AnalyzeFamily <- function(family,
   m.aligned.mut.p.ref.index = matrix(nrow = n.prot, ncol = l.alignment)
   m.identity = matrix(nrow = n.prot, ncol = 1)
   
-  # Start a loop to evaluate each protein of the family
+  # start a loop to evaluate each protein of the family
   for (P in (1:n.prot)) {
     print(P)
     
-    # Get dataset's pdbid
+    # get pdbid 
     p.2 <- pdbid.dataset[P]
     
-    # Anylize the alignment
+    # anylize the alignment
     analysis.alignment = AnalyzeAlignment(alignment, 
                                           pdbid.alignment,   
                                           p.ref, 

@@ -32,7 +32,7 @@ library(bio3d)
 library(seqinr) 
 
 # Set Elastic Network Model: "ANM" or "pfANM"
-model <- "pfANM"
+model <- "ANM"
 
 # Data dir
 data.dir <- "DATA"

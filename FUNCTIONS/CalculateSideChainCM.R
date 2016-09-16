@@ -23,10 +23,10 @@ CalculateSideChainCM <- function(pdb.fname, chain) {
   xyz.side.chain.CM = matrix(nrow = 3, ncol = n.aa)
   
   # Star a loop to analyze each residue
-  for (i in (1:n.aa)) { 
+  for (i in (site.ca)) { 
     
     # Extract information of the chain
-    sel <- atom.select(pdb, chain = chain, string = "protein", resno = i)    
+    sel <- atom.select(pdb, chain = chain, strain = "protein", resno = i)    
     site.elety <- pdb$atom[sel$atom, c("elety")]     
     n.atoms = length(site.elety) 
     xyz.site <- matrix(pdb$xyz[sel$xyz], nrow = 3, byrow = F)     
@@ -50,9 +50,9 @@ CalculateSideChainCM <- function(pdb.fname, chain) {
     }
     
     # Calculate the center of mass
-    xyz.side.chain.CM[1, i] = sum(xyz.site[1, ] * weights) / sum(weights)
-    xyz.side.chain.CM[2, i] = sum(xyz.site[2, ] * weights) / sum(weights)
-    xyz.side.chain.CM[3, i] = sum(xyz.site[3, ] * weights) / sum(weights)
+    xyz.side.chain.CM[1, which(site.ca == i)] = sum(xyz.site[1, ] * weights) / sum(weights)
+    xyz.side.chain.CM[2, which(site.ca == i)] = sum(xyz.site[2, ] * weights) / sum(weights)
+    xyz.side.chain.CM[3, which(site.ca == i)] = sum(xyz.site[3, ] * weights) / sum(weights)
   }
   xyz.side.chain.CM
 }
