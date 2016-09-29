@@ -1,1 +1,0 @@
-vscale <- function(x,...) as.vector(scale(x))

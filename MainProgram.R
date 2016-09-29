@@ -31,11 +31,11 @@ rm(list = ls())
 library(bio3d) 
 library(seqinr) 
 
-# Set Elastic Network Model: "ANM" or "pfANM"
-model <- "ANM"
-
 # Data dir
 data.dir <- "DATA"
+
+# Set Elastic Network Model: "ANM" or "pfANM"
+model <- "ANM"
 
 # Output dir
 if (model == "ANM") out.dir <- "OUT/out_subset_CA_ANM"

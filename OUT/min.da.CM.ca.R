@@ -25,7 +25,8 @@ for (f in (1:nrow(input))) {
   # get coordinates of p.ref
   r.ca.p.ref = ReadCA(pdb.fname, chain.p.ref)$xyz
   r.CM.p.ref = CalculateSideChainCM(pdb.fname, chain.p.ref)
-
+  n.aa = ncol(r.ca.p.ref)
+  
   if (heme == "TRUE") {
     r.heme = ReadHeme(pdb.fname, chain.p.ref)
     r.ca.p.ref = cbind(r.ca.p.ref, r.heme)
@@ -53,17 +54,22 @@ for (f in (1:nrow(input))) {
   m.da.CM = cbind(seq(1:n.sites), m.da.CM)
   colnames(m.da.CM) = c("site", paste("da", seq(1:length(active)), sep = ""))
   
-  # calculate the minimum distance of each site to the active sites
-  m.min.da.ca = matrix(nrow = n.sites, ncol = 1)
-  m.min.da.CM = matrix(nrow = n.sites, ncol = 1)
+  if (family == "globins") {
+    m.da.ca = m.da.ca[1:n.aa, ]
+    m.da.CM = m.da.CM[1:n.aa, ]
+  }
   
-  for (i in (1:n.sites)) {
+  # calculate the minimum distance of each site to the active sites
+  m.min.da.ca = matrix(nrow = n.aa, ncol = 1)
+  m.min.da.CM = matrix(nrow = n.aa, ncol = 1)
+  
+  for (i in (1:n.aa)) {
     m.min.da.ca[i, ] = min(m.da.ca[i, ])
     m.min.da.CM[i, ] = min(m.da.CM[i, ])
   }
 
   # build a dataframe with minimum distances
-  data = data.frame("site" = seq(1:n.sites), 
+  data = data.frame("site" = seq(1:n.aa), 
                "min.da.CM" = as.vector(m.min.da.CM), 
                "min.da.ca" = as.vector(m.min.da.ca))
 

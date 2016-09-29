@@ -1,14 +1,22 @@
+# Description: This program generates reports with the data generated with "MainProgram.R", "MainProgramCM.R" and "mean.da.CM.ca.R".
+# It works with the program "analysis-structure.Rmd". 
+# To run the program it is neccessary to fill the input file "input_MainReport.csv".
+# Files needed for each family in data.dir are:
+#  "famiy_list.txt": with all of the proteins of the family includin p.ref.
+#  "family_ref.txt": p.ref.
+#  "p.ref.pdb": pdb file of p.ref.
+
+### program ###
+
+# set wd
 setwd("C:/Users/Usuario/Desktop/VariabilidadEstructuralProteica")
 
-# load libraries
+# Load packages
 library(knitr)
 library(markdown)
 
-# set output directory
-data.dir <- "OUT/out_subset_CA_ANM"
-
-# set options
-enm = "ANM"
+# set input directory 
+data.dir <- "OUT/out_subset_CA_ANM" # the input is the output of MainProgram.R and MainProgramCM.R 
 
 # read input
 input.fname <- "input_MainReport.csv"
@@ -18,19 +26,27 @@ input <- read.csv(input.fname)
 for (f in (1:nrow(input))) { 
   print(f)
   family <- as.character(input$family)[f]
-  R0 = input$R0[f]
+  type <- as.character(input$type)[f]
   p.ref <- as.character(input$p.ref)[f]
+  enm <- as.character(input$enm)[f]
+  R0.CA = input$R0.CA[f]
+  R0.CM = input$R0.CM[f]
   chain.p.ref <- as.character(input$chain.p.ref)[f]
 
   # generate reports
-  setwd("C:/Users/Usuario/Desktop/VariabilidadEstructuralProteica/OUT")
-  data.dir <- paste("out_subset_CA_ANM", sep = "")
   
+  ## set wd for reports
+  setwd("C:/Users/Usuario/Desktop/VariabilidadEstructuralProteica/OUT")
+  
+  ## CA
+  data.dir <- paste("out_subset_CA_ANM", sep = "")
+  R0 = R0.CA
   rmarkdown::render('analysis-structure.Rmd', 
                       output_file =  paste("report_structure_CA", family, "_", enm, "_R0_", R0, ".html", sep = ''))
-}
 
+  ## CM
   data.dir <- paste("out_subset_CM_ANM", sep = "")
+  R0 = R0.CM
   rmarkdown::render('analysis-structure.Rmd', 
                     output_file =  paste("report_structure_CM", family, "_", enm, "_R0_", R0, ".html", sep = ''))
 }

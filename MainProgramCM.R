@@ -4,6 +4,9 @@
 # Elastic Network Model" (LF-ENM) with different selection regimens according to the "Stress Model". The program also
 # analyzes the multiple alignment of the family to which the protein belongs and calculates measures 
 # of variabilty of theoretical and experimental data.
+# The difference between this program and "MainProgram.R" is that, in this case, the model considers two sites per
+# aminoacid, the CA and the center of mass of the side chain (CM).
+# For the LF - ENM, only CMs are mutated.
 #
 # To run the program it is necessary to previously fill the input ("input_MainProgram.csv") with the following information:
 #

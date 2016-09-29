@@ -1,11 +1,11 @@
 base
+bio3d
+ade4
+seqinr
+knitr
+markdown
 ggplot2
 SparseM
 quantreg
-bio3d
 plyr
 reshape2
-knitr
-markdown
-ade4
-seqinr
