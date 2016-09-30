@@ -1,8 +1,8 @@
-# Description: This program generates reports with the data generated with "MainProgram.R", "MainProgramCM.R" and "mean.da.CM.ca.R".
+# Description: This program generates reports with the output of "MainProgram.R", "MainProgramCM.R" and "mean.da.CM.ca.R".
 # It works with the program "analysis-structure.Rmd". 
 # To run the program it is neccessary to fill the input file "input_MainReport.csv".
 # Files needed for each family in data.dir are:
-#  "famiy_list.txt": with all of the proteins of the family includin p.ref.
+#  "famiy_list.txt": with all of the proteins of the family (includin p.ref).
 #  "family_ref.txt": p.ref.
 #  "p.ref.pdb": pdb file of p.ref.
 
@@ -14,9 +14,6 @@ setwd("C:/Users/Usuario/Desktop/VariabilidadEstructuralProteica")
 # Load packages
 library(knitr)
 library(markdown)
-
-# set input directory 
-data.dir <- "OUT/out_subset_CA_ANM" # the input is the output of MainProgram.R and MainProgramCM.R 
 
 # read input
 input.fname <- "input_MainReport.csv"
@@ -42,11 +39,11 @@ for (f in (1:nrow(input))) {
   data.dir <- paste("out_subset_CA_ANM", sep = "")
   R0 = R0.CA
   rmarkdown::render('analysis-structure.Rmd', 
-                      output_file =  paste("report_structure_CA", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+                      output_file =  paste("report_structure_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
 
   ## CM
   data.dir <- paste("out_subset_CM_ANM", sep = "")
   R0 = R0.CM
   rmarkdown::render('analysis-structure.Rmd', 
-                    output_file =  paste("report_structure_CM", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+                    output_file =  paste("report_structure_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
 }

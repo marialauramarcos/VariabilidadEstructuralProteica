@@ -36,7 +36,6 @@ f99 = 2.6
 f999 = 3.3
 ```
 
-
 ```{r set_file_names}
 # input and pre-processing of data
 
@@ -56,7 +55,6 @@ energy.strong.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_stron
 dri2.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
 Pn.mut.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.Pn.csv", sep = ""))
 energy.mut.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.va.csv", sep = ""))
-
 ```
 
 ```{r set_reference_protein}
@@ -64,11 +62,9 @@ energy.mut.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K
 reference = as.character(read.table(reference.fname, header = F)[1, 1])
 ```
 
-We use the ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-``` Elastic Network Model with `R0 =` `r R0` for the `r family` family. 
+We use the Elastic Network Model with R0 = `r R0` for the `r family` family. 
 We use as reference for the ENM the protein with pdb code `r reference`.
-The `r family` family consists of the following proteins:
+The `r family` family is of the type of `r type` and consists of the following proteins:
 
 ```{r set_experimental_protein_names}
 # experimental protein names
@@ -110,7 +106,6 @@ site.info = cbind(site.info, pdb.info)
 [//]: Prepare experimental data
 
 ```{r read_experimental_data}
-
 # read experimental data
 dri2.exp = read.csv(dri2.exp.fname, header = T)
 site = site.info$site
@@ -127,7 +122,6 @@ rownames(energy.exp) = protein.exp
 [//]: Prepare data for no selection (mut)
 
 ```{r read_and_set_data_mut}
-
 # read simulated data
 dri2.mut = read.csv(dri2.mut.fname, header = T)
 site = site.info$site
@@ -144,7 +138,6 @@ rownames(energy.mut) = paste("mut", rownames(energy.mut), sep = "")
 [//]: Prepare data for strong selection
 
 ```{r read_and_set_data_strong}
-
 # read simulated data
 dri2.strong = read.csv(dri2.strong.fname, header = T)
 site = site.info$site
@@ -192,14 +185,12 @@ siteComparison.all.datasets = ddply(siteComparison.all.datasets, c("dataset", "p
           "z.RSD" = vscale(RSD))
 ```
 
-
 ### Mean z.RSD vs site
 
-To measure structural divergence we use z.RSD profiles, which are the best (most similar distributions and profiles w.r.t experimental).
+To measure structural divergence we use z.RSD profiles, which are the best, at least for globins (most similar distributions and profiles w.r.t experimental).
 
 The following plot compares the mean z.RSD profiles, including standard errors (with .999 confidence level for the mean)
 *Warning: the effective number of data should be smaller than the actual data, especially for the experimental dataset because of several factors, including smoothing of the profiles, phylogenetic relationships, etc. We need to deal with this for quantitative analysis. Probably we'll need to use bootstrapping to calculate standard errors non-parametrically*
-
 
 ```{r mean-z-RSD-vs-site}
 # comparison of z.RSD profiles annotated with functional information (reported active sites).
@@ -214,14 +205,17 @@ d = ddply(dat,c("dataset","site","AA","shell"), function(x) {
                 data.frame(mean.z.RSD, ndata, se.z.RSD)
 })
 
+## read information about minimal active site distances
 m.min.da.CM = read.csv(file.path(data.dir, paste(p.ref, "_min.da.CM.ca.csv", sep = "")))
 
 z.RSD.exp = d$mean.z.RSD[d$dataset == "exp"]
 z.RSD.strong = d$mean.z.RSD[d$dataset == "mut+sel"]
 z.RSD.mut = d$mean.z.RSD[d$dataset == "mut"]
 
-plot(y = z.RSD.exp-z.RSD.strong, x = m.min.da.CM$min.da.ca)
-plot(y = (z.RSD.exp-z.RSD.mut), x = m.min.da.CM$min.da.CM)
+plot(y = z.RSD.exp - z.RSD.strong, x = m.min.da.CM$min.da.ca, xlab = "minimal distance to active site (between CAs)")
+plot(y = z.RSD.exp - z.RSD.mut, x = m.min.da.CM$min.da.CM, xlab = "minimal distance to active site (between CMs)")
+
+print("agregar correlación")
 
 #d$dataset = factor(d$dataset, levels = c("exp", "mut", "strong"))
 d$label = as.character(d$site)
@@ -234,7 +228,7 @@ p = ggplot(d,aes(x = site, y = mean.z.RSD, col = dataset, fill = dataset)) +
     labs(x = "site", y = "structural divergence(mean z.RSD)") +
     coord_cartesian(ylim = c(-1.5, 2.8)) +
     scale_colour_manual(name = NULL, values = myColors) + 
-    scale_fill_manual(name=NULL, values = myColors)
+    scale_fill_manual(name = NULL, values = myColors)
 
 ## plot separate and comparative plots
 p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "none")
@@ -292,7 +286,6 @@ r.mut.strong = cor(dat.mut$mean.z.RSD, dat.strong$mean.z.RSD)
 cor.df = data.frame("comparison" = c("exp vs mut", "exp vs strong", "mut vs strong"),
                     "R" = c(r.exp.mut, r.exp.strong, r.mut.strong))
 knitr::kable(cor.df, digits = 2)
-write.csv(dat, "structure-comparison-profiles.csv")
 ```
 
 ```{r write-pdb-files}
@@ -303,7 +296,7 @@ pdb.xyz.ca = ReadCA(reference.pdb.fname, chain.p.ref)$xyz
 
 ## experimental
 exp.mean.z.RSD.vec <- vec2resno(as.vector(dat.exp$mean.z.RSD), sort(rep(1:ncol(pdb.xyz.ca),3)))
-write.pdb(xyz = c(pdb.xyz.ca), b = exp.mean.z.RSD.vec, file = paste(p.ref, "_exp.pdb", sep = ""))
+write.pdb(xyz = c(pdb.xyz.ca), b = exp.mean.z.RSD.vec, file =  paste(p.ref, "_exp.pdb", sep = ""))
 
 ## mut
 mut.mean.z.RSD.vec <- vec2resno(as.vector(dat.mut$mean.z.RSD), sort(rep(1:ncol(pdb.xyz.ca),3)))
