@@ -27,6 +27,8 @@
 #    - K.analysis: It can be "K" or "Keff". For "K" or "Keff", the analysis is based on normal modes of "K" or "Keff"
 #    respectibly.
 
+### PROGRAM ###
+
 # Remove objects from the workspace
 rm(list = ls())
 

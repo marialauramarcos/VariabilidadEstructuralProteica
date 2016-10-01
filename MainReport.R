@@ -6,10 +6,7 @@
 #  "family_ref.txt": p.ref.
 #  "p.ref.pdb": pdb file of p.ref.
 
-### program ###
-
-# set wd
-setwd("C:/Users/Usuario/Desktop/VariabilidadEstructuralProteica")
+### PROGRAM ###
 
 # Load packages
 library(knitr)
@@ -26,24 +23,22 @@ for (f in (1:nrow(input))) {
   type <- as.character(input$type)[f]
   p.ref <- as.character(input$p.ref)[f]
   enm <- as.character(input$enm)[f]
+  n.mut.p <- input$n.mut.p[f]
   R0.CA = input$R0.CA[f]
   R0.CM = input$R0.CM[f]
   chain.p.ref <- as.character(input$chain.p.ref)[f]
 
   # generate reports
   
-  ## set wd for reports
-  setwd("C:/Users/Usuario/Desktop/VariabilidadEstructuralProteica/OUT")
-  
   ## CA
-  data.dir <- paste("out_subset_CA_ANM", sep = "")
+  data.dir <- paste("OUT/out_subset_CA_ANM", sep = "")
   R0 = R0.CA
   rmarkdown::render('analysis-structure.Rmd', 
-                      output_file =  paste("report_structure_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+                      output_file =  paste("OUT/report_structure_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
 
   ## CM
-  data.dir <- paste("out_subset_CM_ANM", sep = "")
+  data.dir <- paste("OUT/out_subset_CM_ANM", sep = "")
   R0 = R0.CM
   rmarkdown::render('analysis-structure.Rmd', 
-                    output_file =  paste("report_structure_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+                    output_file =  paste("OUT/report_structure_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
 }

@@ -1,0 +1,2 @@
+Pn-vs-mode-energy	$	$<-	%+%	~	==	aes	c	dataset	energy	facet_grid	geom_line	geom_point	ggplot	labs	modeComparison.all.datasets	myColors	Pn	revalue	rq.05	rq.5	rq.95	scale_colour_manual	scale_fill_manual	subset	theme
+median-Pn-vs-mode-energy	$	$<-	%+%	~	==	aes	c	data.frame	dataset	ddply	energy.mean	facet_grid	geom_line	geom_pointrange	ggplot	labs	length	mean	median	modeComparison.all.datasets	myColors	Pn.median	Pn.median.max	Pn.median.min	qbinom	revalue	rq.5	scale_colour_manual	scale_fill_manual	sort	subset	theme
