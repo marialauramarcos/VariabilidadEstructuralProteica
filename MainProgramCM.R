@@ -33,8 +33,8 @@
 rm(list = ls())
 
 # Load packages
-library(bio3d) 
-library(seqinr) 
+library(bio3d)
+library(seqinr)
 
 # Set Elastic Network Model: "ANM" or "pfANM"
 model <- "ANM"
@@ -61,6 +61,8 @@ CalculateSideChainCM.fname <- "FUNCTIONS/CalculateSideChainCM.R"
 CalculateENMKeff.fname <- "FUNCTIONS/CalculateENMKeff.R"
 CalculateENMK.fname <- "FUNCTIONS/CalculateENMK.R"
 CalculateVariability.fname <- "FUNCTIONS/CalculateVariability.R"
+WindowsRMSD.fname <- "FUNCTIONS/WindowsRMSD.R"
+WindowsRMSDcontacts.fname <- "FUNCTIONS/WindowsRMSDcontacts.R"
 
 if (model == "ANM") {
   CalculateBetasCM.fname <- "FUNCTIONS/CalculateBetasCM.R"
@@ -86,7 +88,8 @@ source(CalculateSideChainCM.fname)
 source(CalculateENMKeff.fname)
 source(CalculateENMK.fname)
 source(CalculateVariability.fname)
-
+source(WindowsRMSD.fname)
+source(WindowsRMSDcontacts.fname)
 source(CalculateBetasCM.fname)
 source(CalculateKij.fname)
 source(CalculateForce.fname)
@@ -127,7 +130,7 @@ for (f in (1:nrow(input))) {
   # Calculate betas of the "Stress Model"
   if (calculate.betas == "TRUE") {
     CalculateBetasCM(chain.p.ref,
-                     fmax, 
+                     fmax,
                      R0,
                      heme,
                      data.dir,
@@ -143,45 +146,46 @@ for (f in (1:nrow(input))) {
   # Start a loop for each beta
   for (b in all.betas)  {
     
-    # Generate ids for output filenames
-    mut.fname.id <- paste(family, "_R0_", R0, "_beta_", regimens[all.betas == b], sep = "")
-    analysis.fname.id <- paste(mut.fname.id, "_K.analysis_", K.analysis, sep = "")
+    # Filter regimens
+    if (regimens[all.betas == b] != "medium.sel") {
+      if (regimens[all.betas == b] != "weak.sel") {
+        
+        # Generate ids for output filenames
+        mut.fname.id <- paste(family, "_R0_", R0, "_beta_", regimens[all.betas == b], sep = "")
+        analysis.fname.id <- paste(mut.fname.id, "_K.analysis_", K.analysis, sep = "")
   
-    # Generate mutants
-    if (generate.mutants == "TRUE") {
-      GenerateMutantsCM(family,
-                        chain.p.ref, 
-                        n.mut.p,
-                        fmax, 
-                        R0,
-                        b,
-                        heme, 
-                        data.dir,
-                        out.dir,
-                        mut.fname.id,
-                        tolerance)
-    }
+        # Generate mutants
+        if (generate.mutants == "TRUE") {
+          GenerateMutantsCM(family,
+                            chain.p.ref, 
+                            n.mut.p,
+                            fmax, 
+                            R0,
+                            b,
+                            heme, 
+                            data.dir,
+                            out.dir,
+                            mut.fname.id,
+                            tolerance)
+        }
   
-    # Calculate measures of variability of theoretical and experimental proteins
-    if (analyze.experimental.theoretical == "TRUE") {
-      AnalyzeExperimentalTheoreticalCM(family,
-                                       p.ref,
-                                       chain.p.ref,
-                                       n.mut.p,
-                                       R0, 
-                                       rotate,
-                                       heme,
-                                       K.analysis,
-                                       data.dir,
-                                       out.dir,
-                                       mut.fname.id, 
-                                       analysis.fname.id,
-                                       tolerance)
+        # Calculate measures of variability of theoretical and experimental proteins
+        if (analyze.experimental.theoretical == "TRUE") {
+          AnalyzeExperimentalTheoreticalCM(family,
+                                           p.ref,
+                                           chain.p.ref,
+                                           n.mut.p,
+                                           R0, 
+                                           rotate,
+                                           heme,
+                                           K.analysis,
+                                           data.dir,
+                                           out.dir,
+                                           mut.fname.id, 
+                                           analysis.fname.id,
+                                           tolerance)
+        }
+      }
     }
   }
 }
-
-
-
-
-  

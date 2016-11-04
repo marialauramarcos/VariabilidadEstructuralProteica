@@ -103,10 +103,12 @@ CalculateENMKeff <- function(r,
     veKEFF = veKEFF[, modes]
     vaKEFF = vaKEFF[modes]
     n.modes = length(vaKEFF)
+    covKEFF = veKEFF %*% ((1 / vaKEFF) * t(veKEFF))
+    
   }
   
   # Create a list for the output 
-  output = list("KEFF" = KEFF, "ve" = veKEFF, "va" = vaKEFF, "n.modes" = n.modes)
+  output = list("KEFF" = KEFF, "ve" = veKEFF, "va" = vaKEFF, "n.modes" = n.modes, "covKEFF" = covKEFF)
   output
 }
 

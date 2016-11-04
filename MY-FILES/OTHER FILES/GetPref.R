@@ -5,7 +5,7 @@ rm(list = ls())
 data.dir = "DATA"
 
 # Input.
-input.fname <- "input_GetPref.csv"
+input.fname <- "MY-FILES/OTHER FILES/input_GetPref.csv"
 input <- read.csv(input.fname)
 for (a in (1:nrow(input))) {
     family <- as.character(input$family)[a]
