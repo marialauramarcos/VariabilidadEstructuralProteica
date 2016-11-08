@@ -50,57 +50,37 @@ CalculateVariability <- function(r.p.1,
               mobile.inds = aligned.p.2.index.3N) 
   }
 
-  # calculate dr
+  # calculate dr and dr.squarei
   dr = r.p.2[aligned.p.2.index.3N] - r.p.1[aligned.p.1.index.3N]
-
-  # rotate r.p.2 using aa seq based windows
+  dr.squarei = colSums(matrix(dr, nrow = 3) ^ 2) 
+  
+  # transform r.p.2 using an aa seq based windows and calculate dr.squarei.windows.rot
   r.p.2.window.rot = WindowsRMSD(15,
                                  r.p.1,
                                  r.p.2,
                                  aligned.p.1.index.3N,
                                  aligned.p.2.index.3N)
-  dr.windows.rot = r.p.2.window.rot - r.p.1[aligned.p.1.index.3N]
   
-  # rotate r.p.2 using contacts based windows
+  dr.windows.rot = r.p.2.window.rot - r.p.1[aligned.p.1.index.3N]
+  dr.squarei.windows.rot = colSums(matrix(dr.windows.rot, nrow = 3) ^ 2)
+  
+  # transform r.p.2 using contacts based windows and calculate a score (dr.squarei.windows.contacts.rot) in each window
+  # the score of each window is mean(di^2), being i the sites inside the window
+  
   ## calculate ENMK of aligned sites of p.1
   ENMK.p.1 = CalculateENMK(matrix(r.p.1, nrow = 3)[, aligned.p.1.index],
                            CalculateKij,
                            R0,
                            tolerance)
   
-  r.p.2.window.contacts.rot = WindowsRMSDcontacts(ENMK.p.1$kij,
-                                                  r.p.1,
-                                                  r.p.2,
-                                                  aligned.p.1.index,
-                                                  aligned.p.2.index)
+  ## trasform r.p.2 and get the score of the windows of each site 
+  dr.squarei.windows.contacts.rot = WindowsRMSDcontacts(ENMK.p.1$kij,
+                                                        r.p.1,
+                                                        r.p.2,
+                                                        aligned.p.1.index,
+                                                        aligned.p.2.index)
   
-  dr.windows.contacts.rot = r.p.2.window.contacts.rot - r.p.1[aligned.p.1.index.3N]
-  
-  # calculate ENM Keff of p.1
-  ENMKeff.p.1 = CalculateENMKeff(matrix(r.p.1, nrow = 3),
-                                 aligned.p.1.index, 
-                                 not.aligned.p.1.index,
-                                 R0,
-                                 tolerance,
-                                 K.analysis)
-  
-  # get eigenvalues and eigenvectors of p.1
-  va = ENMKeff.p.1$va
-  ve = ENMKeff.p.1$ve
-  
-  # correct ve for K.analysis == "K"
-  if (K.analysis == "K") {
-    ve = ve[aligned.p.1.index.3N,]
-  }
-  
-  # calculate measures of variability between p.1 and p.2
-  Pn = ((t(ve) %*% dr) ^ 2) / (sum((t(ve) %*% dr) ^ 2))
-  dr.squarei = colSums(matrix(dr, nrow = 3) ^ 2) 
-  dr.squarei.windows.rot = colSums(matrix(dr.windows.rot, nrow = 3) ^ 2) 
-  dr.squarei.windows.contacts.rot = colSums(matrix(dr.windows.contacts.rot, nrow = 3) ^ 2) 
-  
-  # similarity of local enviroment - local score
-  
+  # similarity of local enviroment - local score without transformating coordinates
   ## set R0 for local score
   R0.local.score = 10
   
@@ -143,6 +123,27 @@ CalculateVariability <- function(r.p.1,
     local.score.i = mean((complete.dist.p.1.i - complete.dist.p.2.i) ^ 2)
     local.score[aligned.p.1.index[i]] = local.score.i
   }
+
+  # normal modes
+  ## calculate complete ENM Keff of p.1
+  ENMKeff.p.1 = CalculateENMKeff(matrix(r.p.1, nrow = 3),
+                                 aligned.p.1.index, 
+                                 not.aligned.p.1.index,
+                                 R0,
+                                 tolerance,
+                                 K.analysis)
+  
+  ## get eigenvalues and eigenvectors of p.1
+  va = ENMKeff.p.1$va
+  ve = ENMKeff.p.1$ve
+  
+  ## correct ve for K.analysis == "K"
+  if (K.analysis == "K") {
+    ve = ve[aligned.p.1.index.3N,]
+  }
+  
+  ## calculate measures of variability between p.1 and p.2
+  Pn = ((t(ve) %*% dr) ^ 2) / (sum((t(ve) %*% dr) ^ 2))
   
   # create a list for the output
   output = list(             "dr" = dr,
@@ -154,7 +155,6 @@ CalculateVariability <- function(r.p.1,
          "dr.squarei.windows.rot" = dr.squarei.windows.rot,
 "dr.squarei.windows.contacts.rot" = dr.squarei.windows.contacts.rot,
                     "local.score" = local.score)
-   
   output
 }
 

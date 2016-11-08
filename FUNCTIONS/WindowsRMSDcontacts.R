@@ -13,17 +13,22 @@ WindowsRMSDcontacts <- function(kij,
   # calculate the number of windows
   n.windows = length(aligned.p.1.index)
 
-  # sart a loop to aligne each window
+  # build a vector to save the data
+  score.windows = c()
+  
+  # sart a loop to aligne each window and calculate the score
   for (i in (1:n.windows)) {
     
     index.windows.i = which(kij[i, ] == 1)
     index.windows.i.3N = sort(c(index.windows.i * 3, index.windows.i * 3 - 2,  index.windows.i * 3 - 1))
 
-    r.p.2[, i] = matrix(fit.xyz(fixed = as.vector(r.p.1),
-                               mobile = as.vector(r.p.2),
-                           fixed.inds = index.windows.i.3N,
-                          mobile.inds = index.windows.i.3N), nrow = 3)[, i]
-                                        
+    r.p.2.window = matrix(fit.xyz(fixed = as.vector(r.p.1),
+                                 mobile = as.vector(r.p.2),
+                             fixed.inds = index.windows.i.3N,
+                            mobile.inds = index.windows.i.3N)[index.windows.i.3N], nrow = 3)
+    
+    score.windows.i = mean(colSums((r.p.2.window - r.p.1[, index.windows.i]) ^ 2)) 
+    score.windows[i] = score.windows.i
   }
-  as.vector(r.p.2)
+  as.vector(score.windows)
 }
