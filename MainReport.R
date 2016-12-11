@@ -35,7 +35,7 @@ for (f in (1:nrow(input))) {
   data.dir <- paste("OUT/out_subset_CA_ANM", sep = "")
   R0 = R0.CA
   rmarkdown::render('analysis-structure3-core.Rmd', 
-                    output_file =  paste("OUT/report_structure_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+                    output_file =  paste("OUT/report_structure_CA_core_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
 
   ## CM
   data.dir <- paste("OUT/out_subset_CM_ANM", sep = "")

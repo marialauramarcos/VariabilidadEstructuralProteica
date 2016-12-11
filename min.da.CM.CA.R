@@ -1,3 +1,4 @@
+# WARNING: run the functions of "MainProgramCM.R".
 # This program calculates distances between functional sites of proteins and the other sites of the protein.
 # It calculates distances between CAs and CMs.
 
@@ -64,8 +65,8 @@ for (f in (1:nrow(input))) {
   m.min.da.CM = matrix(nrow = n.aa, ncol = 1)
   
   for (i in (1:n.aa)) {
-    m.min.da.ca[i, ] = min(m.da.ca[i, ])
-    m.min.da.CM[i, ] = min(m.da.CM[i, ])
+    m.min.da.ca[i, ] = min(m.da.ca[i, 2:ncol(m.da.ca)])
+    m.min.da.CM[i, ] = min(m.da.CM[i, 2:ncol(m.da.ca)])
   }
 
   # build a dataframe with minimum distances

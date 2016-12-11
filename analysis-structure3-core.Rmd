@@ -207,13 +207,6 @@ p + theme(legend.position = "bottom")
 ### Correlation between site profiles
 
 ```{r_comparison_mean_z.RSD_vs_site, fig.cap = "Black lines are the active sites and grey lines are their contacts"}
-# comparison of z.RSD profiles
-ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset)) +
-  geom_line() +
-  geom_text(data = subset(d, dataset == "exp" & mean.z.RSD < -.5), aes(x = site, y = mean.z.RSD, label = site), nudge_y = -.1, size = 1.8)+
-  geom_vline(xintercept = active.sites, show.legend = F) +
-  geom_vline(xintercept = contacts.active.sites, col = "grey", show.legend = F) + 
-  scale_colour_manual(name = NULL, values = myColors) 
 
 # calculate correlations berween profiles
 d.exp = subset(d, dataset == "exp")
@@ -229,16 +222,6 @@ cor.df = data.frame("comparison" = c("exp vs mut", "exp vs strong", "mut vs stro
                     "R" = c(r.exp.mut, r.exp.strong, r.mut.strong))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between <Z-scores> profiles")
-```
-
-### Distances to the active sites
-
-```{r_comparison_da}
-
-
-```
-
-```{r_comparison_vs_plots}
 
 # plot exp vs simulated profiles 
 par(pty = "s")
@@ -249,8 +232,6 @@ plot(x = d.exp$mean.z.RSD,
      ylab = "mut.mean.z.RSD", 
      xlim = c(min(c(d.exp$mean.z.RSD, d.mut$mean.z.RSD)), max(c(d.exp$mean.z.RSD, d.mut$mean.z.RSD))),
      ylim = c(min(c(d.exp$mean.z.RSD, d.mut$mean.z.RSD)), max(c(d.exp$mean.z.RSD, d.mut$mean.z.RSD))))
-points(x = as.numeric(d.exp$mean.z.RSD)[active.sites], y = as.numeric(d.mut$mean.z.RSD)[active.sites], col = "yellow")
-points(x = as.numeric(d.exp$mean.z.RSD)[contacts.active.sites], y = as.numeric(d.mut$mean.z.RSD)[contacts.active.sites], col = "green")
 abline(0, 1)
 
 plot(x = d.exp$mean.z.RSD, 
@@ -259,8 +240,6 @@ plot(x = d.exp$mean.z.RSD,
      ylab = "strong.mean.z.RSD", 
      xlim = c(min(c(d.exp$mean.z.RSD, d.strong$mean.z.RSD)), max(c(d.exp$mean.z.RSD, d.strong$mean.z.RSD))),
      ylim = c(min(c(d.exp$mean.z.RSD, d.strong$mean.z.RSD)), max(c(d.exp$mean.z.RSD, d.strong$mean.z.RSD))))
-points(x = as.numeric(d.exp$mean.z.RSD)[contacts.active.sites], y = as.numeric(d.strong$mean.z.RSD)[contacts.active.sites], col = "green")
-points(x = as.numeric(d.exp$mean.z.RSD)[active.sites], y = as.numeric(d.strong$mean.z.RSD)[active.sites], col = "yellow")
 abline(0, 1)
 
 plot(x = d.mut$mean.z.RSD, 
@@ -269,7 +248,5 @@ plot(x = d.mut$mean.z.RSD,
      ylab = "strong.mean.z.RSD", 
      xlim = c(min(c(d.mut$mean.z.RSD, d.strong$mean.z.RSD)), max(c(d.mut$mean.z.RSD, d.strong$mean.z.RSD))),
      ylim = c(min(c(d.mut$mean.z.RSD, d.strong$mean.z.RSD)), max(c(d.mut$mean.z.RSD, d.strong$mean.z.RSD))))
-points(x = as.numeric(d.mut$mean.z.RSD)[contacts.active.sites], y = as.numeric(d.strong$mean.z.RSD)[contacts.active.sites], col = "green")
-points(x = as.numeric(d.mut$mean.z.RSD)[active.sites], y = as.numeric(d.strong$mean.z.RSD)[active.sites], col = "yellow")
 abline(0, 1)
 ```
