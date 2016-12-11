@@ -57,6 +57,7 @@ ReadHeme.fname <- "FUNCTIONS/ReadHeme.R"
 CalculateENMKeff.fname <- "FUNCTIONS/CalculateENMKeff.R"
 CalculateENMK.fname <- "FUNCTIONS/CalculateENMK.R"
 CalculateVariability.fname <- "FUNCTIONS/CalculateVariability.R"
+GetCore.fname <- "FUNCTIONS/GetCore.R"
 
 if (model == "ANM") {
   CalculateBetas.fname <- "FUNCTIONS/CalculateBetas.R"
@@ -81,6 +82,7 @@ source(ReadHeme.fname)
 source(CalculateENMKeff.fname)
 source(CalculateENMK.fname)
 source(CalculateVariability.fname)
+source(GetCore.fname)
 
 source(CalculateBetas.fname)
 source(CalculateKij.fname)
@@ -115,7 +117,12 @@ for (f in (1:nrow(input))) {
                   data.dir,
                   out.dir)
   }
-
+  
+  # Get the core
+  GetCore(family,
+          data.dir,
+          p.ref)
+  
   # Generate id for betas output filename
   betas.fname.id <- paste(family, "_", p.ref, "_R0_", R0, sep = "")
   
