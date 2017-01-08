@@ -1,8 +1,8 @@
-# Description: This program generates reports with the output of "MainProgram.R", "MainProgramCM.R" and "mean.da.CM.ca.R".
-# It works with the program "analysis-structure.Rmd". 
+# Description: This program generates reports with the output of "MainProgram.R", "MainProgramCM.R" and "mean.da.CM.CA.R".
+# It works with the program "analysis-structure.Rmd" and its analogous. 
 # To run the program it is neccessary to fill the input file "input_MainReport.csv".
 # Files needed for each family in data.dir are:
-#  "famiy_list.txt": with all of the proteins of the family (includin p.ref).
+#  "famiy_list.txt": with all of the proteins of the family (including p.ref).
 #  "family_ref.txt": p.ref.
 #  "p.ref.pdb": pdb file of p.ref.
 
@@ -34,26 +34,49 @@ for (f in (1:nrow(input))) {
   ## CA
   data.dir <- paste("OUT/out_subset_CA_ANM", sep = "")
   R0 = R0.CA
-  rmarkdown::render('analysis-structure3-core.Rmd', 
-                    output_file =  paste("OUT/report_structure_CA_core_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
-
+  
+  ### Pn
+  rmarkdown::render('analysis-structure-normal-modes.Rmd', 
+                    output_file =  paste("OUT/report_structure_CA_normal_modes_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### RMSD
+  rmarkdown::render('analysis-structure.Rmd', 
+                    output_file =  paste("OUT/report_structure_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### RMSD core
+  rmarkdown::render('analysis-structure-core.Rmd', 
+                   output_file =  paste("OUT/report_structure_CA_core_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### RMSD windows contacts rot
+  #rmarkdown::render('analysis-structure-window-contacts.Rmd', 
+   #                 output_file =  paste("OUT/report_structure_window_contacts_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### local enviroment 
+  #rmarkdown::render('analysis-structure-local-enviroment.Rmd', 
+  #                 output_file =  paste("OUT/report_structure_local_enviroment_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+ 
   ## CM
   data.dir <- paste("OUT/out_subset_CM_ANM", sep = "")
   R0 = R0.CM
   
+  ### Pn
+  rmarkdown::render('analysis-structure-normal-modes.Rmd', 
+                    output_file =  paste("OUT/report_structure_CM_normal_modes_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
   ### RMSD
-  rmarkdown::render('analysis-structure3.Rmd', 
+  rmarkdown::render('analysis-structure.Rmd', 
                     output_file =  paste("OUT/report_structure_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
-
-  ### RMSD windows rot
-  rmarkdown::render('analysis-structure-window3.Rmd', 
-                    output_file =  paste("OUT/report_structure_window_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### RMSD core
+  rmarkdown::render('analysis-structure-core.Rmd', 
+                    output_file =  paste("OUT/report_structure_CM_core_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
   ### RMSD windows contacts rot
-  rmarkdown::render('analysis-structure-window-contacts3.Rmd', 
-                    output_file =  paste("OUT/report_structure_window_contacts_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  #rmarkdown::render('analysis-structure-window-contacts.Rmd', 
+  #                  output_file =  paste("OUT/report_structure_window_contacts_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
   ### local enviroment 
-  rmarkdown::render('analysis-structure-local-enviroment3.Rmd', 
-                    output_file =  paste("OUT/report_structure_local_enviroment_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  #rmarkdown::render('analysis-structure-local-enviroment.Rmd', 
+  #                  output_file =  paste("OUT/report_structure_local_enviroment_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
 }

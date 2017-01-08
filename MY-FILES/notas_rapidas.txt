@@ -1,0 +1,6 @@
+agregar dist.CM en core
+modificar leyendas que están mal
+chequear sitios activos 
+evaluar alfa amilasa
+comparar mut-strong
+comparar CA-CM

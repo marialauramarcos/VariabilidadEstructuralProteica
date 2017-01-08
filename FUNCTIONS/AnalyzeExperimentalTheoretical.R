@@ -38,6 +38,7 @@
 #    CalculateENMK
 
 AnalyzeExperimentalTheoretical <- function(family,
+                                           p.ref,
                                            chain.p.ref,
                                            n.mut.p,
                                            R0, 
@@ -51,7 +52,7 @@ AnalyzeExperimentalTheoretical <- function(family,
                                            tolerance) {
   ### GENERAL ###
   
-  # Filenames
+  # filenames
   dataset.fname <- file.path(data.dir, paste(family, "_dataset.csv", sep = ""))
   pdbs.fname <- file.path(data.dir, paste(family, "_coordinates.pdb", sep = "")) 
   
@@ -61,42 +62,48 @@ AnalyzeExperimentalTheoretical <- function(family,
   m.not.aligned.p.ref.index.fname <- file.path(out.dir, paste(family, "_out_m.not.aligned.p.ref.index.csv", sep = ""))
   m.not.aligned.p.2.index.fname <- file.path(out.dir, paste(family, "_out_m.not.aligned.p.2.index.csv", sep = ""))
   
-  # Read the dataset
+  # read the dataset
   dataset <- read.csv(dataset.fname)
   pdbid.dataset <- as.character(dataset$pdbid)
   chain <- as.character(dataset$chain)
   n.prot = length(pdbid.dataset)
   
   ### THEORETICAL ###
+  print("analysing theoretical...")
   
-  # Filenames
+  # filenames
   theo.r.p.ref.fname <- file.path(out.dir, paste(mut.fname.id, "_out_r.p.ref.csv", sep = ""))
   m.r.mut.fname <- file.path(out.dir, paste(mut.fname.id, "_out_m.r.mut.csv", sep = ""))
   
-  # Read coordinates
+  # read coordinates
   theo.r.p.ref = read.csv(theo.r.p.ref.fname)$x
   m.r.mut = read.csv(m.r.mut.fname)
   n.sites.p.ref = length(theo.r.p.ref)/3
   n.mut = ncol(m.r.mut)
   
-  # Create matrices to save measures of variability of each mutant
+  # create matrices to save measures of variability of each mutant
   m.theo.Pn = matrix(nrow = n.mut, ncol = 3 * n.sites.p.ref)
   m.theo.va = matrix(nrow = n.mut, ncol = 3 * n.sites.p.ref)
   m.theo.dr.squarei = matrix(nrow = n.mut, ncol = n.sites.p.ref)
+  m.theo.dr.squarei.windows.rot = matrix(nrow = n.mut, ncol = n.sites.p.ref)
+  m.theo.dr.squarei.windows.contacts.rot = matrix(nrow = n.mut, ncol = n.sites.p.ref)
   m.theo.norm.dr.squarei = matrix(nrow = n.mut, ncol = n.sites.p.ref)
-  m.theo.smooth.dr.squarei = matrix(nrow = n.mut, ncol = n.sites.p.ref)
-  m.theo.smooth.norm.dr.squarei = matrix(nrow = n.mut, ncol = n.sites.p.ref)
+  m.theo.norm.dr.squarei.windows.rot = matrix(nrow = n.mut, ncol = n.sites.p.ref)
+  m.theo.norm.dr.squarei.windows.contacts.rot = matrix(nrow = n.mut, ncol = n.sites.p.ref)
+  m.theo.local.score = matrix(nrow = n.mut, ncol = n.sites.p.ref)
   
-  # Start a loop to analyze each mutant
+  # start a loop to analyze each mutant
   for (mut in (1:(n.mut))) {
     print(c(mut))
       
-    # Get theo.r.p.2
+    # get theo.r.p.2
     theo.r.p.2 = m.r.mut[, mut]
     
-    # Calculate measures of variavility
+    # calculate measures of variavility
     theo.variability = CalculateVariability(as.vector(theo.r.p.ref), 
                                             as.vector(theo.r.p.2), 
+                                            n.sites.p.ref,
+                                            n.sites.p.ref,
                                             seq(1, n.sites.p.ref),                                               
                                             seq(1, n.sites.p.ref), 
                                             c(),
@@ -109,21 +116,23 @@ AnalyzeExperimentalTheoretical <- function(family,
     m.theo.va[mut, 1:length(theo.variability$va)] = theo.variability$va
     m.theo.Pn[mut, 1:length(theo.variability$Pn)] = theo.variability$Pn
     m.theo.dr.squarei[mut, 1:length(theo.variability$dr.squarei)] = theo.variability$dr.squarei
-      
-    # Calculate norm.dr.squarei
+    m.theo.dr.squarei.windows.rot[mut, 1:length(theo.variability$dr.squarei)] = theo.variability$dr.squarei.windows.rot
+    m.theo.dr.squarei.windows.contacts.rot[mut, 1:length(theo.variability$dr.squarei)] = theo.variability$dr.squarei.windows.contacts.rot
+    m.theo.local.score[mut, 1:length(theo.variability$local.score)] = theo.variability$local.score
+    
+    # calculate norm.dr.squarei
     m.theo.norm.dr.squarei[mut, ] = m.theo.dr.squarei[mut, ]/ mean(m.theo.dr.squarei[mut, ], na.rm = T)
-  
-    # Calculate smooth.norm.dr.squarei
-    kij = CalculateENMK(matrix(theo.r.p.ref, nrow = 3), CalculateKij, R0, tolerance)$kij
-    m.theo.smooth.dr.squarei[mut, ] = (m.theo.dr.squarei[mut, ] + (kij %*%  m.theo.dr.squarei[mut, ])) / (rowSums(kij) + 1)     
-    m.theo.smooth.norm.dr.squarei[mut, ] = m.theo.smooth.dr.squarei[mut, ]/ mean(m.theo.smooth.dr.squarei[mut, ], na.rm = T)
+    m.theo.norm.dr.squarei.windows.rot[mut, ] = m.theo.dr.squarei.windows.rot[mut, ]/ mean(m.theo.dr.squarei.windows.rot[mut, ], na.rm = T)
+    m.theo.norm.dr.squarei.windows.contacts.rot[mut, ] = m.theo.dr.squarei.windows.contacts.rot[mut, ]/ mean(m.theo.dr.squarei.windows.contacts.rot[mut, ], na.rm = T)
   }
   
-  # Create files to save the data
+  # create files to save the data
   write.csv(m.theo.va, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.va.csv", sep = "")), row.names = FALSE)
   write.csv(m.theo.Pn, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.Pn.csv", sep = "")), row.names = FALSE)
   write.csv(m.theo.norm.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.norm.dr.squarei.csv", sep = "")), row.names = FALSE)
-  write.csv(m.theo.smooth.norm.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.smooth.norm.dr.squarei.csv", sep = "")), row.names = FALSE)
+  write.csv(m.theo.norm.dr.squarei.windows.rot, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.norm.dr.squarei.windows.rot.csv", sep = "")), row.names = FALSE)
+  write.csv(m.theo.norm.dr.squarei.windows.contacts.rot, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.norm.dr.squarei.windows.contacts.rot.csv", sep = "")), row.names = FALSE)
+  write.csv(m.theo.local.score, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.local.score.csv", sep = "")), row.names = FALSE)
   
   ### EXPERIMENTAL ###
   
@@ -143,13 +152,16 @@ AnalyzeExperimentalTheoretical <- function(family,
   m.not.aligned.p.ref.index = read.csv(m.not.aligned.p.ref.index.fname)
   m.not.aligned.p.2.index = read.csv(m.not.aligned.p.2.index.fname)
   
-  # Create matrices to save measures of variability of each mutant
+  # create matrices to save measures of variability of each mutant
   m.exp.Pn = matrix(nrow = n.prot, ncol = 3 * (n.sites.p.ref)) 
   m.exp.va = matrix(nrow = n.prot, ncol = 3 * (n.sites.p.ref))
   m.exp.dr.squarei = matrix(nrow = n.prot, ncol = (n.sites.p.ref))
+  m.exp.dr.squarei.windows.rot = matrix(nrow = n.mut, ncol = n.sites.p.ref)
+  m.exp.dr.squarei.windows.contacts.rot = matrix(nrow = n.mut, ncol = n.sites.p.ref)
   m.exp.norm.dr.squarei = matrix(nrow = n.prot, ncol = (n.sites.p.ref))
-  m.exp.smooth.dr.squarei = matrix(nrow = n.prot, ncol = (n.sites.p.ref))
-  m.exp.smooth.norm.dr.squarei = matrix(nrow = n.prot, ncol = (n.sites.p.ref))
+  m.exp.norm.dr.squarei.windows.rot = matrix(nrow = n.prot, ncol = n.sites.p.ref)
+  m.exp.norm.dr.squarei.windows.contacts.rot = matrix(nrow = n.prot, ncol = n.sites.p.ref)
+  m.exp.local.score = matrix(nrow = n.prot, ncol = n.sites.p.ref)
   
   # Start a loop to evaluate each protein of the family
   for (P in (1:n.prot)) {
@@ -180,7 +192,9 @@ AnalyzeExperimentalTheoretical <- function(family,
     
     # Calculate measures of variability
     exp.variability = CalculateVariability(as.vector(exp.r.p.ref), 
-                                           as.vector(exp.r.p.2), 
+                                           as.vector(exp.r.p.2),
+                                           n.sites.p.ref,
+                                           exp.n.sites.p.2,
                                            aligned.p.ref.index, 
                                            aligned.p.2.index, 
                                            not.aligned.p.ref.index,
@@ -192,30 +206,29 @@ AnalyzeExperimentalTheoretical <- function(family,
     
     m.exp.va[P, 1:length(exp.variability$va)] = exp.variability$va
     m.exp.Pn[P, 1:length(exp.variability$Pn)] = exp.variability$Pn
+    m.exp.local.score[P, 1:length(exp.variability$local.score)] = exp.variability$local.score
+    
     exp.dr.squarei = exp.variability$dr.squarei
+    exp.dr.squarei.windows.rot = exp.variability$dr.squarei.windows.rot
+    exp.dr.squarei.windows.contacts.rot = exp.variability$dr.squarei.windows.contacts.rot
+    
     for (i in (1:n.sites.p.ref)) {
       m.exp.dr.squarei[P, i] = matrix(exp.dr.squarei[aligned.p.ref.index == i], nrow = 1, ncol = 1)
+      m.exp.dr.squarei.windows.rot[P, i] = matrix(exp.dr.squarei.windows.rot[aligned.p.ref.index == i], nrow = 1, ncol = 1)
+      m.exp.dr.squarei.windows.contacts.rot[P, i] = matrix(exp.dr.squarei.windows.contacts.rot[aligned.p.ref.index == i], nrow = 1, ncol = 1)
     }
     
-    # Calculate norm.dr.squarei
+    # calculate norm.dr.squarei
     m.exp.norm.dr.squarei[P, ] = m.exp.dr.squarei[P, ]/ mean(m.exp.dr.squarei[P, ], na.rm = T)
-    
-    # Calculate smooth.norm.dr.squarei
-    m.exp.dr.squarei.0 = m.exp.dr.squarei[P, ]
-    m.exp.dr.squarei.0[is.na(m.exp.dr.squarei.0)] = tolerance
-    m.exp.smooth.dr.squarei[P, ] = (m.exp.dr.squarei[P, ] + (kij %*%  m.exp.dr.squarei.0)) / (rowSums(kij[, !is.na(m.exp.dr.squarei[P, ])]) + 1)
-    m.exp.smooth.norm.dr.squarei[P, ] = m.exp.smooth.dr.squarei[P, ]/ mean(m.exp.smooth.dr.squarei[P, ], na.rm = T)
+    m.exp.norm.dr.squarei.windows.rot[P, ] = m.exp.dr.squarei.windows.rot[P, ]/ mean(m.exp.dr.squarei.windows.rot[P, ], na.rm = T)
+    m.exp.norm.dr.squarei.windows.contacts.rot[P, ] = m.exp.dr.squarei.windows.contacts.rot[P, ]/ mean(m.exp.dr.squarei.windows.contacts.rot[P, ], na.rm = T)
   }  
   
-  # Create files to save the data
+  # create files to save the data
   write.csv(m.exp.va, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.va.csv", sep = "")), row.names = FALSE)
   write.csv(m.exp.Pn, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.Pn.csv", sep = "")), row.names = FALSE)
   write.csv(m.exp.norm.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.norm.dr.squarei.csv", sep = "")), row.names = FALSE)
-  write.csv(m.exp.smooth.norm.dr.squarei, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.smooth.norm.dr.squarei.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.norm.dr.squarei.windows.rot, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.norm.dr.squarei.windows.rot.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.norm.dr.squarei.windows.contacts.rot, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.norm.dr.squarei.windows.contacts.rot.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.local.score, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.local.score.csv", sep = "")), row.names = FALSE)
 }
-
-
-
-
-
-

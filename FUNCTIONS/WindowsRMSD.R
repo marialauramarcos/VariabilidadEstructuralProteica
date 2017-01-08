@@ -11,7 +11,7 @@ WindowsRMSD <- function(length.windows,
   # calculate the number of aligned sites
   n.aligned = length(r.p.1)/3
   
-  # calculate the number of windows and the legth of the last window)
+  # calculate the number of windows and the length of the last window
   n.windows = as.integer(n.aligned/length.windows)
   resid.last.window = n.aligned - (n.windows * length.windows)
   
@@ -29,9 +29,9 @@ WindowsRMSD <- function(length.windows,
     index.windows.i.3N = sort(c(index.windows.i * 3, index.windows.i * 3 - 2,  index.windows.i * 3 - 1))
 
     r.p.2[index.windows.i.3N] = as.vector(fit.xyz(fixed = r.p.1[index.windows.i.3N],
-                                          mobile = r.p.2[index.windows.i.3N],
-                                          fixed.inds = (1:length(index.windows.i.3N)),
-                                          mobile.inds = (1:length(index.windows.i.3N))))
+                                                 mobile = r.p.2[index.windows.i.3N],
+                                             fixed.inds = (1:length(index.windows.i.3N)),
+                                            mobile.inds = (1:length(index.windows.i.3N))))
                                         
   }
   r.p.2

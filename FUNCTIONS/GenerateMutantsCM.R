@@ -157,7 +157,6 @@ GenerateMutantsCM <- function(family,
         v.p.accept = c(v.p.accept, p.accept.mut)
         
         if (p.accept.mut >= runif(1, 0, 1)) {
-          
           v.accept = c(v.accept, 1)
           
           # Add to accepted mutants
@@ -166,14 +165,14 @@ GenerateMutantsCM <- function(family,
           # Calculate "dr.mut" and "dr.tot"
           dr.mut = ENMK.p.ref$cov %*% f
           dr.tot = dr.tot + dr.mut
-            
+
           # Remove "mut.index" from "sites.to.mutate" in order to not to mutate the same site more than once
           sites.to.mutate = sites.to.mutate[sites.to.mutate != mut.index]
         }else{
           v.accept = c(v.accept, 0)
         }
-      }
-        
+      }  
+      
       # Save n.accept.mut and n.mut for mut
       v.n.accept.mut = c(v.n.accept.mut, n.accept.mut)
       

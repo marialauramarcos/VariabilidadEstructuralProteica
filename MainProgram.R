@@ -26,27 +26,27 @@
 
 ### PROGRAM ###
 
-# Remove objects from the workspace
+# remove objects from the workspace
 rm(list = ls())
 
-# Load packages
+# load packages
 library(bio3d) 
 library(seqinr) 
 
-# Data dir
+# data dir
 data.dir <- "DATA"
 
-# Set Elastic Network Model: "ANM" or "pfANM"
+# set Elastic Network Model: "ANM" or "pfANM"
 model <- "ANM"
 
-# Output dir
+# output dir
 if (model == "ANM") out.dir <- "OUT/out_subset_CA_ANM"
 if (model == "pfANM") out.dir <- "OUT/out_subset_CA_pfANM"
 
-# General parameters
+# general parameters
 tolerance = 1e-10
 
-# Function filenames
+# function filenames
 AnalyzeExperimentalTheoretical.fname <- "FUNCTIONS/AnalyzeExperimentalTheoretical.R"
 AnalyzeFamily.fname <- "FUNCTIONS/AnalyzeFamily.R"
 AnalyzeAlignment.fname <- "FUNCTIONS/AnalyzeAlignment.R"
@@ -58,6 +58,8 @@ CalculateENMKeff.fname <- "FUNCTIONS/CalculateENMKeff.R"
 CalculateENMK.fname <- "FUNCTIONS/CalculateENMK.R"
 CalculateVariability.fname <- "FUNCTIONS/CalculateVariability.R"
 GetCore.fname <- "FUNCTIONS/GetCore.R"
+WindowsRMSD.fname <- "FUNCTIONS/WindowsRMSD.R"
+WindowsRMSDcontacts.fname <- "FUNCTIONS/WindowsRMSDcontacts.R"
 
 if (model == "ANM") {
   CalculateBetas.fname <- "FUNCTIONS/CalculateBetas.R"
@@ -71,7 +73,7 @@ if (model == "pfANM") {
   CalculateForce.fname <- "FUNCTIONS/CalculateForcePFANM.R"
 }
 
-# Source functions
+# source functions
 source(AnalyzeExperimentalTheoretical.fname)
 source(AnalyzeFamily.fname)
 source(AnalyzeAlignment.fname)
@@ -83,16 +85,18 @@ source(CalculateENMKeff.fname)
 source(CalculateENMK.fname)
 source(CalculateVariability.fname)
 source(GetCore.fname)
+source(WindowsRMSD.fname)
+source(WindowsRMSDcontacts.fname)
 
 source(CalculateBetas.fname)
 source(CalculateKij.fname)
 source(CalculateForce.fname)
 
-# Read input
+# read input
 input.fname <- file.path("input_MainProgram.csv")
 input <- read.csv(input.fname)
 
-# Start a loop to analyze each family
+# start a loop to analyze each family
 for (f in (1:nrow(input))) { 
   family <- as.character(input$family)[f]
   p.ref <- as.character(input$p.ref)[f]
@@ -118,15 +122,15 @@ for (f in (1:nrow(input))) {
                   out.dir)
   }
   
-  # Get the core
+  # get the core
   GetCore(family,
           data.dir,
           p.ref)
   
-  # Generate id for betas output filename
+  # generate id for betas output filename
   betas.fname.id <- paste(family, "_", p.ref, "_R0_", R0, sep = "")
   
-  # Calculate betas of the "Stress Model"
+  # calculate betas of the "Stress Model"
   if (calculate.betas == "TRUE") {
     CalculateBetas(chain.p.ref,
                    fmax, 
@@ -138,50 +142,56 @@ for (f in (1:nrow(input))) {
                    tolerance)
   }
   
-  # Read betas and stablish selection regimens
+  # read betas and stablish selection regimens
   all.betas <- read.csv(file.path(out.dir, paste(betas.fname.id, "_out_all.betas.csv", sep = "")))
   regimens <- c("strong.sel", "medium.sel", "weak.sel", "no.sel")
   
-  # Start a loop for each beta
+  # start a loop for each beta
   for (b in all.betas)  {
     
-    # Generate ids for output filenames
-    mut.fname.id <- paste(family, "_R0_", R0, "_beta_", regimens[all.betas == b], sep = "")
-    analysis.fname.id <- paste(mut.fname.id, "_K.analysis_", K.analysis, sep = "")
+    # filter regimens
+    if (regimens[all.betas == b] != "medium.sel") {
+      if (regimens[all.betas == b] != "weak.sel") {
+    
+        # generate ids for output filenames
+        mut.fname.id <- paste(family, "_R0_", R0, "_beta_", regimens[all.betas == b], sep = "")
+        analysis.fname.id <- paste(mut.fname.id, "_K.analysis_", K.analysis, sep = "")
   
-    # Generate mutants
-    if (generate.mutants == "TRUE") {
-      GenerateMutants(family,
-                      chain.p.ref, 
-                      n.mut.p,
-                      fmax, 
-                      R0,
-                      b,
-                      heme, 
-                      data.dir,
-                      out.dir,
-                      mut.fname.id,
-                      tolerance)
-    }
+        # generate mutants
+        if (generate.mutants == "TRUE") {
+          GenerateMutants(family,
+                          chain.p.ref, 
+                          n.mut.p,
+                          fmax, 
+                          R0,
+                          b,
+                          heme, 
+                          data.dir,
+                          out.dir,
+                          mut.fname.id,
+                          tolerance)
+        }
   
-    # Calculate measures of variability of theoretical and experimental proteins
-    if (analyze.experimental.theoretical == "TRUE") {
-      AnalyzeExperimentalTheoretical(family,
-                                     chain.p.ref,
-                                     n.mut.p,
-                                     R0, 
-                                     rotate,
-                                     heme,
-                                     K.analysis,
-                                     data.dir,
-                                     out.dir,
-                                     mut.fname.id, 
-                                     analysis.fname.id,
-                                     tolerance)
+        # calculate measures of variability of theoretical and experimental proteins
+        if (analyze.experimental.theoretical == "TRUE") {
+          AnalyzeExperimentalTheoretical(family,
+                                         p.ref,
+                                         chain.p.ref,
+                                         n.mut.p,
+                                         R0, 
+                                         rotate,
+                                         heme,
+                                         K.analysis,
+                                         data.dir,
+                                         out.dir,
+                                         mut.fname.id, 
+                                         analysis.fname.id,
+                                         tolerance)
+        }
+      }
     }
   }
 }
-
 
 
 

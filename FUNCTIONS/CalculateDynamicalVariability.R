@@ -32,22 +32,27 @@ CalculateDynamicalVariability <- function(r.p.1,
   ## get eigen vectors
   ve.p.1 = ENMK.p.1$ve
   ve.p.2 = ENMK.p.2$ve
+  
+  # calculate nH and nR
+  overlap = t(ve.p.1) %*% ve.p.2
+  nH = exp( - rowSums(overlap ^ 2 * log(overlap ^ 2 + tolerance)))
+  nR = 1 / rowSums(overlap ^ 4)
 
   # calculate Mean Square Fluctuation
   ## get the diagonal of the cov matrix
   diag.p.1 = diag(cov.p.1)
   diag.p.2 = diag(cov.p.2)
 
-  ## calculate the factor to divide the diagonal
+  ## calculate the factor to split the diagonal
   factor = sort(rep(seq(1:n.aligned), 3))
 
-  ## separate the diagonal
+  ## split the diagonal
   s.diag.p.1 = split(diag.p.1, factor)
   s.diag.p.2 = split(diag.p.2, factor)
 
-  ## create matrices to save data
-  MSF.p.1 = matrix(rnow = 1, ncol = n.aligned)
-  MSF.p.2 = matrix(rnow = 1, ncol = n.aligned)
+  ## create matrices to save the data
+  MSF.p.1 = matrix(nrow = 1, ncol = n.aligned)
+  MSF.p.2 = matrix(nrow = 1, ncol = n.aligned)
 
   ## start a loop to calculate sums for each site
   for (i in (1:n.aligned)) {
@@ -57,11 +62,6 @@ CalculateDynamicalVariability <- function(r.p.1,
  
   ## calculate the difference
   square.dif.MSF = (MSF.p.1 - MSF.p.2) ^ 2
-  
-  # calculate nH and nR
-  overlap = t(ve.p.1) %*% ve.p.2
-  nH = exp( - rowSums(overlap ^ 2 * log(overlap ^ 2 + tolerance)))
-  nR = 1 / rowSums(overlap ^ 4)
   
   # create a list for the output
   out = list("MSF.p.1" = MSF.p.1,

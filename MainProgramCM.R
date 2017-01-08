@@ -29,27 +29,27 @@
 
 ### PROGRAM ###
 
-# Remove objects from the workspace
+# remove objects from the workspace
 rm(list = ls())
 
-# Load packages
+# load packages
 library(bio3d)
 library(seqinr)
 
-# Set Elastic Network Model: "ANM" or "pfANM"
+# set Elastic Network Model: "ANM" or "pfANM"
 model <- "ANM"
 
-# Data dir
+# data dir
 data.dir <- "DATA"
 
-# Output dir
+# output dir
 if (model == "ANM") out.dir <- "OUT/out_subset_CM_ANM"
 if (model == "pfANM") out.dir <- "OUT/out_subset_CM_pfANM"
 
-# General parameters
+# general parameters
 tolerance = 1e-10
 
-# Function filenames
+# function filenames
 AnalyzeExperimentalTheoreticalCM.fname <- "FUNCTIONS/AnalyzeExperimentalTheoreticalCM.R"
 AnalyzeFamily.fname <- "FUNCTIONS/AnalyzeFamily.R"
 AnalyzeAlignment.fname <- "FUNCTIONS/AnalyzeAlignment.R"
@@ -76,7 +76,7 @@ if (model == "pfANM") {
   CalculateForce.fname <- "FUNCTIONS/CalculateForcePFANM.R"
 }
 
-# Source functions
+# source functions
 source(AnalyzeExperimentalTheoreticalCM.fname)
 source(AnalyzeFamily.fname)
 source(AnalyzeAlignment.fname)
@@ -94,11 +94,11 @@ source(CalculateBetasCM.fname)
 source(CalculateKij.fname)
 source(CalculateForce.fname)
 
-# Read input
+# read input
 input.fname <- file.path("input_MainProgram.csv")
 input <- read.csv(input.fname)
 
-# Start a loop to analyze each family
+# start a loop to analyze each family
 for (f in (1:nrow(input))) { 
   family <- as.character(input$family)[f]
   p.ref <- as.character(input$p.ref)[f]
@@ -116,7 +116,7 @@ for (f in (1:nrow(input))) {
   
   print(family)
   
-  # Analyze the alignment of the family
+  # analyze the alignment of the family
   if (analyze.family == "TRUE") {
     AnalyzeFamily(family,
                   p.ref, 
@@ -124,10 +124,10 @@ for (f in (1:nrow(input))) {
                   out.dir)
   }
 
-  # Generate id for betas output filename
+  # generate id for betas output filename
   betas.fname.id <- paste(family, "_", p.ref, "_R0_", R0, sep = "")
   
-  # Calculate betas of the "Stress Model"
+  # calculate betas of the "Stress Model"
   if (calculate.betas == "TRUE") {
     CalculateBetasCM(chain.p.ref,
                      fmax,
@@ -139,22 +139,22 @@ for (f in (1:nrow(input))) {
                      tolerance)
   }
   
-  # Read betas and stablish selection regimens
+  # read betas and stablish selection regimens
   all.betas <- read.csv(file.path(out.dir, paste(betas.fname.id, "_out_all.betas.csv", sep = "")))
   regimens <- c("strong.sel", "medium.sel", "weak.sel", "no.sel")
   
-  # Start a loop for each beta
+  # start a loop for each beta
   for (b in all.betas)  {
     
-    # Filter regimens
+    # filter regimens
     if (regimens[all.betas == b] != "medium.sel") {
       if (regimens[all.betas == b] != "weak.sel") {
         
-        # Generate ids for output filenames
+        # generate ids for output filenames
         mut.fname.id <- paste(family, "_R0_", R0, "_beta_", regimens[all.betas == b], sep = "")
         analysis.fname.id <- paste(mut.fname.id, "_K.analysis_", K.analysis, sep = "")
   
-        # Generate mutants
+        # generate mutants
         if (generate.mutants == "TRUE") {
           GenerateMutantsCM(family,
                             chain.p.ref, 
@@ -169,7 +169,7 @@ for (f in (1:nrow(input))) {
                             tolerance)
         }
   
-        # Calculate measures of variability of theoretical and experimental proteins
+        # calculate measures of variability of theoretical and experimental proteins
         if (analyze.experimental.theoretical == "TRUE") {
           AnalyzeExperimentalTheoreticalCM(family,
                                            p.ref,
