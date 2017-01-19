@@ -105,7 +105,7 @@ for (f in (1:nrow(input))) {
   chain.p.ref <- as.character(input$chain.p.ref)[f]
   n.mut.p = input$n.mut.p[f]
   fmax = input$fmax[f] 
-  R0 = input$R0[f]
+  R0 = input$R0.CM[f]
   rotate <- input$rotate[f]
   heme <- input$heme[f]
   calculate.betas <- input$calculate.betas[f]

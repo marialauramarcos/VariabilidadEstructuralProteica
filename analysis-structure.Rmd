@@ -22,7 +22,8 @@ library(bio3d)
 
 # load functions
 source(file.path(data.dir, "multiplot.R"))
-source(file.path(data.dir, "my-functions.R")) 
+source(file.path(data.dir, "my-functions.R"))
+source("FUNCTIONS/readCA.R") 
 ```
 
 ```{r set_my_colors}
@@ -45,6 +46,7 @@ reference.fname = file.path(data.dir, paste(family, "_ref.txt", sep = ""))
 protein_list.fname = file.path(data.dir, paste(family, "_list.txt", sep = ""))
 site.info.fname = file.path(data.dir, paste(p.ref, "_m.da.ca.csv", sep = ""))
 min.da.CM.CA.fname = file.path(data.dir, paste(p.ref, "_min.da.CM.ca.csv", sep = ""))
+functional.sites.fname = file.path("DATA", paste(p.ref, "_functionalSites.csv", sep = ""))
 
 ## profiles to compare
 dri2.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.norm.dr.squarei.csv", sep = ""))
@@ -60,9 +62,22 @@ if (reference != p.ref) {
 }
 ```
 
+```{r read_functional_sites}
+# which are the functional sites?
+functional.sites = read.csv(functional.sites.fname, sep = ";")
+active.site.index = functional.sites$index
+description = functional.sites$description
+function.info = data.frame(active.site.index, description)
+```
+
 We studied the `r family` family. 
 We used the ENM `r enm` with R0 = `r R0` to generate mutants.
 We used as reference for the ENM the protein with pdb code `r reference`. 
+The active.sites sites of the reference are:
+```{r}
+print(function.info)
+```
+
 We simulated `r n.mut.p` mutants of this reference for each protein of the family.
 The `r family` family is of the type `r type` and consists of the following proteins:
 
@@ -81,7 +96,7 @@ m.min.da.CM.CA = read.csv(min.da.CM.CA.fname)
 # add info to site.info
 d = ddply(site.info, "site", .fun = function(x) data.frame("da" = min(x[, c(-1, -2)])))
 
-# define shells of active site neighborhood
+# define shells of active.sites site neighborhood
 d$shell = cut(d$da, breaks = c(-.1, 2.5, 7.5, 12.5, 17.5, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, max(d$da)))
 levels(d$shell) = seq(length(levels(d$shell))) - 1 # rename shell levels
 site.info = merge(site.info, d, by = "site")
@@ -207,7 +222,7 @@ p + theme(legend.position = "bottom")
 
 ### Correlation between site profiles
 
-```{r-comparison_mean_z.RSD_vs_site}
+```{r-comparison-mean-z.RSD-vs-site}
 
 # comparison of z.RSD profiles
 
@@ -232,23 +247,6 @@ cor.df = data.frame("comparison" = c("exp vs mut", "exp vs strong", "mut vs stro
                     "R" = c(r.exp.mut, r.exp.strong, r.mut.strong))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between <Z-scores> profiles")
-```
-
-### Distances to the active sites
-
-```{r-comparison-da}
-
-# comparison of means.z.scores with the minimum distance to the functional sites
-plot(y = d.exp$mean.z.RSD - d.mut$mean.z.RSD, x = m.min.da.CM.CA$min.da.ca, xlab = "minimal distance to active site (between CAs)", ylab = "exp.mean.z.RSD - mut.mean.z.RSD")
-plot(y = d.exp$mean.z.RSD - d.mut$mean.z.RSD, x = m.min.da.CM.CA$min.da.CM, xlab = "minimal distance to active site (between CMs)", ylab = "exp.mean.z.RSD - mut.mean.z.RSD")
-
-## calculate correlations between profiles
-r.min.da.CA = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD), m.min.da.CM.CA$min.da.ca)
-r.min.da.CM = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD), m.min.da.CM.CA$min.da.CM)
-
-cor.df = data.frame("comparison" = c("(exp - mut) vs min.da.CA", "(exp - mut) vs min.da.CM"), "R" = c(r.min.da.CA, r.min.da.CM))
-
-knitr::kable(cor.df, digits = 2, caption = "Correlation between differences in <Z-scores> profiles and the minimal distance to the active site")
 ```
 
 ```{r-comparisons-between-plots}
@@ -287,3 +285,39 @@ points(x = as.numeric(d.mut$mean.z.RSD)[active.sites], y = as.numeric(d.strong$m
 abline(0, 1)
 ```
 
+### Distances to the active sites
+
+```{r-comparison-da}
+
+# comparison of means.z.scores with the minimum distance to the functional sites
+plot(y = d.exp$mean.z.RSD - d.mut$mean.z.RSD, x = m.min.da.CM.CA$min.da.ca, xlab = "minimal distance to active site (between CAs)", ylab = "exp.mean.z.RSD - mut.mean.z.RSD")
+plot(y = d.exp$mean.z.RSD - d.mut$mean.z.RSD, x = m.min.da.CM.CA$min.da.CM, xlab = "minimal distance to active site (between CMs)", ylab = "exp.mean.z.RSD - mut.mean.z.RSD")
+
+## calculate correlations between profiles
+r.min.da.CA = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD), m.min.da.CM.CA$min.da.ca)
+r.min.da.CM = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD), m.min.da.CM.CA$min.da.CM)
+
+cor.df = data.frame("comparison" = c("(exp - mut) vs min.da.CA", "(exp - mut) vs min.da.CM"), "R" = c(r.min.da.CA, r.min.da.CM))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between differences in <Z-scores> profiles and the minimal distance to the active site")
+```
+
+
+```{r-write-pdbs} 
+# write pdb files with mean.z.RSDi as b-factor for building images
+
+## read pdb CAs
+pdb.xyz.ca = ReadCA(reference.pdb.fname, chain.p.ref)$xyz
+
+## experimental
+exp.mean.z.RSD.vec <- vec2resno(as.vector(d.exp$mean.z.RSD), sort(rep(1:ncol(pdb.xyz.ca),3)))
+write.pdb(xyz = c(pdb.xyz.ca), b = exp.mean.z.RSD.vec, file =  file.path(data.dir, paste(p.ref, "_exp.pdb", sep = "")))
+
+## mut
+mut.mean.z.RSD.vec <- vec2resno(as.vector(d.mut$mean.z.RSD), sort(rep(1:ncol(pdb.xyz.ca),3)))
+write.pdb(xyz = c(pdb.xyz.ca), b = mut.mean.z.RSD.vec, file = file.path(data.dir, paste(p.ref, "_mut.pdb", sep = "")))
+
+## mut + sel / strong
+strong.mean.z.RSD.vec <- vec2resno(as.vector(d.strong$mean.z.RSD), sort(rep(1:ncol(pdb.xyz.ca),3)))
+write.pdb(xyz = c(pdb.xyz.ca), b = strong.mean.z.RSD.vec, file = file.path(data.dir, paste(p.ref, "_strong.pdb", sep = "")))
+```

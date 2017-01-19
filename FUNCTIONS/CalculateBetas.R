@@ -71,13 +71,13 @@ CalculateBetas <- function(chain.p.ref,
   f2 = mean((fmax * runif(1e6, -1, 1)) ^ 2)
   
   # Caculate betas for differente selection regimes.
-  beta.0.2 = round(- log(0.1) / (f2 * mean.CN), digits = 3) # Strong selection
+  beta.0.1 = round(- log(0.1) / (f2 * mean.CN), digits = 3) # Strong selection
   beta.0.5 = round(- log(0.5) / (f2 * mean.CN), digits = 3) # Medium selection
-  beta.0.8 = round(- log(0.9) / (f2 * mean.CN), digits = 3) # Weak selection
+  beta.0.9 = round(- log(0.9) / (f2 * mean.CN), digits = 3) # Weak selection
   beta.1 = round(- log(1) / (f2 * mean.CN), digits = 3) # No selection
   
   # Build a list with betas
-  all.betas = list("strong.sel" = beta.0.2, "medium.sel" = beta.0.5, "weak.sel" = beta.0.8, "no.sel" = beta.1) 
+  all.betas = list("strong.sel" = beta.0.1, "medium.sel" = beta.0.5, "weak.sel" = beta.0.9, "no.sel" = beta.1) 
   
   # Create a file to save the data
   write.csv(all.betas, file = file.path(out.dir, paste(betas.fname.id, "_out_all.betas.csv", sep = "")), row.names = FALSE)

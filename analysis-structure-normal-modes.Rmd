@@ -97,40 +97,13 @@ rownames(Pn.strong) = paste("strong", rownames(Pn.strong), sep = "")
 energy.strong = read.csv(energy.strong.fname, header = T)
 rownames(energy.strong) = paste("strong", rownames(energy.strong), sep = "")
 
-
-## exp
-tdri2.exp = as.data.frame(t(as.matrix(dri2.exp)))
-tdri2.exp = cbind(site.info, tdri2.exp)
-siteComparison.exp = melt(tdri2.exp, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
-
-## mut
-tdri2.mut = as.data.frame(t(as.matrix(dri2.mut)))
-tdri2.mut = cbind(site.info, tdri2.mut)
-siteComparison.mut = melt(tdri2.mut, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
-
-## strong
-tdri2.strong = as.data.frame(t(as.matrix(dri2.strong)))
-tdri2.strong = cbind(site.info, tdri2.strong)
-siteComparison.strong = melt(tdri2.strong, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
-
-# bluild the data.frame
-siteComparison.all.datasets = rbind(data.frame("dataset" = "exp", siteComparison.exp),
-                                    data.frame("dataset" = "mut", siteComparison.mut),
-                                    data.frame("dataset" = "strong", siteComparison.strong))
-
-siteComparison.all.datasets = ddply(siteComparison.all.datasets, c("dataset", "protein"), mutate,
-          "n.SD" = dri2/mean(dri2, na.rm = T),
-          "z.SD" = vscale(dri2),
-          "RSD" = sqrt(dri2), 
-          "n.RSD" = RSD/mean(RSD, na.rm = T),
-          "z.RSD" = vscale(RSD))
 ```
 
 ### Structural divergence along normal modes
 
 In this section we consider structural divergence using normal mode coordinates. Pn is the square divergence along a normal mode relative to the mean.
 
-```{r-prepare-mode-data}
+```{r prepare-mode-data}
 mode = seq(ncol(Pn.strong))
 
 # Prepare modeComparison.strong
@@ -181,7 +154,7 @@ modeComparison.mut <- na.omit(modeComparison.mut)
 ```
 
 
-```{r-add-quantile-regression-data}
+```{r add-quantile-regression-data}
 
 ## Quantile regression 
 
@@ -226,7 +199,7 @@ Here we show the square deviation along each normal mode (normalized so that = 1
 Upper panel: simulated vs empirical data, shown separately.
 Lower panel: simulated vs empirical overlaped and zoomed to better see the pattern.
 
-```{r-Pn-vs-energy}
+```{r Pn-vs-energy}
 
 # Plot Pn vs energy
 dat = modeComparison.all.datasets
@@ -253,7 +226,7 @@ p.facet
 
 ### median(Pn) vs mode energy
 
-```{r-median-vs-mode-energy}
+```{r median-vs-mode-energy}
 
 dat = modeComparison.all.datasets
 dat$dataset = revalue(dat$dataset,c("strong" = "mut+sel"))
@@ -279,8 +252,8 @@ p = ggplot(dat,aes(x=energy.mean,y=Pn.median,col=dataset,fill=dataset)) +
     coord_cartesian(xlim=c(0,1)) 
 
 
-p.facet = p + facet_grid(dataset~.,switch="y") + theme(legend.position="none")
-p.facet %+% subset(dat,dataset =="exp")
+p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "none")
+p.facet %+% subset(dat,dataset == "exp")
 p.facet %+% subset(dat,dataset == "mut")
 p.facet %+% subset(dat,dataset == "mut+sel")
 p.facet
@@ -290,7 +263,7 @@ p + theme(legend.position = "bottom")
 
 ### correlaction between mode profiles
 
-```{r-correlation-mode-profiles}
+```{r correlation-mode-profiles}
 dat = modeComparison.all.datasets
 #dat$dataset = revalue(dat$dataset,c("strong" = "mut+sel"))
 
