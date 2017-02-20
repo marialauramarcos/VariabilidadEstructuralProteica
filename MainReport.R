@@ -1,5 +1,4 @@
-# Description: This program generates reports with the output of "MainProgram.R", "MainProgramCM.R" and "mean.da.CM.CA.R".
-# It works with the program "analysis-structure.Rmd" and its analogous. 
+# Description: This program generates reports with the output of "MainProgram.R" and "MainProgramCM.R".
 # To run the program it is neccessary to fill the input file "input_MainReport.csv".
 # Files needed for each family in data.dir are:
 #  "famiy_list.txt": with all of the proteins of the family (including p.ref).
@@ -8,7 +7,7 @@
 
 ### PROGRAM ###
 
-# Load packages
+# load packages
 library(knitr)
 library(markdown)
 

@@ -67,7 +67,7 @@ GenerateMutants <- function(family,
   r.p.ref = pdb$xyz.calpha
   n.aa = pdb$n.sites
   
-  # Get heme coordinates, add them to CA´s coordinates and calculate the new number of sites
+  # Get heme coordinates, add them to CAB4s coordinates and calculate the new number of sites
   if (heme == "TRUE") {
     r.heme = ReadHeme(pdbs.fname, chain.p.ref)
     r.p.ref = cbind(r.p.ref, r.heme)
@@ -77,7 +77,7 @@ GenerateMutants <- function(family,
   }
   
   # Get the minimun sequence identity 
-  identity = min(m.identity)
+  identity = mean(m.identity)
   n.sites.mut = as.integer((100 - (identity)) * n.aa / 100)
   
   ### CALCULATE ENM OF THE REFERENCE PROTEIN ###

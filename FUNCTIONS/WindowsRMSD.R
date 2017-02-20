@@ -11,28 +11,27 @@ WindowsRMSD <- function(length.windows,
   # calculate the number of aligned sites
   n.aligned = length(r.p.1)/3
   
-  # calculate the number of windows and the length of the last window
-  n.windows = as.integer(n.aligned/length.windows)
-  resid.last.window = n.aligned - (n.windows * length.windows)
+  # index for windows
+  index.windows = seq(1:n.aligned)
+  index.windows = c(rep(0, (length.windows/2)), index.windows, rep(0, (length.windows/2)))
+  
+  # build a vector to save the data
+  score.windows = c()
   
   # sart a loop to aligne each window 
-  for (i in (1:n.windows)) {
-    
-    # set resid value
-    if (i == n.windows) {
-      resid = resid.last.window
-    } else {
-      resid = 0
-    }
-    
-    index.windows.i = seq(((length.windows * i) - (length.windows - 1)), ((length.windows * i) + resid))
-    index.windows.i.3N = sort(c(index.windows.i * 3, index.windows.i * 3 - 2,  index.windows.i * 3 - 1))
+  for (i in (1:n.aligned)) {
+    index.window.i = which(index.windows == i)
+    indexes.window.i = index.windows[(index.window.i - (length.windows / 2)):(index.window.i + (length.windows / 2))]
+    indexes.window.i = indexes.window.i[indexes.window.i != 0]
+    indexes.window.i.3N = sort(c(indexes.window.i * 3, indexes.window.i * 3 - 2,  indexes.window.i * 3 - 1))
 
-    r.p.2[index.windows.i.3N] = as.vector(fit.xyz(fixed = r.p.1[index.windows.i.3N],
-                                                 mobile = r.p.2[index.windows.i.3N],
-                                             fixed.inds = (1:length(index.windows.i.3N)),
-                                            mobile.inds = (1:length(index.windows.i.3N))))
-                                        
+    r.p.2.window = fit.xyz(fixed = r.p.1[indexes.window.i.3N],
+                          mobile = r.p.2[indexes.window.i.3N],
+                      fixed.inds = (1:length(indexes.window.i.3N)),
+                     mobile.inds = (1:length(indexes.window.i.3N)))
+    
+    score.window.i = mean(colSums((matrix((r.p.2.window - r.p.1[indexes.window.i.3N]), nrow = 3)) ^ 2)) 
+    score.windows[i] = score.window.i
   }
-  r.p.2
+  as.vector(score.windows)                                    
 }

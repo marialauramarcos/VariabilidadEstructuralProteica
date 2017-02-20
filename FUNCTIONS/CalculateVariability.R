@@ -55,14 +55,11 @@ CalculateVariability <- function(r.p.1,
   dr.squarei = colSums(matrix(dr, nrow = 3) ^ 2) 
   
   # transform r.p.2 using an aa seq based windows and calculate dr.squarei.windows.rot
-  r.p.2.window.rot = WindowsRMSD(15,
-                                 r.p.1,
-                                 r.p.2,
-                                 aligned.p.1.index.3N,
-                                 aligned.p.2.index.3N)
-  
-  dr.windows.rot = r.p.2.window.rot - r.p.1[aligned.p.1.index.3N]
-  dr.squarei.windows.rot = colSums(matrix(dr.windows.rot, nrow = 3) ^ 2)
+  dr.squarei.windows.rot = WindowsRMSD(10,
+                                       r.p.1,
+                                       r.p.2,
+                                       aligned.p.1.index.3N,
+                                       aligned.p.2.index.3N)
   
   # transform r.p.2 using contacts based windows and calculate a score (dr.squarei.windows.contacts.rot) in each window
   # the score of each window is mean(di^2), being i the sites inside the window
@@ -77,12 +74,12 @@ CalculateVariability <- function(r.p.1,
   dr.squarei.windows.contacts.rot = WindowsRMSDcontacts(ENMK.p.1$kij,
                                                         r.p.1,
                                                         r.p.2,
-                                                        aligned.p.1.index,
-                                                        aligned.p.2.index)
+                                                        aligned.p.1.index.3N,
+                                                        aligned.p.2.index.3N)
   
   # similarity of local enviroment - local score without transformating coordinates
   ## set R0 for local score
-  R0.local.score = 10
+  R0.local.score = R0
   
   ## calculate ENMK of aligned sites of p.1
   ENMK.p.1 = CalculateENMK(matrix(r.p.1, nrow = 3)[, aligned.p.1.index],
@@ -147,7 +144,6 @@ CalculateVariability <- function(r.p.1,
   
   # create a list for the output
   output = list(             "dr" = dr,
-                 "dr.windows.rot" = dr.windows.rot,
                              "va" = va,
                              "ve" = ve,
                              "Pn" = Pn,

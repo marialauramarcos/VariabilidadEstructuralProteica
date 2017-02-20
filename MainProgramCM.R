@@ -3,22 +3,23 @@
 # This is the main program of the project. The program simulates multiple mutants of a given protein using the "Linearly Forced - 
 # Elastic Network Model" (LF-ENM) with different selection regimens according to the "Stress Model". The program also
 # analyzes the multiple alignment of the family to which the protein belongs and calculates measures 
-# of variabilty of theoretical and experimental data.
-# The difference between this program and "MainProgram.R" is that, in this case, the model considers two sites per
-# aminoacid, the CA and the center of mass of the side chain (CM).
-# For the LF - ENM, only CMs are mutated.
+# of variabilty of theoretical and experimental structures.
+# Experimental structures and the multiple alignment must be obtained from Homstrad.
+# The difference between this program and "MainProgram.R" is that, in this case, the model considers two nodes per
+# aminoacid, the alpha carbon (CA) and the center of mass of the side chain (CM).
+# For the simulations using the LF-ENM, only CMs are mutated.
 #
 # To run the program it is necessary to previously fill the input ("input_MainProgram.csv") with the following information:
 #
-#    - family: The family of the protein to mutate. It can be "globins", "serinProteases", 
-#    "snakesToxin", "sh3", "fabp", "rrm", "phoslip" or "cys".
+#    - family: The family of the protein to mutate.
 #    - p.ref: The pdb code (pdbid) of the protein to mutate (example: "1a6m"). The protein must be a member of
 #    the selected family. This pdbid must not be included in the dataset ("DATA/family_dataset.csv").
 #    - chain.p.ref: The chain of p.ref in the pdb file obtained from Homstrad.
 #    - n.mut.p: The number of mutants to generate for each member of the family. For example, if the family has 20 
 #    members, the program generates n.mut.p x 20 mutants.
-#    - fmax: Argument for "LFENM". It is the maximun value for the forces that model the mutations. 
-#    - R0: the Cut-off for the "ANM" (Anisotropic Network Model) that represents the proteins.
+#    - fmax: Argument for the "LF-ENM". It is the maximun value for the forces that model the mutations. 
+#    - R0.CA: The Cut-off for the "ANM" (Anisotropic Network Model) that represents the proteins for the CA model.
+#    - R0.CM: The Cut-off for the "ANM" (Anisotropic Network Model) that represents the proteins for the two nodes per site model.
 #    - rotate: It can be "TRUE" or "FALSE". If it is "TRUE", r.p.2 is rotated in order to minimize RMSD with r.p.ref.
 #    - heme: Argument for "globins". It can be "TRUE" or "FALSE". If it is "TRUE", the program considers the heme group.
 #    - calculate.betas: It can be "TRUE" or "FALSE". If it is "TRUE", the program calculates betas of the "Stress Model".
@@ -36,11 +37,11 @@ rm(list = ls())
 library(bio3d)
 library(seqinr)
 
-# set Elastic Network Model: "ANM" or "pfANM"
-model <- "ANM"
-
 # data dir
 data.dir <- "DATA"
+
+# set Elastic Network Model: "ANM" or "pfANM"
+model <- "ANM"
 
 # output dir
 if (model == "ANM") out.dir <- "OUT/out_subset_CM_ANM"
@@ -61,15 +62,15 @@ CalculateSideChainCM.fname <- "FUNCTIONS/CalculateSideChainCM.R"
 CalculateENMKeff.fname <- "FUNCTIONS/CalculateENMKeff.R"
 CalculateENMK.fname <- "FUNCTIONS/CalculateENMK.R"
 CalculateVariability.fname <- "FUNCTIONS/CalculateVariability.R"
+CalculateDaCMCA.fname <- "FUNCTIONS/CalculateDaCMCA.R"
+GetCore.fname <- "FUNCTIONS/GetCore.R"
 WindowsRMSD.fname <- "FUNCTIONS/WindowsRMSD.R"
 WindowsRMSDcontacts.fname <- "FUNCTIONS/WindowsRMSDcontacts.R"
-
 if (model == "ANM") {
   CalculateBetasCM.fname <- "FUNCTIONS/CalculateBetasCM.R"
   CalculateKij.fname <- "FUNCTIONS/CalculateKij.R"
   CalculateForce.fname <- "FUNCTIONS/CalculateForce.R"
 }
-
 if (model == "pfANM") {
   CalculateBetasCM.fname <- "FUNCTIONS/CalculateBetasCMPFANM.R"
   CalculateKij.fname <- "FUNCTIONS/CalculateKijPFANM.R"
@@ -88,6 +89,8 @@ source(CalculateSideChainCM.fname)
 source(CalculateENMKeff.fname)
 source(CalculateENMK.fname)
 source(CalculateVariability.fname)
+source(CalculateDaCMCA.fname)
+source(GetCore.fname)
 source(WindowsRMSD.fname)
 source(WindowsRMSDcontacts.fname)
 source(CalculateBetasCM.fname)
@@ -123,7 +126,20 @@ for (f in (1:nrow(input))) {
                   data.dir,
                   out.dir)
   }
-
+  
+  # get the core of the alignment
+  GetCore(family,
+          data.dir,
+          p.ref)
+  
+  # calculate distances to the active site
+  CalculateDaCMCA(family,
+                  p.ref,
+                  chain.p.ref,
+                  heme,
+                  data.dir,
+                  out.dir)
+  
   # generate id for betas output filename
   betas.fname.id <- paste(family, "_", p.ref, "_R0_", R0, sep = "")
   

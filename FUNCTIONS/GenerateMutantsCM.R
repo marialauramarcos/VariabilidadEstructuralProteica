@@ -72,7 +72,7 @@ GenerateMutantsCM <- function(family,
   r.CM.p.ref = CalculateSideChainCM(pdb.fname, chain.p.ref)
   n.CM = ncol(r.CM.p.ref)
 
-  # Get heme coordinates, add them to CA´s coordinates and calculate the new number of sites
+  # Get heme coordinates, add them to CAB4s coordinates and calculate the new number of sites
   if (heme == "TRUE") {
     r.heme = ReadHeme(pdb.fname, chain.p.ref)
     r.ca.p.ref = cbind(r.ca.p.ref, r.heme)
@@ -85,8 +85,8 @@ GenerateMutantsCM <- function(family,
   r.p.ref = cbind(r.ca.p.ref, r.CM.p.ref)
   n.sites.tot = ncol(r.p.ref)
 
-  # Get the minimun sequence identity 
-  identity = min(m.identity)
+  # Get the mean sequence identity 
+  identity = mean(m.identity)
   n.sites.mut = as.integer((100 - (identity)) * n.aa / 100)
   
   ### CALCULATE ENM OF THE REFERENCE PROTEIN ###

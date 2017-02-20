@@ -13,7 +13,7 @@ For the core we considered sites with no gaps in the whole multiple alignment.
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
-```{r load_packages}
+```{r load-packages}
 # load packages
 library(ggplot2)
 library(reshape2)
@@ -26,20 +26,20 @@ source(file.path(data.dir, "multiplot.R"))
 source(file.path(data.dir, "my-functions.R"))
 ```
 
-```{r set_my_colors}
+```{r set-my-colors}
 # set my colors
 myColors = c("blue", "darkgreen", "red", "red") 
 names(myColors) <- c("exp", "mut", "strong", "mut+sel")
 ```
 
-```{r set_run_variables}
+```{r set-run-variables}
 # set significance factors
 f95 = 1.96
 f99 = 2.6
 f999 = 3.3
 ```
 
-```{r set_file_names}
+```{r set-file-names}
 # set input filenames
 ## data
 reference.fname = file.path(data.dir, paste(family, "_ref.txt", sep = ""))
@@ -53,7 +53,7 @@ dri2.strong.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_strong.
 dri2.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
 ```
 
-```{r set_reference_protein}
+```{r set-reference-protein}
 # which is the reference protein?
 reference = as.character(read.table(reference.fname, header = F)[1, 1])
 if (reference != p.ref) {
@@ -67,19 +67,19 @@ We used as reference for the ENM the protein with pdb code `r reference`.
 We simulated `r n.mut.p` mutants of this reference for each protein of the family.
 The `r family` family is of the type `r type` and consists of the following proteins:
 
-```{r set_experimental_protein_names, comment = ""}
+```{r set-experimental-protein-names, comment = ""}
 # experimental protein names
 protein.exp = read.table(protein_list.fname, header = F, stringsAsFactors = F)[, 1]
 protein.exp = protein.exp[protein.exp != reference]
 print(protein.exp)
 ```
 
-```{r read_the_core, comment = ""}
+```{r read-the-core, comment = ""}
 # indexes.core
 indexes.core = as.numeric(read.csv(file.path("DATA", paste("indexes.core", "_", family, ".csv", sep = "")))[1, -1])
 ```
 
-```{r set_site_info}
+```{r set-site-info}
 # read site information of the reference protein
 site.info = read.csv(site.info.fname, header = T, sep = ",")
 m.min.da.CM.CA = read.csv(min.da.CM.CA.fname)
@@ -99,6 +99,7 @@ inds = atom.select(ref.pdb, elety = "CA")
 ref.pdb.ca = ref.pdb$atom[inds$atom,]
 cmap.ca = cmap(ref.pdb$xyz[inds$xyz], dcut = R0, scut = 0, mask.lower = F)
 CN = rowSums(cmap.ca, na.rm = T) - 1 # diag(cmap.ca) returned by cmap is 1!
+n.sites = length(CN)
 AA = ref.pdb.ca$resid
 resno = ref.pdb.ca$resno
 pdb.info = data.frame(resno, AA, CN)
@@ -108,7 +109,7 @@ names(pdb.info) = c("resno", "AA", paste("CN", as.character(R0), sep = ""))
 site.info = cbind(site.info[indexes.core, ], pdb.info[indexes.core, ])
 ```
 
-```{r read_data}
+```{r read-data}
 # read data
 ## exp
 dri2.exp = read.csv(dri2.exp.fname, header = T)[, indexes.core]
@@ -127,7 +128,7 @@ rownames(dri2.strong) = paste("strong", rownames(dri2.strong), sep = "")
 
 Here we study how structural divergence varies from site to site. We compare simulated data with empirical data. 
 
-```{r prepare_site_data}
+```{r prepare-site-data}
 # prepare the data
 ## exp
 tdri2.exp = as.data.frame(t(as.matrix(dri2.exp)))
@@ -164,7 +165,7 @@ To measure structural divergence we use z.RSD profiles, which are the best for m
 The following plot compares the mean z.RSD profiles, including standard errors (with .999 confidence level for the mean)
 *Warning: the effective number of data should be smaller than the actual data, especially for the experimental dataset because of several factors. We need to deal with this for quantitative analysis. Probably we'll need to use bootstrapping to calculate standard errors non-parametrically*
 
-```{r mean_se_z.RSD_vs_site, fig.cap = "Black lines are the active sites and grey lines are their contacts"}
+```{r mean-se-z.RSD-vs-site, fig.cap = "Black lines are the active sites and grey lines are their contacts"}
 # comparison of z.RSD profiles with functional sites
 ## prepare dat
 dat = siteComparison.all.datasets
@@ -207,7 +208,7 @@ p + theme(legend.position = "bottom")
 
 ### Correlation between site profiles
 
-```{r-comparison-mean-z.RSD-vs-site, fig.cap = "Black lines are the active sites and grey lines are their contacts"}
+```{r comparison-mean-z.RSD-vs-site, fig.cap = "Black lines are the active sites and grey lines are their contacts"}
 
 # calculate correlations berween profiles
 d.exp = subset(d, dataset == "exp")
@@ -277,14 +278,14 @@ abline(0, 1)
 ```
 ### Distance to the active site
 
-```{r-comparison-da}
+```{r comparison-min.da}
 
 # comparison of means.z.scores with the minimum distance to the functional sites
-plot(y = d.exp$mean.z.RSD - d.mut$mean.z.RSD, x = m.min.da.CM.CA$min.da.ca[indexes.core], xlab = "minimal distance to active site (between CAs)", ylab = "exp.mean.z.RSD - mut.mean.z.RSD")
+plot(y = d.exp$mean.z.RSD - d.mut$mean.z.RSD, x = m.min.da.CM.CA$min.da.CA[indexes.core], xlab = "minimal distance to active site (between CAs)", ylab = "exp.mean.z.RSD - mut.mean.z.RSD")
 plot(y = d.exp$mean.z.RSD - d.mut$mean.z.RSD, x = m.min.da.CM.CA$min.da.CM[indexes.core], xlab = "minimal distance to active site (between CMs)", ylab = "exp.mean.z.RSD - mut.mean.z.RSD")
 
 ## calculate correlations between profiles
-r.min.da.CA = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD), m.min.da.CM.CA$min.da.ca[indexes.core])
+r.min.da.CA = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD), m.min.da.CM.CA$min.da.CA[indexes.core])
 r.min.da.CM = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD), m.min.da.CM.CA$min.da.CM[indexes.core])
 
 cor.df = data.frame("comparison" = c("(exp - mut) vs min.da.CA", "(exp - mut) vs min.da.CM"), "R" = c(r.min.da.CA, r.min.da.CM))
