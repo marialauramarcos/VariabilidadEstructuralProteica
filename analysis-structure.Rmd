@@ -367,26 +367,37 @@ write.pdb(xyz = c(pdb.xyz.ca), b = strong.mean.z.RSD.vec, file = file.path(data.
 ```
 
 ### sequence comparison
-```{r}
+```{r sequence-profiles-comparison}
+# read experimental data obtained from ConsurfDB
 consurf = read.csv(score.fname, sep = ";")
 score = consurf$SCORE
 
+# read simulated data
+## no sel
 sim.data.no.sel = read.csv(sim.data.no.sel.fname)
 mut.site.no.sel = sim.data.no.sel$site
 p.accept.no.sel = sim.data.no.sel$p.accept
 
+## strong sel
 sim.data.strong.sel = read.csv(sim.data.strong.sel.fname)
 mut.site.strong.sel = sim.data.strong.sel$site
 p.accept.strong.sel = sim.data.strong.sel$p.accept
 
+# calculate de mean.p.accept of simulated data
 mean.p.accept.no.sel = c()
 mean.p.accept.strong.sel = c()
 
 if (data.dir == "OUT/out_subset_CM_ANM") {
   mut.site.no.sel = mut.site.no.sel - n.sites
   mut.site.strong.sel = mut.site.strong.sel - n.sites
-  }
+  CN.CM = sim.data.no.sel$CN
+  CN = c()
 
+  for (i in (1:n.sites)) {
+    CN[i] = CN.CM[which(mut.site.no.sel == i)][1]
+  }
+}
+  
 for (i in (1:n.sites)) {
   p.accept.no.sel.i = p.accept.no.sel[which(mut.site.no.sel == i)]
   mean.p.accept.no.sel.i = mean(p.accept.no.sel.i)
@@ -397,12 +408,15 @@ for (i in (1:n.sites)) {
   mean.p.accept.strong.sel[i] = mean.p.accept.strong.sel.i
 }
 
+# compare exp vs no sel profiles
+## plot
 par(pty = "s")
 
 plot(x = mean.p.accept.no.sel, y = CN)
 plot(x = mean.p.accept.no.sel, y = score)
 plot(x = score, y = CN)
 
+## calculate corelations
 r.mean.p.accept.no.sel.CN = cor(mean.p.accept.no.sel, CN)
 r.mean.p.accept.no.sel.score = cor(mean.p.accept.no.sel, score)
 r.score.CN = cor(score, CN)
@@ -412,12 +426,15 @@ cor.df = data.frame("comparison" = c("p.accept.no.sel vs CN", "p.accept.no.sel v
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
 
+# compare exp vs strong sel profiles
+## plot
 par(pty = "s")
 
 plot(x = log(mean.p.accept.strong.sel), y = CN)
 plot(x = log(mean.p.accept.strong.sel), y = score)
 plot(x = score, y = CN)
 
+## calculate corelations
 r.mean.p.accept.strong.sel.CN = cor(log(mean.p.accept.strong.sel), CN)
 r.mean.p.accept.strong.sel.score = cor(log(mean.p.accept.strong.sel), score)
 r.score.CN = cor(score, CN)

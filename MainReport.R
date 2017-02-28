@@ -35,8 +35,8 @@ for (f in (1:nrow(input))) {
   R0 = R0.CA
   
   ### Pn
-  rmarkdown::render('analysis-structure-normal-modes.Rmd', 
-                    output_file =  paste("OUT/report_structure_CA_normal_modes_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  #rmarkdown::render('analysis-structure-normal-modes.Rmd', 
+  #                  output_file =  paste("OUT/report_structure_CA_normal_modes_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
   ### RMSD
   rmarkdown::render('analysis-structure.Rmd', 
@@ -60,8 +60,8 @@ for (f in (1:nrow(input))) {
   R0 = R0.CM
   
   ### Pn
-  rmarkdown::render('analysis-structure-normal-modes.Rmd', 
-                    output_file =  paste("OUT/report_structure_CM_normal_modes_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  #rmarkdown::render('analysis-structure-normal-modes.Rmd', 
+  #                  output_file =  paste("OUT/report_structure_CM_normal_modes_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
   ### RMSD
   rmarkdown::render('analysis-structure.Rmd', 

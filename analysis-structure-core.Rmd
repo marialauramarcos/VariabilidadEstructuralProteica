@@ -46,11 +46,17 @@ reference.fname = file.path(data.dir, paste(family, "_ref.txt", sep = ""))
 protein_list.fname = file.path(data.dir, paste(family, "_list.txt", sep = ""))
 site.info.fname = file.path(data.dir, paste(p.ref, "_m.da.ca.csv", sep = ""))
 min.da.CM.CA.fname = file.path(data.dir, paste(p.ref, "_min.da.CM.ca.csv", sep = ""))
+sum.inv.da.CM.CA.fname = file.path(data.dir, paste(p.ref, "_sum.inv.da.CM.ca.csv", sep = ""))
 
 ## profiles to compare
 dri2.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.norm.dr.squarei.csv", sep = ""))
 dri2.strong.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_strong.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
 dri2.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+
+## consurf
+score.fname = file.path(data.dir, paste(p.ref, "_consurf.csv", sep = ""))
+sim.data.no.sel.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_out_df.data.csv", sep = ""))
+sim.data.strong.sel.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_strong.sel_out_df.data.csv", sep = ""))
 ```
 
 ```{r set-reference-protein}
@@ -83,6 +89,7 @@ indexes.core = as.numeric(read.csv(file.path("DATA", paste("indexes.core", "_", 
 # read site information of the reference protein
 site.info = read.csv(site.info.fname, header = T, sep = ",")
 m.min.da.CM.CA = read.csv(min.da.CM.CA.fname)
+m.sum.inv.da.CM.CA = read.csv(sum.inv.da.CM.CA.fname)
 
 # add info to site.info
 d = ddply(site.info, "site", .fun = function(x) data.frame("da" = min(x[, c(-1, -2)])))
@@ -291,4 +298,125 @@ r.min.da.CM = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD), m.min.da.CM.CA$min.da.C
 cor.df = data.frame("comparison" = c("(exp - mut) vs min.da.CA", "(exp - mut) vs min.da.CM"), "R" = c(r.min.da.CA, r.min.da.CM))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between differences in <Z-scores> profiles and the minimal distance to the active site")
+```
+
+```{r comparison-sum.inv.da}
+
+
+# comparison of means.z.scores with the sum.inv distance to the functional sites
+plot(y = d.exp$mean.z.RSD - d.mut$mean.z.RSD, x = m.sum.inv.da.CM.CA$sum.inv.da.CA[indexes.core], xlab = "sum.inv distance to active site (between CAs)", ylab = "exp.mean.z.RSD - mut.mean.z.RSD")
+plot(y = d.exp$mean.z.RSD - d.mut$mean.z.RSD, x = m.sum.inv.da.CM.CA$sum.inv.da.CM[indexes.core], xlab = "sum.inv distance to active site (between CMs)", ylab = "exp.mean.z.RSD - mut.mean.z.RSD")
+
+## calculate correlations between profiles
+r.sum.inv.da.CA = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD), m.sum.inv.da.CM.CA$sum.inv.da.CA[indexes.core])
+r.sum.inv.da.CM = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD), m.sum.inv.da.CM.CA$sum.inv.da.CM[indexes.core])
+
+cor.df = data.frame("comparison" = c("(exp - mut) vs sum.inv.da.CA", "(exp - mut) vs sum.inv.da.CM"), "R" = c(r.sum.inv.da.CA, r.sum.inv.da.CM))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between differences in <Z-scores> profiles and the sum.inv distance to the active site")
+```
+
+```{r correlation-da-CN} 
+## CN core
+CN = CN[indexes.core]
+
+## calculate correlations between profiles
+r.min.da.CA.CN = cor(CN, m.min.da.CM.CA$min.da.CA[indexes.core])
+r.min.da.CM.CN = cor(CN, m.min.da.CM.CA$min.da.CM[indexes.core])
+
+cor.df = data.frame("comparison" = c("CN vs min.da.CA", "CN vs min.da.CM"), "R" = c(r.min.da.CA.CN, r.min.da.CM.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between CN and the minimal distance to the active site")
+
+## calculate correlations between profiles
+r.sum.inv.da.CA.CN = cor(CN, m.sum.inv.da.CM.CA$sum.inv.da.CA[indexes.core])
+r.sum.inv.da.CM.CN = cor(CN, m.sum.inv.da.CM.CA$sum.inv.da.CM[indexes.core])
+
+cor.df = data.frame("comparison" = c("CN vs sum.inv.da.CA", "CN vs sum.inv.da.CM"), "R" = c(r.sum.inv.da.CA.CN, r.sum.inv.da.CM.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between CN and the sum.inv distance to the active site")
+```
+
+```{r}
+# read experimental data obtained from ConsurfDB
+consurf = read.csv(score.fname, sep = ";")
+score = consurf$SCORE[indexes.core]
+
+# read simulated data
+## no sel
+sim.data.no.sel = read.csv(sim.data.no.sel.fname)
+mut.site.no.sel = sim.data.no.sel$site
+p.accept.no.sel = sim.data.no.sel$p.accept
+
+## strong sel
+sim.data.strong.sel = read.csv(sim.data.strong.sel.fname)
+mut.site.strong.sel = sim.data.strong.sel$site
+p.accept.strong.sel = sim.data.strong.sel$p.accept
+
+# calculate de mean.p.accept of simulated data
+mean.p.accept.no.sel = c()
+mean.p.accept.strong.sel = c()
+
+if (data.dir == "OUT/out_subset_CM_ANM") {
+  mut.site.no.sel = mut.site.no.sel - n.sites
+  mut.site.strong.sel = mut.site.strong.sel - n.sites
+  CN.CM = sim.data.no.sel$CN
+  CN = c()
+
+  for (i in (1:n.sites)) {
+    CN[i] = CN.CM[which(mut.site.no.sel == i)][1]
+  }
+  CN = CN[indexes.core]
+}
+
+# core n.sites
+
+for (i in (1:n.sites)) {
+  p.accept.no.sel.i = p.accept.no.sel[which(mut.site.no.sel == i)]
+  mean.p.accept.no.sel.i = mean(p.accept.no.sel.i)
+  mean.p.accept.no.sel[i] = mean.p.accept.no.sel.i
+  
+  p.accept.strong.sel.i = p.accept.strong.sel[which(mut.site.strong.sel == i)]
+  mean.p.accept.strong.sel.i = mean(p.accept.strong.sel.i)
+  mean.p.accept.strong.sel[i] = mean.p.accept.strong.sel.i
+}
+mean.p.accept.no.sel = mean.p.accept.no.sel[indexes.core]
+mean.p.accept.strong.sel = mean.p.accept.strong.sel[indexes.core]
+
+# compare exp vs no sel profiles
+## plot
+par(pty = "s")
+
+plot(x = mean.p.accept.no.sel, y = CN)
+plot(x = mean.p.accept.no.sel, y = score)
+plot(x = score, y = CN)
+
+## calculate corelations
+r.mean.p.accept.no.sel.CN = cor(mean.p.accept.no.sel, CN)
+r.mean.p.accept.no.sel.score = cor(mean.p.accept.no.sel, score)
+r.score.CN = cor(score, CN)
+
+cor.df = data.frame("comparison" = c("p.accept.no.sel vs CN", "p.accept.no.sel vs score", "score vs CN"),
+                    "R" = c(r.mean.p.accept.no.sel.CN , r.mean.p.accept.no.sel.score, r.score.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
+
+# compare exp vs strong sel profiles
+## plot
+par(pty = "s")
+
+plot(x = log(mean.p.accept.strong.sel), y = CN)
+plot(x = log(mean.p.accept.strong.sel), y = score)
+plot(x = score, y = CN)
+
+## calculate corelations
+r.mean.p.accept.strong.sel.CN = cor(log(mean.p.accept.strong.sel), CN)
+r.mean.p.accept.strong.sel.score = cor(log(mean.p.accept.strong.sel), score)
+r.score.CN = cor(score, CN)
+
+cor.df = data.frame("comparison" = c("log(p.accept.strong.sel) vs CN", "log(p.accept.strong.sel) vs score", "score vs CN"),
+                    "R" = c(r.mean.p.accept.strong.sel.CN , r.mean.p.accept.strong.sel.score, r.score.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
+
 ```
