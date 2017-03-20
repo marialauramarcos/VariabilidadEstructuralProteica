@@ -28,8 +28,8 @@ source("FUNCTIONS/readCA.R")
 
 ```{r set-my-colors}
 # set my colors
-myColors = c("blue", "darkgreen", "red", "red") 
-names(myColors) <- c("exp", "mut", "strong", "mut+sel")
+myColors = c("blue", "darkgreen", "darkgreen", "red", "red") 
+names(myColors) <- c("exp", "mut", "no-sel", "strong", "strong-sel")
 ```
 
 ```{r set-run-variables}
@@ -193,7 +193,8 @@ The following plot compares the mean z.RSD profiles, including standard errors (
 # comparison of z.RSD profiles with functional sites
 ## prepare dat
 dat = siteComparison.all.datasets
-dat$dataset = revalue(dat$dataset, c("strong" = "mut+sel"))
+dat$dataset = revalue(dat$dataset, c("strong" = "strong-sel"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-sel"))
 
 ## dat with means and standard errors
 d = ddply(dat,c("dataset", "site", "AA", "shell"), function(x) {
@@ -213,7 +214,7 @@ p = ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset, fill = dataset)) +
     geom_ribbon(aes(ymin = mean.z.RSD - f95 * se.z.RSD, ymax = mean.z.RSD + se.z.RSD), alpha = .4, show.legend = F) +
     geom_vline(xintercept = active.sites, show.legend = F) +
     geom_vline(xintercept = contacts.active.sites, col = "grey", show.legend = F) +
-    labs(x = "site", y = "structural divergence(mean z.RSD)") +
+    labs(x = "site", y = "<zRSDi>") +
     coord_cartesian(ylim = c(-1.5, 2.8)) +
     scale_colour_manual(name = NULL, values = myColors) + 
     scale_fill_manual(name = NULL, values = myColors)
@@ -222,8 +223,8 @@ p = ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset, fill = dataset)) +
 p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "bottom")
 
 p.facet %+% subset(d, dataset == "exp") 
-p.facet %+% subset(d, dataset == "mut")
-p.facet %+% subset(d, dataset == "mut+sel") 
+p.facet %+% subset(d, dataset == "no-sel")
+p.facet %+% subset(d, dataset == "strong-sel") 
 p.facet
 
 ## plot superimposed plots
@@ -245,8 +246,8 @@ ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset)) +
 
 # calculate correlations berween profiles
 d.exp = subset(d, dataset == "exp")
-d.mut = subset(d, dataset == "mut")
-d.strong = subset(d, dataset == "mut+sel")
+d.mut = subset(d, dataset == "no-sel")
+d.strong = subset(d, dataset == "strong-sel")
 
 # calculate cors
 r.exp.mut = cor(d.exp$mean.z.RSD, d.mut$mean.z.RSD)
@@ -445,4 +446,22 @@ cor.df = data.frame("comparison" = c("log(p.accept.strong.sel) vs CN", "log(p.ac
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
 
 ```
+```{r structure-profiles-comparison}
 
+# compare profiles
+## plot
+par(pty = "s")
+plot(x = d.exp$mean.z.RSD, y = CN, xlab = "experimental <zRSDi>")
+plot(x = d.mut$mean.z.RSD, y = CN, xlab = "theoretical with no selection <zRSDi>")
+plot(x = d.strong$mean.z.RSD, y = CN, xlab = "theoretical with strong selection <zRSDi>")
+
+## calculate corelations
+r.exp.mean.z.RSD.CN = cor(d.exp$mean.z.RSD, CN)
+r.mut.mean.z.RSD.CN = cor(d.mut$mean.z.RSD, CN)
+r.strong.mean.z.RSD.CN = cor(d.strong$mean.z.RSD, CN)
+
+cor.df = data.frame("comparison" = c("exp.mean.z.RSD vs CN", "mut.mean.z.RSD vs CN", "strong.mean.z.RSD vs CN"),
+                    "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.strong.mean.z.RSD.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
+```
