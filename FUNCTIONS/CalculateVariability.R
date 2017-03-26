@@ -19,6 +19,7 @@
 #    CalculateKij
 #    WindowsRMSD
 #    LocalEnviroment
+#    CalculateDynamicalVariability
 #
 #  Returns:
 #    Pn
@@ -142,6 +143,21 @@ CalculateVariability <- function(r.p.1,
   ## calculate measures of variability between p.1 and p.2
   Pn = ((t(ve) %*% dr) ^ 2) / (sum((t(ve) %*% dr) ^ 2))
   
+  ## dynamical variability
+  
+  dynamical.variability = CalculateDynamicalVariability(r.p.1,
+                                                        r.p.2,
+                                                        aligned.p.1.index,
+                                                        aligned.p.2.index,
+                                                        not.aligned.p.1.index,
+                                                        not.aligned.p.2.index,
+                                                        R0, 
+                                                        tolerance, 
+                                                        K.analysis)
+  square.dif.MSF = dynamical.variability$square.dif.MSF
+  nH = dynamical.variability$nH
+  nR = dynamical.variability$nR
+  
   # create a list for the output
   output = list(             "dr" = dr,
                              "va" = va,
@@ -150,7 +166,10 @@ CalculateVariability <- function(r.p.1,
                      "dr.squarei" = dr.squarei,
          "dr.squarei.windows.rot" = dr.squarei.windows.rot,
 "dr.squarei.windows.contacts.rot" = dr.squarei.windows.contacts.rot,
-                    "local.score" = local.score)
+                    "local.score" = local.score,
+                 "square.dif.MSF" = square.dif.MSF,
+                             "nH" = nH,
+                             "nR" = nR)
   output
 }
 

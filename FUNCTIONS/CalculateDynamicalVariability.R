@@ -10,7 +10,7 @@ CalculateDynamicalVariability <- function(r.p.1,
 
   # analyse p.1 and p.2
   ## calculate ENMK of p.1
-  ENMK.p.1 = CalculateENMKeff(r.p.1, 
+  ENMK.p.1 = CalculateENMKeff(matrix(r.p.1, nrow = 3), 
                               aligned.p.1.index, 
                               not.aligned.p.1.index, 
                               R0, 
@@ -18,7 +18,7 @@ CalculateDynamicalVariability <- function(r.p.1,
                               K.analysis)
 
   ## calculate ENMK of p.2
-  ENMK.p.2 = CalculateENMKeff(r.p.2, 
+  ENMK.p.2 = CalculateENMKeff(matrix(r.p.2, nrow = 3), 
                               aligned.p.2.index, 
                               not.aligned.p.2.index, 
                               R0, 
@@ -26,8 +26,8 @@ CalculateDynamicalVariability <- function(r.p.1,
                               K.analysis)
 
   ## get cov matrices
-  cov.p.1 = ENMK.p.1$Cov
-  cov.p.2 = ENMK.p.2$Cov
+  cov.p.1 = ENMK.p.1$cov
+  cov.p.2 = ENMK.p.2$cov
 
   ## get eigen vectors
   ve.p.1 = ENMK.p.1$ve
@@ -44,6 +44,7 @@ CalculateDynamicalVariability <- function(r.p.1,
   diag.p.2 = diag(cov.p.2)
 
   ## calculate the factor to split the diagonal
+  n.aligned = length(aligned.p.1.index)
   factor = sort(rep(seq(1:n.aligned), 3))
 
   ## split the diagonal

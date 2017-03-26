@@ -59,6 +59,7 @@ CalculateSideChainCM.fname <- "FUNCTIONS/CalculateSideChainCM.R"
 CalculateENMKeff.fname <- "FUNCTIONS/CalculateENMKeff.R"
 CalculateENMK.fname <- "FUNCTIONS/CalculateENMK.R"
 CalculateVariability.fname <- "FUNCTIONS/CalculateVariability.R"
+CalculateDynamicalVariability.fname <- "FUNCTIONS/CalculateDynamicalVariability.R"
 CalculateDaCMCA.fname <- "FUNCTIONS/CalculateDaCMCA.R"
 GetCore.fname <- "FUNCTIONS/GetCore.R"
 WindowsRMSD.fname <- "FUNCTIONS/WindowsRMSD.R"
@@ -86,6 +87,7 @@ source(CalculateSideChainCM.fname)
 source(CalculateENMKeff.fname)
 source(CalculateENMK.fname)
 source(CalculateVariability.fname)
+source(CalculateDynamicalVariability.fname)
 source(CalculateDaCMCA.fname)
 source(GetCore.fname)
 source(WindowsRMSD.fname)
@@ -160,8 +162,8 @@ for (f in (1:nrow(input))) {
   for (b in all.betas)  {
     
     # filter regimens
-    if (regimens[all.betas == b] != "medium.sel") {
-      if (regimens[all.betas == b] != "weak.sel") {
+    if (regimens[all.betas == b] != "weak.sel") {
+      if (regimens[all.betas == b] != "strong.sel") {
     
         # generate ids for output filenames
         mut.fname.id <- paste(family, "_R0_", R0, "_beta_", regimens[all.betas == b], sep = "")

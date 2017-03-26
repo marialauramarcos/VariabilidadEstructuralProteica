@@ -29,7 +29,7 @@ source("FUNCTIONS/readCA.R")
 ```{r set-my-colors}
 # set my colors
 myColors = c("blue", "darkgreen", "darkgreen", "red", "red") 
-names(myColors) <- c("exp", "mut", "no-sel", "strong", "strong-sel")
+names(myColors) <- c("exp", "mut", "no-selection", "strong", "selection")
 ```
 
 ```{r set-run-variables}
@@ -193,8 +193,8 @@ The following plot compares the mean z.RSD profiles, including standard errors (
 # comparison of z.RSD profiles with functional sites
 ## prepare dat
 dat = siteComparison.all.datasets
-dat$dataset = revalue(dat$dataset, c("strong" = "strong-sel"))
-dat$dataset = revalue(dat$dataset, c("mut" = "no-sel"))
+dat$dataset = revalue(dat$dataset, c("strong" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
 
 ## dat with means and standard errors
 d = ddply(dat,c("dataset", "site", "AA", "shell"), function(x) {
@@ -223,8 +223,8 @@ p = ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset, fill = dataset)) +
 p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "bottom")
 
 p.facet %+% subset(d, dataset == "exp") 
-p.facet %+% subset(d, dataset == "no-sel")
-p.facet %+% subset(d, dataset == "strong-sel") 
+p.facet %+% subset(d, dataset == "no-selection")
+p.facet %+% subset(d, dataset == "selection") 
 p.facet
 
 ## plot superimposed plots
@@ -246,8 +246,8 @@ ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset)) +
 
 # calculate correlations berween profiles
 d.exp = subset(d, dataset == "exp")
-d.mut = subset(d, dataset == "no-sel")
-d.strong = subset(d, dataset == "strong-sel")
+d.mut = subset(d, dataset == "no-selection")
+d.strong = subset(d, dataset == "selection")
 
 # calculate cors
 r.exp.mut = cor(d.exp$mean.z.RSD, d.mut$mean.z.RSD)
@@ -384,10 +384,11 @@ sim.data.strong.sel = read.csv(sim.data.strong.sel.fname)
 mut.site.strong.sel = sim.data.strong.sel$site
 p.accept.strong.sel = sim.data.strong.sel$p.accept
 
-# calculate de mean.p.accept of simulated data
+# calculate mean.p.accept of simulated data
 mean.p.accept.no.sel = c()
 mean.p.accept.strong.sel = c()
 
+# correct indexes
 if (data.dir == "OUT/out_subset_CM_ANM") {
   mut.site.no.sel = mut.site.no.sel - n.sites
   mut.site.strong.sel = mut.site.strong.sel - n.sites
@@ -446,7 +447,7 @@ cor.df = data.frame("comparison" = c("log(p.accept.strong.sel) vs CN", "log(p.ac
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
 
 ```
-```{r structure-profiles-comparison}
+```{r structure-profiles-CN-comparison}
 
 # compare profiles
 ## plot
@@ -463,5 +464,5 @@ r.strong.mean.z.RSD.CN = cor(d.strong$mean.z.RSD, CN)
 cor.df = data.frame("comparison" = c("exp.mean.z.RSD vs CN", "mut.mean.z.RSD vs CN", "strong.mean.z.RSD vs CN"),
                     "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.strong.mean.z.RSD.CN))
 
-knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
+knitr::kable(cor.df, digits = 2, caption = "Correlation structure - sequence")
 ```

@@ -101,6 +101,9 @@ AnalyzeExperimentalTheoreticalCM <- function(family,
   m.theo.norm.dr.squarei.windows.rot = matrix(nrow = n.mut, ncol = n.sites.p.ref)
   m.theo.norm.dr.squarei.windows.contacts.rot = matrix(nrow = n.mut, ncol = n.sites.p.ref)
   m.theo.local.score = matrix(nrow = n.mut, ncol = n.sites.p.ref)
+  m.theo.square.dif.MSF = matrix(nrow = n.mut, ncol = n.sites.p.ref)
+  m.theo.nH = matrix(nrow = n.mut, ncol = 3 * n.sites.p.ref)
+  m.theo.nR = matrix(nrow = n.mut, ncol = 3 * n.sites.p.ref)
   
   # start a loop to analyze each mutant
   for (mut in (1:(n.mut))) {
@@ -129,6 +132,9 @@ AnalyzeExperimentalTheoreticalCM <- function(family,
     m.theo.dr.squarei.windows.rot[mut, 1:length(theo.variability$dr.squarei)] = theo.variability$dr.squarei.windows.rot
     m.theo.dr.squarei.windows.contacts.rot[mut, 1:length(theo.variability$dr.squarei)] = theo.variability$dr.squarei.windows.contacts.rot
     m.theo.local.score[mut, 1:length(theo.variability$local.score)] = theo.variability$local.score
+    m.theo.square.dif.MSF[mut, 1:length(theo.variability$square.dif.MSF)] = theo.variability$square.dif.MSF
+    m.theo.nH[mut, 1:length(theo.variability$nH)] = theo.variability$nH
+    m.theo.nR[mut, 1:length(theo.variability$nR)] = theo.variability$nR
     
     # calculate norm.dr.squarei
     m.theo.norm.dr.squarei[mut, ] = m.theo.dr.squarei[mut, ]/ mean(m.theo.dr.squarei[mut, ], na.rm = T)
@@ -143,6 +149,9 @@ AnalyzeExperimentalTheoreticalCM <- function(family,
   write.csv(m.theo.norm.dr.squarei.windows.rot, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.norm.dr.squarei.windows.rot.csv", sep = "")), row.names = FALSE)
   write.csv(m.theo.norm.dr.squarei.windows.contacts.rot, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.norm.dr.squarei.windows.contacts.rot.csv", sep = "")), row.names = FALSE)
   write.csv(m.theo.local.score, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.local.score.csv", sep = "")), row.names = FALSE)
+  write.csv(m.theo.square.dif.MSF, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.square.dif.MSF.csv", sep = "")), row.names = FALSE)
+  write.csv(m.theo.nH, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.nH.csv", sep = "")), row.names = FALSE)
+  write.csv(m.theo.nR, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.nR.csv", sep = "")), row.names = FALSE)
   
   ### EXPERIMENTAL ###
   print("analysing experimental...")
@@ -173,6 +182,9 @@ AnalyzeExperimentalTheoreticalCM <- function(family,
   m.exp.norm.dr.squarei.windows.rot = matrix(nrow = n.prot, ncol = n.sites.p.ref)
   m.exp.norm.dr.squarei.windows.contacts.rot = matrix(nrow = n.prot, ncol = n.sites.p.ref)
   m.exp.local.score = matrix(nrow = n.prot, ncol = n.sites.p.ref)
+  m.exp.square.dif.MSF = matrix(nrow = n.mut, ncol = n.sites.p.ref)
+  m.exp.nH = matrix(nrow = n.mut, ncol = 3 * n.sites.p.ref)
+  m.exp.nR = matrix(nrow = n.mut, ncol = 3 * n.sites.p.ref)
   
   # start a loop to evaluate each protein of the family
   for (P in (1:n.prot)) {
@@ -223,15 +235,19 @@ AnalyzeExperimentalTheoreticalCM <- function(family,
     m.exp.va[P, 1:length(exp.variability$va)] = exp.variability$va
     m.exp.Pn[P, 1:length(exp.variability$Pn)] = exp.variability$Pn
     m.exp.local.score[P, 1:length(exp.variability$local.score)] = exp.variability$local.score
+    m.exp.nH[P, 1:length(exp.variability$nH)] = exp.variability$nH
+    m.exp.nR[P, 1:length(exp.variability$nR)] = exp.variability$nR
     
     exp.dr.squarei = exp.variability$dr.squarei
     exp.dr.squarei.windows.rot = exp.variability$dr.squarei.windows.rot
     exp.dr.squarei.windows.contacts.rot = exp.variability$dr.squarei.windows.contacts.rot
+    exp.square.dif.MSF = exp.variability$square.dif.MSF
     
     for (i in (1:n.sites.p.ref)) {
       m.exp.dr.squarei[P, i] = matrix(exp.dr.squarei[aligned.p.ref.index == i], nrow = 1, ncol = 1)
       m.exp.dr.squarei.windows.rot[P, i] = matrix(exp.dr.squarei.windows.rot[aligned.p.ref.index == i], nrow = 1, ncol = 1)
       m.exp.dr.squarei.windows.contacts.rot[P, i] = matrix(exp.dr.squarei.windows.contacts.rot[aligned.p.ref.index == i], nrow = 1, ncol = 1)
+      m.exp.square.dif.MSF[P, i] = matrix(exp.square.dif.MSF[aligned.p.ref.index == i], nrow = 1, ncol = 1)
     }
     
     # calculate norm.dr.squarei
@@ -247,5 +263,8 @@ AnalyzeExperimentalTheoreticalCM <- function(family,
   write.csv(m.exp.norm.dr.squarei.windows.rot, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.norm.dr.squarei.windows.rot.csv", sep = "")), row.names = FALSE)
   write.csv(m.exp.norm.dr.squarei.windows.contacts.rot, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.norm.dr.squarei.windows.contacts.rot.csv", sep = "")), row.names = FALSE)
   write.csv(m.exp.local.score, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.local.score.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.square.dif.MSF, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.square.dif.MSF.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.nH, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.nH.csv", sep = "")), row.names = FALSE)
+  write.csv(m.exp.nR, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.exp.nR.csv", sep = "")), row.names = FALSE)
 }
 
