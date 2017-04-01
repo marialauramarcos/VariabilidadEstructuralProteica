@@ -46,6 +46,18 @@ for (f in (1:nrow(input))) {
   rmarkdown::render('analysis-structure-core.Rmd', 
                    output_file =  paste("OUT/report_structure_CA_core_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
+  ### MSF
+  rmarkdown::render('analysis-dynamical-MSF.Rmd', 
+                    output_file =  paste("OUT/report__dynamical_MSF_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### nH
+  rmarkdown::render('analysis-dynamical-nH.Rmd', 
+                    output_file =  paste("OUT/report_dynamical_nH_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### nR
+  rmarkdown::render('analysis-dynamical-nR.Rmd', 
+                    output_file =  paste("OUT/report_dynamical_nR_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
   ### RMSD windows contacts rot
   #rmarkdown::render('analysis-structure-window-contacts.Rmd', 
    #                 output_file =  paste("OUT/report_structure_window_contacts_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
@@ -70,6 +82,17 @@ for (f in (1:nrow(input))) {
   ### RMSD core
   rmarkdown::render('analysis-structure-core.Rmd', 
                     output_file =  paste("OUT/report_structure_CM_core_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### MSF
+  rmarkdown::render('analysis-dynamical-MSF.Rmd', 
+                    output_file =  paste("OUT/report_dynamical_MSF_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### nH
+  rmarkdown::render('analysis-dynamical-nH.Rmd', 
+                    output_file =  paste("OUT/report_dynamical_nH_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  ### nR
+  rmarkdown::render('analysis-dynamical-nR.Rmd', 
+                    output_file =  paste("OUT/report_dynamical_nR_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
   ### RMSD windows contacts rot
   #rmarkdown::render('analysis-structure-window-contacts.Rmd', 

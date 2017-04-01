@@ -1,0 +1,135 @@
+---
+title: "Structural Divergence Analysis"
+author: "Maria Laura Marcos, Julian Echave"
+output: html_document
+---
+
+# Introduction
+We study the evolutionary divergence of proteins using the LF-ENM and comparing simulated mutants with experimental data.
+
+```{r setup, include = FALSE}
+# set chunk options
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r load_packages}
+# load packages
+library(ggplot2)
+library(reshape2)
+library(plyr)
+library(quantreg)
+library(bio3d)
+
+# load functions
+source(file.path(data.dir, "multiplot.R"))
+source(file.path(data.dir, "my-functions.R")) 
+```
+
+```{r set_my_colors}
+# set my colors
+myColors = c("blue", "darkgreen", "red", "red") 
+names(myColors) <- c("exp", "mut", "medium", "mut+sel")
+```
+
+```{r set_run_variables}
+# set significance factors
+f95 = 1.96
+f99 = 2.6
+f999 = 3.3
+```
+
+```{r set_file_names}
+# set input filenames
+## data
+reference.fname = file.path(data.dir, paste(family, "_ref.txt", sep = ""))
+protein_list.fname = file.path(data.dir, paste(family, "_list.txt", sep = ""))
+site.info.fname = file.path(data.dir, paste(p.ref, "_m.da.ca.csv", sep = ""))
+min.da.CM.CA.fname = file.path(data.dir, paste(p.ref, "_min.da.CM.ca.csv", sep = ""))
+
+## profiles to compare
+### nH
+nH.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.nH.csv", sep = ""))
+nH.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.nH.csv", sep = ""))
+nH.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.nH.csv", sep = ""))
+
+```
+
+```{r set_reference_protein}
+# which is the reference protein?
+reference = as.character(read.table(reference.fname, header = F)[1, 1])
+if (reference != p.ref) {
+  print("Warning: different references")
+}
+```
+
+We studied the `r family` family. 
+We used the ENM `r enm` with R0 = `r R0` to generate mutants.
+We used as reference for the ENM the protein with pdb code `r reference`. 
+We simulated `r n.mut.p` mutants of this reference for each protein of the family.
+The `r family` family is of the type `r type` and consists of the following proteins:
+
+```{r set_experimental_protein_names, comment = ""}
+# experimental protein names
+protein.exp = read.table(protein_list.fname, header = F, stringsAsFactors = F)[, 1]
+protein.exp = protein.exp[protein.exp != reference]
+print(protein.exp)
+```
+
+```{r prepare_site_data}
+# prepare the data
+nH.exp = read.csv(nH.exp.fname, header = T)
+
+nH.mut = read.csv(nH.mut.fname, header = T)
+
+nH.medium = read.csv(nH.medium.fname, header = T)
+```
+
+### Dynamical divergence along normal modes
+
+In this section we consider dynamical divergence using normal modes coordinates.
+
+
+```{r comparisson-of-means}
+# calculate means
+mean.nH.exp = colMeans(nH.exp, na.rm = T)
+mean.nH.mut = colMeans(nH.mut)
+mean.nH.medium = colMeans(nH.medium)
+
+# scale profiles
+mean.nH.exp = rank(mean.nH.exp)
+mean.nH.mut = rank(mean.nH.mut)
+mean.nH.medium = rank(mean.nH.medium)
+
+plot(mean.nH.exp, ylab = "nH", xlab = "site", col = "blue")
+points(mean.nH.mut, col = "green")
+points(mean.nH.medium, col = "red")
+
+r.exp.mut = cor(mean.nH.exp, mean.nH.mut)
+r.exp.medium = cor(mean.nH.exp, mean.nH.medium)
+r.mut.medium = cor(mean.nH.mut, mean.nH.medium)
+
+cor.df = data.frame("comparison" = c("exp vs mut", "exp vs medium", "mut vs medium"),
+                    "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
+knitr::kable(cor.df, digits = 2)
+
+# plot exp vs simulated profiles 
+par(pty = "s")
+
+plot(x = mean.nH.exp, 
+     y = mean.nH.mut, 
+     xlab = "exp.mean.nH", 
+     ylab = "mut.mean.nH")
+abline(0, 1)
+
+plot(x = mean.nH.exp, 
+     y = mean.nH.medium, 
+     xlab = "exp.mean.nH", 
+     ylab = "medium.mean.nH")
+abline(0, 1)
+
+plot(x = mean.nH.mut, 
+     y = mean.nH.medium, 
+     xlab = "mut.mean.nH", 
+     ylab = "medium.mean.nH")
+abline(0, 1)
+```

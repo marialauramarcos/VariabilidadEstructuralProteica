@@ -38,7 +38,8 @@ CalculateDynamicalVariability <- function(r.p.1,
   nH = exp( - rowSums(overlap ^ 2 * log(overlap ^ 2 + tolerance)))
   nR = 1 / rowSums(overlap ^ 4)
 
-  # calculate Mean Square Fluctuation
+  # calculate MSF (Mean Square Fluctuation)
+  
   ## get the diagonal of the cov matrix
   diag.p.1 = diag(cov.p.1)
   diag.p.2 = diag(cov.p.2)
