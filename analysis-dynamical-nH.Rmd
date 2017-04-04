@@ -43,8 +43,6 @@ f999 = 3.3
 ## data
 reference.fname = file.path(data.dir, paste(family, "_ref.txt", sep = ""))
 protein_list.fname = file.path(data.dir, paste(family, "_list.txt", sep = ""))
-site.info.fname = file.path(data.dir, paste(p.ref, "_m.da.ca.csv", sep = ""))
-min.da.CM.CA.fname = file.path(data.dir, paste(p.ref, "_min.da.CM.ca.csv", sep = ""))
 
 ## profiles to compare
 ### nH
@@ -75,12 +73,10 @@ protein.exp = protein.exp[protein.exp != reference]
 print(protein.exp)
 ```
 
-```{r prepare_site_data}
+```{r prepare_mode_data}
 # prepare the data
 nH.exp = read.csv(nH.exp.fname, header = T)
-
 nH.mut = read.csv(nH.mut.fname, header = T)
-
 nH.medium = read.csv(nH.medium.fname, header = T)
 ```
 
@@ -89,18 +85,62 @@ nH.medium = read.csv(nH.medium.fname, header = T)
 In this section we consider dynamical divergence using normal modes coordinates.
 
 
-```{r comparisson-of-means}
+```{r comparisson-of-means, fig.cap = "blue = experimental - green = mut - red = medium selection"}
 # calculate means
 mean.nH.exp = colMeans(nH.exp, na.rm = T)
 mean.nH.mut = colMeans(nH.mut)
 mean.nH.medium = colMeans(nH.medium)
 
 # scale profiles
-mean.nH.exp = rank(mean.nH.exp)
-mean.nH.mut = rank(mean.nH.mut)
-mean.nH.medium = rank(mean.nH.medium)
+mean.nH.exp = scale(mean.nH.exp[which(!is.na(mean.nH.exp))])
+mean.nH.mut = scale(mean.nH.mut[which(!is.na(mean.nH.mut))])
+mean.nH.medium = scale(mean.nH.medium[which(!is.na(mean.nH.medium))])
 
-plot(mean.nH.exp, ylab = "nH", xlab = "site", col = "blue")
+plot(mean.nH.exp, ylab = "<nH>", xlab = "mode", col = "blue")
+points(mean.nH.mut, col = "green")
+points(mean.nH.medium, col = "red")
+
+r.exp.mut = cor(mean.nH.exp, mean.nH.mut)
+r.exp.medium = cor(mean.nH.exp, mean.nH.medium)
+r.mut.medium = cor(mean.nH.mut, mean.nH.medium)
+
+cor.df = data.frame("comparison" = c("exp vs mut", "exp vs medium", "mut vs medium"),
+                    "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
+knitr::kable(cor.df, digits = 2)
+```
+
+```{r vs-mean-profiles}
+
+# plot exp vs simulated profiles 
+par(pty = "s")
+
+plot(x = mean.nH.exp, 
+     y = mean.nH.mut, 
+     xlab = "exp.mean.nH", 
+     ylab = "mut.mean.nH")
+abline(0, 1)
+
+plot(x = mean.nH.exp, 
+     y = mean.nH.medium, 
+     xlab = "exp.mean.nH", 
+     ylab = "medium.mean.nH")
+abline(0, 1)
+
+plot(x = mean.nH.mut, 
+     y = mean.nH.medium, 
+     xlab = "mut.mean.nH", 
+     ylab = "medium.mean.nH")
+abline(0, 1)
+```
+
+```{r comparisson-of-means-100-modes}
+
+# get first 100 modes and re-scale
+mean.nH.exp = scale(mean.nH.exp[1:100])
+mean.nH.mut = scale(mean.nH.mut[1:100])
+mean.nH.medium = scale(mean.nH.medium[1:100])
+
+plot(mean.nH.exp, ylab = "<nH>", xlab = "mode", col = "blue")
 points(mean.nH.mut, col = "green")
 points(mean.nH.medium, col = "red")
 

@@ -182,9 +182,9 @@ AnalyzeExperimentalTheoreticalCM <- function(family,
   m.exp.norm.dr.squarei.windows.rot = matrix(nrow = n.prot, ncol = n.sites.p.ref)
   m.exp.norm.dr.squarei.windows.contacts.rot = matrix(nrow = n.prot, ncol = n.sites.p.ref)
   m.exp.local.score = matrix(nrow = n.prot, ncol = n.sites.p.ref)
-  m.exp.square.dif.MSF = matrix(nrow = n.mut, ncol = n.sites.p.ref)
-  m.exp.nH = matrix(nrow = n.mut, ncol = 3 * n.sites.p.ref)
-  m.exp.nR = matrix(nrow = n.mut, ncol = 3 * n.sites.p.ref)
+  m.exp.square.dif.MSF = matrix(nrow = n.prot, ncol = n.sites.p.ref)
+  m.exp.nH = matrix(nrow = n.prot, ncol = 3 * n.sites.p.ref)
+  m.exp.nR = matrix(nrow = n.prot, ncol = 3 * n.sites.p.ref)
   
   # start a loop to evaluate each protein of the family
   for (P in (1:n.prot)) {

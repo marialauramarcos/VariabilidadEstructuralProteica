@@ -447,11 +447,14 @@ cor.df = data.frame("comparison" = c("log(p.accept.strong.sel) vs CN", "log(p.ac
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
 
 ```
+### sequence - structure comparison
+
 ```{r structure-profiles-CN-comparison}
 
 # compare profiles
 ## plot
 par(pty = "s")
+
 plot(x = d.exp$mean.z.RSD, y = CN, xlab = "experimental <zRSDi>")
 plot(x = d.mut$mean.z.RSD, y = CN, xlab = "theoretical with no selection <zRSDi>")
 plot(x = d.strong$mean.z.RSD, y = CN, xlab = "theoretical with strong selection <zRSDi>")

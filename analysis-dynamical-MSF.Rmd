@@ -78,9 +78,7 @@ print(protein.exp)
 ```{r prepare_site_data}
 # prepare the data
 square.dif.MSF.exp = read.csv(square.dif.MSF.exp.fname, header = T)
-
 square.dif.MSF.mut = read.csv(square.dif.MSF.mut.fname, header = T)
-
 square.dif.MSF.medium = read.csv(square.dif.MSF.medium.fname, header = T)
 ```
 
@@ -106,7 +104,7 @@ mean.square.dif.MSF.exp = rank(mean.square.dif.MSF.exp)
 mean.square.dif.MSF.mut = rank(mean.square.dif.MSF.mut)
 mean.square.dif.MSF.medium = rank(mean.square.dif.MSF.medium)
 
-plot(mean.square.dif.MSF.exp, ylab = "Square dif MSF", xlab = "site", col = "blue")
+plot(mean.square.dif.MSF.exp, ylab = "<Square dif MSF>", xlab = "site", col = "blue")
 points(mean.square.dif.MSF.mut, col = "green")
 points(mean.square.dif.MSF.medium, col = "red")
 
