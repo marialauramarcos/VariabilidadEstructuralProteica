@@ -82,10 +82,9 @@ nH.medium = read.csv(nH.medium.fname, header = T)
 
 ### Dynamical divergence along normal modes
 
-In this section we consider dynamical divergence using normal modes coordinates.
+In this section we consider dynamical divergence using normal modes coordinates. We calculated mean nH and we z-normalized profiles.
 
-
-```{r comparisson-of-means, fig.cap = "blue = experimental - green = mut - red = medium selection"}
+```{r comparison-of-means, fig.cap = "blue = experimental - green = no-selection - red = selection"}
 # calculate means
 mean.nH.exp = colMeans(nH.exp, na.rm = T)
 mean.nH.mut = colMeans(nH.mut)
@@ -104,7 +103,7 @@ r.exp.mut = cor(mean.nH.exp, mean.nH.mut)
 r.exp.medium = cor(mean.nH.exp, mean.nH.medium)
 r.mut.medium = cor(mean.nH.mut, mean.nH.medium)
 
-cor.df = data.frame("comparison" = c("exp vs mut", "exp vs medium", "mut vs medium"),
+cor.df = data.frame("comparison" = c("exp vs no-selection", "exp vs selection", "no-selection vs selection"),
                     "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
 knitr::kable(cor.df, digits = 2)
 ```
@@ -117,23 +116,23 @@ par(pty = "s")
 plot(x = mean.nH.exp, 
      y = mean.nH.mut, 
      xlab = "exp.mean.nH", 
-     ylab = "mut.mean.nH")
+     ylab = "no.selection.mean.nH")
 abline(0, 1)
 
 plot(x = mean.nH.exp, 
      y = mean.nH.medium, 
      xlab = "exp.mean.nH", 
-     ylab = "medium.mean.nH")
+     ylab = "selection.mean.nH")
 abline(0, 1)
 
 plot(x = mean.nH.mut, 
      y = mean.nH.medium, 
-     xlab = "mut.mean.nH", 
-     ylab = "medium.mean.nH")
+     xlab = "no.selection.mean.nH", 
+     ylab = "selection.mean.nH")
 abline(0, 1)
 ```
 
-```{r comparisson-of-means-100-modes}
+```{r comparison-of-means-100-modes}
 
 # get first 100 modes and re-scale
 mean.nH.exp = scale(mean.nH.exp[1:100])
@@ -148,7 +147,7 @@ r.exp.mut = cor(mean.nH.exp, mean.nH.mut)
 r.exp.medium = cor(mean.nH.exp, mean.nH.medium)
 r.mut.medium = cor(mean.nH.mut, mean.nH.medium)
 
-cor.df = data.frame("comparison" = c("exp vs mut", "exp vs medium", "mut vs medium"),
+cor.df = data.frame("comparison" = c("exp vs no-selection", "exp vs selection", "no-selection vs selection"),
                     "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
 knitr::kable(cor.df, digits = 2)
 
@@ -158,18 +157,18 @@ par(pty = "s")
 plot(x = mean.nH.exp, 
      y = mean.nH.mut, 
      xlab = "exp.mean.nH", 
-     ylab = "mut.mean.nH")
+     ylab = "no.selection.mean.nH")
 abline(0, 1)
 
 plot(x = mean.nH.exp, 
      y = mean.nH.medium, 
      xlab = "exp.mean.nH", 
-     ylab = "medium.mean.nH")
+     ylab = "selection.mean.nH")
 abline(0, 1)
 
 plot(x = mean.nH.mut, 
      y = mean.nH.medium, 
-     xlab = "mut.mean.nH", 
-     ylab = "medium.mean.nH")
+     xlab = "no.selection.mean.nH", 
+     ylab = "selection.mean.nH")
 abline(0, 1)
 ```

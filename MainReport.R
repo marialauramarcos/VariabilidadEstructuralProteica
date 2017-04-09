@@ -47,7 +47,7 @@ for (f in (1:nrow(input))) {
                    output_file =  paste("OUT/report_structure_CA_core_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
   ### MSF
-  rmarkdown::render('analysis-dynamical-MSF.Rmd', 
+  rmarkdown::render('analysis-dynamical-MSF-structure.Rmd', 
                     output_file =  paste("OUT/report__dynamical_MSF_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
   ### nH
@@ -84,7 +84,7 @@ for (f in (1:nrow(input))) {
                     output_file =  paste("OUT/report_structure_CM_core_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
   ### MSF
-  rmarkdown::render('analysis-dynamical-MSF.Rmd', 
+  rmarkdown::render('analysis-dynamical-MSF-structure.Rmd', 
                     output_file =  paste("OUT/report_dynamical_MSF_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
   ### nH
@@ -101,4 +101,5 @@ for (f in (1:nrow(input))) {
   ### local enviroment 
   #rmarkdown::render('analysis-structure-local-enviroment.Rmd', 
   #                  output_file =  paste("OUT/report_structure_local_enviroment_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+
 }
