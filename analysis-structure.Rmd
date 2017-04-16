@@ -239,7 +239,8 @@ p + theme(legend.position = "bottom")
 
 ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset)) +
   geom_line() +
-  geom_text(data = subset(d, dataset == "exp" & mean.z.RSD < -.5), aes(x = site, y = mean.z.RSD, label = site), nudge_y = -.1, size = 1.8)+
+  geom_text(data = subset(d, dataset == "exp" & mean.z.RSD < -.5), aes(x = site, y = mean.z.RSD, label = site), nudge_y = -.1, size = 1.8) +
+  labs(x = "site", y = "<zRSDi>") +
   geom_vline(xintercept = active.sites, show.legend = F) +
   geom_vline(xintercept = contacts.active.sites, col = "grey", show.legend = F) + 
   scale_colour_manual(name = NULL, values = myColors) 
@@ -355,19 +356,22 @@ knitr::kable(cor.df, digits = 2, caption = "Correlation between CN and the sum.i
 pdb.xyz.ca = ReadCA(reference.pdb.fname, chain.p.ref)$xyz
 
 ## experimental
-exp.mean.z.RSD.vec <- vec2resno(as.vector(d.exp$mean.z.RSD), sort(rep(1:ncol(pdb.xyz.ca),3)))
+exp.mean.z.RSD.vec <- vec2resno(as.vector(d.exp$mean.z.RSD), 1:ncol(pdb.xyz.ca))
 write.pdb(xyz = c(pdb.xyz.ca), b = exp.mean.z.RSD.vec, file =  file.path(data.dir, paste(p.ref, "_exp.pdb", sep = "")))
 
 ## mut
-mut.mean.z.RSD.vec <- vec2resno(as.vector(d.mut$mean.z.RSD), sort(rep(1:ncol(pdb.xyz.ca),3)))
+mut.mean.z.RSD.vec <- vec2resno(as.vector(d.mut$mean.z.RSD), 1:ncol(pdb.xyz.ca))
 write.pdb(xyz = c(pdb.xyz.ca), b = mut.mean.z.RSD.vec, file = file.path(data.dir, paste(p.ref, "_mut.pdb", sep = "")))
 
 ## mut + sel / medium
-medium.mean.z.RSD.vec <- vec2resno(as.vector(d.medium$mean.z.RSD), sort(rep(1:ncol(pdb.xyz.ca),3)))
+medium.mean.z.RSD.vec <- vec2resno(as.vector(d.medium$mean.z.RSD), 1:ncol(pdb.xyz.ca))
 write.pdb(xyz = c(pdb.xyz.ca), b = medium.mean.z.RSD.vec, file = file.path(data.dir, paste(p.ref, "_medium.pdb", sep = "")))
 ```
 
-### sequence comparison
+### Sequence comparison
+
+In this section we compare theoretical sequence profiles with sequence scores obtained from ConsurfDB. To obtain theoretical profiles, we calculated the number of times we had mutated each site for each selection regimen. 
+
 ```{r sequence-profiles-comparison}
 # read experimental data obtained from ConsurfDB
 consurf = read.csv(score.fname, sep = ";")
@@ -447,7 +451,8 @@ cor.df = data.frame("comparison" = c("log(p.accept.medium.sel) vs CN", "log(p.ac
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
 
 ```
-### sequence - structure comparison
+
+### Sequence - structure comparison
 
 ```{r structure-profiles-CN-comparison}
 

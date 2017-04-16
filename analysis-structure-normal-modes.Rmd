@@ -27,8 +27,8 @@ source(file.path(data.dir, "my-functions.R"))
 
 ```{r set_my_colors}
 # set my colors
-myColors = c("blue", "darkgreen", "red", "red") 
-names(myColors) <- c("exp", "mut", "strong", "mut+sel")
+myColors = c("blue", "darkgreen", "darkgreen", "red", "red") 
+names(myColors) <- c("exp", "mut", "no-selection", "medium", "selection")
 ```
 
 ```{r set_run_variables}
@@ -49,12 +49,12 @@ min.da.CM.CA.fname = file.path(data.dir, paste(p.ref, "_min.da.CM.ca.csv", sep =
 ## profiles to compare
 ### Pn
 Pn.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.Pn.csv", sep = ""))
-Pn.strong.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_strong.sel_K.analysis_Keff_out_m.theo.Pn.csv", sep = ""))
+Pn.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.Pn.csv", sep = ""))
 Pn.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.Pn.csv", sep = ""))
 
 ### energy
 energy.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.va.csv", sep = ""))
-energy.strong.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_strong.sel_K.analysis_Keff_out_m.theo.va.csv", sep = ""))
+energy.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.va.csv", sep = ""))
 energy.mut.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.va.csv", sep = ""))
 
 ```
@@ -92,10 +92,10 @@ rownames(Pn.mut) = paste("mut", rownames(Pn.mut), sep = "")
 energy.mut = read.csv(energy.mut.fname, header = T)
 rownames(energy.mut) = paste("mut", rownames(energy.mut), sep = "")
 
-Pn.strong = read.csv(Pn.strong.fname, header = T)
-rownames(Pn.strong) = paste("strong", rownames(Pn.strong), sep = "")
-energy.strong = read.csv(energy.strong.fname, header = T)
-rownames(energy.strong) = paste("strong", rownames(energy.strong), sep = "")
+Pn.medium = read.csv(Pn.medium.fname, header = T)
+rownames(Pn.medium) = paste("medium", rownames(Pn.medium), sep = "")
+energy.medium = read.csv(energy.medium.fname, header = T)
+rownames(energy.medium) = paste("medium", rownames(energy.medium), sep = "")
 
 ```
 
@@ -104,20 +104,20 @@ rownames(energy.strong) = paste("strong", rownames(energy.strong), sep = "")
 In this section we consider structural divergence using normal mode coordinates. Pn is the square divergence along a normal mode relative to the mean.
 
 ```{r prepare-mode-data}
-mode = seq(ncol(Pn.strong))
+mode = seq(ncol(Pn.medium))
 
-# Prepare modeComparison.strong
-tPn.strong = as.data.frame(t(as.matrix(Pn.strong)))
-tPn.strong = cbind(data.frame("mode" = mode), tPn.strong)
-Pn.strong.long = melt(tPn.strong, "mode", variable.name = "protein", value.name = "Pn")
+# Prepare modeComparison.medium
+tPn.medium = as.data.frame(t(as.matrix(Pn.medium)))
+tPn.medium = cbind(data.frame("mode" = mode), tPn.medium)
+Pn.medium.long = melt(tPn.medium, "mode", variable.name = "protein", value.name = "Pn")
 
-tenergy.strong = as.data.frame(t(as.matrix(energy.strong)))
-tenergy.strong = cbind(data.frame("mode" = mode), tenergy.strong)
-energy.strong.long = melt(tenergy.strong, "mode", variable.name = "protein", value.name = "energy")
-energy.strong.long$sn2 = 1/energy.strong.long$energy
+tenergy.medium = as.data.frame(t(as.matrix(energy.medium)))
+tenergy.medium = cbind(data.frame("mode" = mode), tenergy.medium)
+energy.medium.long = melt(tenergy.medium, "mode", variable.name = "protein", value.name = "energy")
+energy.medium.long$sn2 = 1/energy.medium.long$energy
 
-modeComparison.strong = merge(energy.strong.long, Pn.strong.long, by = c("mode", "protein"))
-modeComparison.strong = ddply(modeComparison.strong, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
+modeComparison.medium = merge(energy.medium.long, Pn.medium.long, by = c("mode", "protein"))
+modeComparison.medium = ddply(modeComparison.medium, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
 
 # Prepare modeComparison.mut
 tPn.mut = as.data.frame(t(as.matrix(Pn.mut)))
@@ -149,7 +149,7 @@ modeComparison.exp = ddply(modeComparison.exp, "protein", mutate, "Pn" = Pn / me
 # modeComparison.exp has NA's because for proteins with gaps when using Keff there're less modes
 #print("Warning: modeComparison.exp <- na.omit(modeComparison.exp)")
 modeComparison.exp <- na.omit(modeComparison.exp)
-modeComparison.strong <- na.omit(modeComparison.strong)
+modeComparison.medium <- na.omit(modeComparison.medium)
 modeComparison.mut <- na.omit(modeComparison.mut)
 ```
 
@@ -159,12 +159,12 @@ modeComparison.mut <- na.omit(modeComparison.mut)
 ## Quantile regression 
 
 # fit median and quantiles to simulated data and add them to data.frames
-fit.strong.rq.5 <- rq(Pn ~ sn2, tau = .5, data = modeComparison.strong, method = "fn")
-fit.strong.rq.05 <- rq(Pn ~ sn2, tau = .05, data = modeComparison.strong, method = "fn")
-fit.strong.rq.95 <- rq(Pn ~ sn2, tau = .95, data = modeComparison.strong, method = "fn")
-modeComparison.strong$rq.5 = fit.strong.rq.5$fitted.values
-modeComparison.strong$rq.05 = fit.strong.rq.05$fitted.values
-modeComparison.strong$rq.95 = fit.strong.rq.95$fitted.values
+fit.medium.rq.5 <- rq(Pn ~ sn2, tau = .5, data = modeComparison.medium, method = "fn")
+fit.medium.rq.05 <- rq(Pn ~ sn2, tau = .05, data = modeComparison.medium, method = "fn")
+fit.medium.rq.95 <- rq(Pn ~ sn2, tau = .95, data = modeComparison.medium, method = "fn")
+modeComparison.medium$rq.5 = fit.medium.rq.5$fitted.values
+modeComparison.medium$rq.05 = fit.medium.rq.05$fitted.values
+modeComparison.medium$rq.95 = fit.medium.rq.95$fitted.values
 
 # fit median and quantiles to simulated data and add them to data.frames
 fit.mut.rq.5 <- rq(Pn ~ sn2, tau = .5, data = modeComparison.mut, method = "fn")
@@ -186,9 +186,9 @@ modeComparison.exp$rq.95 = fit.exp.rq.95$fitted.values
 
 modeComparison.all.datasets = rbind(data.frame("dataset" = "exp", modeComparison.exp),
                                     data.frame("dataset" = "mut", modeComparison.mut),
-                                    data.frame("dataset" = "strong", modeComparison.strong))
+                                    data.frame("dataset" = "medium", modeComparison.medium))
 
-modeComparison.all.datasets$dataset = factor(modeComparison.all.datasets$dataset, levels = c("exp", "mut", "strong"))
+modeComparison.all.datasets$dataset = factor(modeComparison.all.datasets$dataset, levels = c("exp", "mut", "medium"))
 ```
 ### Pn vs. mode energy
 
@@ -203,7 +203,6 @@ Lower panel: simulated vs empirical overlaped and zoomed to better see the patte
 
 # Plot Pn vs energy
 dat = modeComparison.all.datasets
-dat$dataset = revalue(dat$dataset,c("strong" = "mut+sel"))
 
 # p is just the median and quantiles
 p.points.rq = ggplot(dat, aes(x = energy, y = Pn, col = dataset)) + 
@@ -220,7 +219,7 @@ p = p.points.rq +
 p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "none")
 p.facet %+% subset(dat, dataset == "exp")
 p.facet %+% subset(dat, dataset == "mut")
-p.facet %+% subset(dat, dataset == "mut+sel")
+p.facet %+% subset(dat, dataset == "medium")
 p.facet
 ```
 
@@ -229,7 +228,8 @@ p.facet
 ```{r median-vs-mode-energy}
 
 dat = modeComparison.all.datasets
-dat$dataset = revalue(dat$dataset,c("strong" = "mut+sel"))
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
 
 # calculate dataset of medians
 
@@ -254,8 +254,8 @@ p = ggplot(dat,aes(x=energy.mean,y=Pn.median,col=dataset,fill=dataset)) +
 
 p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "none")
 p.facet %+% subset(dat,dataset == "exp")
-p.facet %+% subset(dat,dataset == "mut")
-p.facet %+% subset(dat,dataset == "mut+sel")
+p.facet %+% subset(dat,dataset == "no-selection")
+p.facet %+% subset(dat,dataset == "selection")
 p.facet
 p + theme(legend.position = "bottom")
 
@@ -264,8 +264,10 @@ p + theme(legend.position = "bottom")
 ### correlaction between mode profiles
 
 ```{r correlation-mode-profiles}
+#dat$dataset = revalue(dat$dataset,c("medium" = "mut+sel"))
 dat = modeComparison.all.datasets
-#dat$dataset = revalue(dat$dataset,c("strong" = "mut+sel"))
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
 
 # calculate dataset of medians
 dat = ddply(dat, c("dataset", "mode"), function(x) {
@@ -276,14 +278,14 @@ dat = ddply(dat, c("dataset", "mode"), function(x) {
 
 dat = subset(dat, mode < 101)
 dat.exp = subset(dat, dataset == "exp")
-dat.mut = subset(dat,dataset == "mut")
-dat.strong = subset(dat,dataset == "strong")
+dat.mut = subset(dat,dataset == "no-selection")
+dat.medium = subset(dat,dataset == "selection")
 
 r.exp.mut = cor(dat.exp$Pn.median, dat.mut$Pn.median)
-r.exp.strong = cor(dat.exp$Pn.median, dat.strong$Pn.median)
-r.mut.strong = cor(dat.mut$Pn.median, dat.strong$Pn.median)
-cor.df = data.frame("comparison" = c("exp vs mut", "exp vs strong", "mut vs strong"),
-                    "R" = c(r.exp.mut, r.exp.strong, r.mut.strong))
+r.exp.medium = cor(dat.exp$Pn.median, dat.medium$Pn.median)
+r.mut.medium = cor(dat.mut$Pn.median, dat.medium$Pn.median)
+cor.df = data.frame("comparison" = c("exp vs mut", "exp vs medium", "mut vs medium"),
+                    "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
 knitr::kable(cor.df, digits = 2)
 
 # plot exp vs simulated profiles 
@@ -298,18 +300,18 @@ plot(x = dat.exp$Pn.median,
 abline(0, 1)
 
 plot(x = dat.exp$Pn.median, 
-     y = dat.strong$Pn.median, 
+     y = dat.medium$Pn.median, 
      xlab = "exp.Pn.median", 
-     ylab = "strong.Pn.median", 
-     xlim = c(min(c(dat.exp$Pn.median, dat.strong$Pn.median)), max(c(dat.exp$Pn.median, dat.strong$Pn.median))),
-     ylim = c(min(c(dat.exp$Pn.median, dat.strong$Pn.median)), max(c(dat.exp$Pn.median, dat.strong$Pn.median))))
+     ylab = "medium.Pn.median", 
+     xlim = c(min(c(dat.exp$Pn.median, dat.medium$Pn.median)), max(c(dat.exp$Pn.median, dat.medium$Pn.median))),
+     ylim = c(min(c(dat.exp$Pn.median, dat.medium$Pn.median)), max(c(dat.exp$Pn.median, dat.medium$Pn.median))))
 abline(0, 1)
 
 plot(x = dat.mut$Pn.median, 
-     y = dat.strong$Pn.median, 
+     y = dat.medium$Pn.median, 
      xlab = "mut.Pn.median", 
-     ylab = "strong.Pn.median", 
-     xlim = c(min(c(dat.mut$Pn.median, dat.strong$Pn.median)), max(c(dat.mut$Pn.median, dat.strong$Pn.median))),
-     ylim = c(min(c(dat.mut$Pn.median, dat.strong$Pn.median)), max(c(dat.mut$Pn.median, dat.strong$Pn.median))))
+     ylab = "medium.Pn.median", 
+     xlim = c(min(c(dat.mut$Pn.median, dat.medium$Pn.median)), max(c(dat.mut$Pn.median, dat.medium$Pn.median))),
+     ylim = c(min(c(dat.mut$Pn.median, dat.medium$Pn.median)), max(c(dat.mut$Pn.median, dat.medium$Pn.median))))
 abline(0, 1)
 ```

@@ -1,7 +1,7 @@
 # Description: This program generates reports with the output of "MainProgram.R" and "MainProgramCM.R".
 # To run the program it is neccessary to fill the input file "input_MainReport.csv".
 # Files needed for each family in data.dir are:
-#  "famiy_list.txt": with all of the proteins of the family (including p.ref).
+#  "family_list.txt": with all of the proteins of the family (including p.ref).
 #  "family_ref.txt": p.ref.
 #  "p.ref.pdb": pdb file of p.ref.
 

@@ -337,7 +337,10 @@ cor.df = data.frame("comparison" = c("CN vs sum.inv.da.CA", "CN vs sum.inv.da.CM
 knitr::kable(cor.df, digits = 2, caption = "Correlation between CN and the sum.inv distance to the active site")
 ```
 
-```{r}
+### Sequence comparison
+In this section we compare theoretical sequence profiles with sequence scores obtained from ConsurfDB. To obtain theoretical profiles, we calculated the number of times we had mutated each site for each selection regimen. 
+
+```{r sequence-profiles-comparison}
 # read experimental data obtained from ConsurfDB
 consurf = read.csv(score.fname, sep = ";")
 score = consurf$SCORE[indexes.core]
