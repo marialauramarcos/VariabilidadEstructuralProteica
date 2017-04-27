@@ -1,0 +1,563 @@
+---
+title: "Structural Divergence Analysis"
+author: "Maria Laura Marcos, Julian Echave"
+output: html_document
+---
+
+```{r setup, include = FALSE}
+# set chunk options
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r load-packages}
+# load functions
+source(file.path(data.dir, "my-functions.R"))
+
+# load packages
+library(ggplot2)
+library(reshape2)
+library(plyr)
+library(quantreg)
+library(bio3d)
+```
+  
+### Structure - cartesian coordinates 
+
+```{r set-file-names}
+data.dir <- paste("OUT/out_subset_CA_ANM", sep = "")
+R0 = R0.CA
+
+# set input filenames
+## profiles to compare
+dri2.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.norm.dr.squarei.csv", sep = ""))
+dri2.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+dri2.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+
+## consurf
+score.fname = file.path(data.dir, paste(p.ref, "_consurf.csv", sep = ""))
+CA.sim.data.mut.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_out_df.data.csv", sep = ""))
+CA.sim.data.medium.sel.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_out_df.data.csv", sep = ""))
+
+## active sites
+functional.sites.fname = file.path("DATA", paste(p.ref, "_functionalSites.csv", sep = ""))
+
+```
+
+```{r read-functional-sites}
+# which are the functional sites?
+functional.sites = read.csv(functional.sites.fname, sep = ";")
+active.site.index = functional.sites$index
+```
+
+```{r read-data}
+# read data
+dri2.exp = read.csv(dri2.exp.fname, header = T)
+dri2.mut = read.csv(dri2.mut.fname, header = T)
+dri2.medium = read.csv(dri2.medium.fname, header = T)
+
+n.sites = length(dri2.exp)
+
+rownames(dri2.exp) = paste("mut", rownames(dri2.exp), sep = "")
+rownames(dri2.mut) = paste("mut", rownames(dri2.mut), sep = "")
+rownames(dri2.medium) = paste("mut", rownames(dri2.medium), sep = "")
+
+tdri2.exp = as.data.frame(t(as.matrix(dri2.exp)))
+tdri2.mut = as.data.frame(t(as.matrix(dri2.mut)))
+tdri2.medium = as.data.frame(t(as.matrix(dri2.medium)))
+
+site.info = seq(1:length(dri2.mut))
+
+tdri2.exp = cbind(site.info, tdri2.exp)
+tdri2.mut = cbind(site.info, tdri2.mut)
+tdri2.medium = cbind(site.info, tdri2.medium)
+
+siteComparison.exp = melt(tdri2.exp, id.vars = c("site.info"), variable.name = "protein", value.name = "dri2")
+siteComparison.mut = melt(tdri2.mut, id.vars = c("site.info"), variable.name = "protein", value.name = "dri2")
+siteComparison.medium = melt(tdri2.medium, id.vars = c("site.info"), variable.name = "protein", value.name = "dri2")
+
+# bluild the data.frame
+siteComparison.all.datasets = rbind(data.frame("dataset" = "exp", siteComparison.exp),
+                                    data.frame("dataset" = "mut", siteComparison.mut),
+                                    data.frame("dataset" = "medium", siteComparison.medium))
+
+siteComparison.all.datasets = ddply(siteComparison.all.datasets, c("dataset", "protein"), mutate,
+          "n.SD" = dri2/mean(dri2, na.rm = T),
+          "z.SD" = vscale(dri2),
+          "RSD" = sqrt(dri2),
+          "n.RSD" = RSD/mean(RSD, na.rm = T),
+          "z.RSD" = vscale(RSD))
+
+dat = siteComparison.all.datasets
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
+
+## dat with means and standard errors
+d.CA = ddply(dat,c("dataset", "site.info"), function(x) {
+                mean.z.RSD = mean(x$z.RSD, na.rm = T)
+                ndata = sum(!is.na(x$z.RSD))
+                se.z.RSD = sd(x$z.RSD, na.rm = T) / sqrt(ndata)
+                data.frame(mean.z.RSD, ndata, se.z.RSD)
+})
+```
+
+```{r set-file-names-CM}
+data.dir <- paste("OUT/out_subset_CM_ANM", sep = "")
+R0 = R0.CM
+
+# set input filenames
+## profiles to compare
+dri2.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.norm.dr.squarei.csv", sep = ""))
+dri2.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+dri2.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+
+## consurf
+score.fname = file.path(data.dir, paste(p.ref, "_consurf.csv", sep = ""))
+CM.sim.data.mut.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_out_df.data.csv", sep = ""))
+CM.sim.data.medium.sel.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_out_df.data.csv", sep = ""))
+```
+
+```{r read-data-CM}
+# read data
+dri2.exp = read.csv(dri2.exp.fname, header = T)
+dri2.mut = read.csv(dri2.mut.fname, header = T)
+dri2.medium = read.csv(dri2.medium.fname, header = T)
+
+rownames(dri2.exp) = paste("mut", rownames(dri2.exp), sep = "")
+rownames(dri2.mut) = paste("mut", rownames(dri2.mut), sep = "")
+rownames(dri2.medium) = paste("mut", rownames(dri2.medium), sep = "")
+
+tdri2.exp = as.data.frame(t(as.matrix(dri2.exp)))
+tdri2.mut = as.data.frame(t(as.matrix(dri2.mut)))
+tdri2.medium = as.data.frame(t(as.matrix(dri2.medium)))
+
+site.info = seq(1:length(dri2.mut))
+
+tdri2.exp = cbind(site.info, tdri2.exp)
+tdri2.mut = cbind(site.info, tdri2.mut)
+tdri2.medium = cbind(site.info, tdri2.medium)
+
+siteComparison.exp = melt(tdri2.exp, id.vars = c("site.info"), variable.name = "protein", value.name = "dri2")
+siteComparison.mut = melt(tdri2.mut, id.vars = c("site.info"), variable.name = "protein", value.name = "dri2")
+siteComparison.medium = melt(tdri2.medium, id.vars = c("site.info"), variable.name = "protein", value.name = "dri2")
+
+# bluild the data.frame
+siteComparison.all.datasets = rbind(data.frame("dataset" = "exp", siteComparison.exp),
+                                    data.frame("dataset" = "mut", siteComparison.mut),
+                                    data.frame("dataset" = "medium", siteComparison.medium))
+
+siteComparison.all.datasets = ddply(siteComparison.all.datasets, c("dataset", "protein"), mutate,
+          "n.SD" = dri2/mean(dri2, na.rm = T),
+          "z.SD" = vscale(dri2),
+          "RSD" = sqrt(dri2),
+          "n.RSD" = RSD/mean(RSD, na.rm = T),
+          "z.RSD" = vscale(RSD))
+
+dat = siteComparison.all.datasets
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
+
+## dat with means and standard errors
+d.CM = ddply(dat,c("dataset", "site.info"), function(x) {
+                mean.z.RSD = mean(x$z.RSD, na.rm = T)
+                ndata = sum(!is.na(x$z.RSD))
+                se.z.RSD = sd(x$z.RSD, na.rm = T) / sqrt(ndata)
+                data.frame(mean.z.RSD, ndata, se.z.RSD)
+})
+```
+
+```{r comparison-mean-z.RSD-vs-site}
+# CA
+d = d.CA
+
+# calculate correlations berween profiles
+d.exp = subset(d, dataset == "exp")
+d.mut = subset(d, dataset == "no-selection")
+d.medium = subset(d, dataset == "selection")
+
+# calculate cors
+r.exp.mut = cor(d.exp$mean.z.RSD, d.mut$mean.z.RSD)
+r.exp.medium = cor(d.exp$mean.z.RSD, d.medium$mean.z.RSD)
+r.mut.medium = cor(d.mut$mean.z.RSD, d.medium$mean.z.RSD)
+
+# save data
+CA.mean.exp = d.exp$mean.z.RSD
+CA.mean.mut = d.mut$mean.z.RSD
+CA.mean.medium = d.medium$mean.z.RSD
+
+CA.se.exp = d.exp$se.z.RSD
+CA.se.mut = d.mut$se.z.RSD
+CA.se.medium = d.medium$se.z.RSD
+
+cor.df = data.frame("comparison CA" = c("exp vs no-selection", "exp vs selection", "no-selection vs selection"),
+                    "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between <Z-scores> profiles")
+
+# CM
+d = d.CM
+
+# calculate correlations berween profiles
+d.exp = subset(d, dataset == "exp")
+d.mut = subset(d, dataset == "no-selection")
+d.medium = subset(d, dataset == "selection")
+
+# calculate cors
+r.exp.mut = cor(d.exp$mean.z.RSD, d.mut$mean.z.RSD)
+r.exp.medium = cor(d.exp$mean.z.RSD, d.medium$mean.z.RSD)
+r.mut.medium = cor(d.mut$mean.z.RSD, d.medium$mean.z.RSD)
+
+# save data
+CM.mean.exp = d.exp$mean.z.RSD
+CM.mean.mut = d.mut$mean.z.RSD
+CM.mean.medium = d.medium$mean.z.RSD
+
+CM.se.exp = d.exp$se.z.RSD
+CM.se.mut = d.mut$se.z.RSD
+CM.se.medium = d.medium$se.z.RSD
+
+cor.df = data.frame("comparison CM" = c("exp vs no-selection", "exp vs selection", "no-selection vs selection"),
+                    "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between <Z-scores> profiles")
+```
+
+```{r plots, fig.cap= "yellow = active sites"}
+# plot comparative profiles
+par(pty = "s")
+
+# exp
+plot(x = CA.mean.exp, y = CM.mean.exp, xlab = "CA <z.RSD> experimental", ylab = "CM <z.RSD> experimental")
+abline(0, 1)
+points(x = CA.mean.exp[active.site.index], y = CM.mean.exp[active.site.index], col = "yellow")
+
+# mut
+plot(x = CA.mean.mut, y = CM.mean.mut, xlab = "CA <z.RSD> no-selection", ylab = "CM <z.RSD> no-selection")
+abline(0, 1)
+points(x = CA.mean.mut[active.site.index], y = CM.mean.mut[active.site.index], col = "yellow")
+
+# medium
+plot(x = CA.mean.medium, y = CM.mean.medium, xlab = "CA <z.RSD> selection", ylab = "CM <z.RSD> selection")
+abline(0, 1)
+points(x = CA.mean.medium[active.site.index], y = CM.mean.medium[active.site.index], col = "yellow")
+```
+
+```{r correlations-CA-CM}
+# calculate cors
+r.exp = cor(CA.mean.exp, CM.mean.exp)
+r.mut = cor(CA.mean.mut, CM.mean.mut)
+r.medium = cor(CA.mean.medium, CM.mean.medium)
+
+cor.df = data.frame("comparison CM" = c("exp CA vs CM", "no-selection CA vs CM", "selection CA vs CM"),
+                    "R" = c(r.exp, r.mut, r.medium))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between CA and CM <Z-scores> profiles")
+```
+
+```{r sequence-profiles-comparison}
+# read experimental data obtained from ConsurfDB
+consurf = read.csv(score.fname, sep = ";")
+score = consurf$SCORE
+
+# read simulated data
+## no sel
+CA.sim.data.mut = read.csv(CA.sim.data.mut.fname)
+mut.site.mut = CA.sim.data.mut$site
+accept.mut = CA.sim.data.mut$accept
+
+## medium sel
+CA.sim.data.medium.sel = read.csv(CA.sim.data.medium.sel.fname)
+mut.site.medium.sel = CA.sim.data.medium.sel$site
+accept.medium.sel = CA.sim.data.medium.sel$accept
+
+# calculate p.accept of simulated data
+p.accept.mut = c()
+p.accept.medium.sel = c()
+
+# calculate CN
+CN.CA = CA.sim.data.mut$CN
+CN = c()
+
+for (i in (1:n.sites)) {
+  CN[i] = CN.CA[which(mut.site.mut == i)][1]
+}
+  
+for (i in (1:n.sites)) {
+  accept.mut.i = accept.mut[which(mut.site.mut == i)]
+  p.accept.mut.i = mean(accept.mut.i)
+  p.accept.mut[i] = p.accept.mut.i
+  
+  accept.medium.sel.i = accept.medium.sel[which(mut.site.medium.sel == i)]
+  p.accept.medium.sel.i = mean(accept.medium.sel.i)
+  p.accept.medium.sel[i] = p.accept.medium.sel.i
+}
+
+## calculate corelations
+r.p.accept.mut.CN = cor(p.accept.mut, CN)
+r.p.accept.mut.score = cor(p.accept.mut, score)
+r.score.CN = cor(score, CN)
+
+cor.df = data.frame("comparison CA" = c("log(paccept no-selection) vs CN", "log(paccept no-selection) vs score", "score vs CN"),
+                    "R" = c(r.p.accept.mut.CN , r.p.accept.mut.score, r.score.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
+
+print("<paccept no-selection>")
+print(mean(p.accept.mut))
+
+## calculate corelations
+r.p.accept.medium.sel.CN = cor(log(p.accept.medium.sel), CN)
+r.p.accept.medium.sel.score = cor(log(p.accept.medium.sel), score)
+r.score.CN = cor(score, CN)
+
+cor.df = data.frame("comparison CA" = c("log(paccept selection) vs CN", "log(paccept selection) vs score", "score vs CN"),
+                    "R" = c(r.p.accept.medium.sel.CN , r.p.accept.medium.sel.score, r.score.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
+
+print("<paccept selection>")
+print(mean(p.accept.medium.sel))
+```
+
+```{r sequence-profiles-comparison-CM}
+# read experimental data obtained from ConsurfDB
+consurf = read.csv(score.fname, sep = ";")
+score = consurf$SCORE
+
+# read simulated data
+## no sel
+CM.sim.data.mut = read.csv(CM.sim.data.mut.fname)
+mut.site.mut = CM.sim.data.mut$site
+accept.mut = CM.sim.data.mut$accept
+
+## medium sel
+CM.sim.data.medium.sel = read.csv(CM.sim.data.medium.sel.fname)
+mut.site.medium.sel = CM.sim.data.medium.sel$site
+accept.medium.sel = CM.sim.data.medium.sel$accept
+
+# calculate p.accept of simulated data
+p.accept.mut = c()
+p.accept.medium.sel = c()
+
+# correct indexes
+mut.site.mut = mut.site.mut - n.sites
+mut.site.medium.sel = mut.site.medium.sel - n.sites
+  
+# calculate CN
+CN.CM = CM.sim.data.mut$CN
+CN = c()
+
+for (i in (1:n.sites)) {
+  CN[i] = CN.CM[which(mut.site.mut == i)][1]
+}
+
+for (i in (1:n.sites)) {
+  accept.mut.i = accept.mut[which(mut.site.mut == i)]
+  p.accept.mut.i = mean(accept.mut.i)
+  p.accept.mut[i] = p.accept.mut.i
+  
+  accept.medium.sel.i = accept.medium.sel[which(mut.site.medium.sel == i)]
+  p.accept.medium.sel.i = mean(accept.medium.sel.i)
+  p.accept.medium.sel[i] = p.accept.medium.sel.i
+}
+
+## calculate corelations
+r.p.accept.mut.CN = cor(p.accept.mut, CN)
+r.p.accept.mut.score = cor(p.accept.mut, score)
+r.score.CN = cor(score, CN)
+
+cor.df = data.frame("comparison CM" = c("log(paccept no-selection) vs CN", "log(paccept no-selection) vs score", "score vs CN"),
+                    "R" = c(r.p.accept.mut.CN , r.p.accept.mut.score, r.score.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
+
+print("<paccept no-selection>")
+print(mean(p.accept.mut))
+
+## calculate corelations
+r.p.accept.medium.sel.CN = cor(log(p.accept.medium.sel), CN)
+r.p.accept.medium.sel.score = cor(log(p.accept.medium.sel), score)
+r.score.CN = cor(score, CN)
+
+cor.df = data.frame("comparison CM" = c("log(paccept selection) vs CN", "log(paccept selection) vs score", "score vs CN"),
+                    "R" = c(r.p.accept.medium.sel.CN , r.p.accept.medium.sel.score, r.score.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
+
+print("<paccept selection>")
+print(mean(p.accept.medium.sel))
+```
+
+```{r structure-profiles-CN-comparison}
+d = d.CA
+# calculate correlations berween profiles
+d.exp = subset(d, dataset == "exp")
+d.mut = subset(d, dataset == "no-selection")
+d.medium = subset(d, dataset == "selection")
+
+## calculate correlations
+r.exp.mean.z.RSD.CN = cor(d.exp$mean.z.RSD, CN)
+r.mut.mean.z.RSD.CN = cor(d.mut$mean.z.RSD, CN)
+r.medium.mean.z.RSD.CN = cor(d.medium$mean.z.RSD, CN)
+
+cor.df = data.frame("comparison CA" = c("<z.RSD> experimental vs CN", "<z.RSD> no-selection vs CN", "<z.RSD> selection vs CN"),
+                    "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation structure (<z.RSD>) - sequence (CN)")
+```
+
+```{r structure-profiles-CN-comparison-CM}
+d = d.CM
+# calculate correlations berween profiles
+d.exp = subset(d, dataset == "exp")
+d.mut = subset(d, dataset == "no-selection")
+d.medium = subset(d, dataset == "selection")
+
+## calculate correlations
+r.exp.mean.z.RSD.CN = cor(d.exp$mean.z.RSD, CN)
+r.mut.mean.z.RSD.CN = cor(d.mut$mean.z.RSD, CN)
+r.medium.mean.z.RSD.CN = cor(d.medium$mean.z.RSD, CN)
+
+cor.df = data.frame("comparison CM" = c("<z.RSD> experimental vs CN", "<z.RSD> no-selection vs CN", "<z.RSD> selection vs CN"),
+                    "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation structure (<z.RSD>) - sequence (CN)")
+```
+
+### Structure - normal modes 
+
+```{r set-file-names}
+data.dir <- paste("OUT/out_subset_CA_ANM", sep = "")
+R0 = R0.CA
+
+# set input filenames
+## profiles to compare
+Pn.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.Pn.csv", sep = ""))
+Pn.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.Pn.csv", sep = ""))
+Pn.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.Pn.csv", sep = ""))
+```
+
+```{r prepare-site-data}
+# prepare the data
+Pn.exp = read.csv(Pn.exp.fname, header = T)
+rownames(Pn.exp) = paste("mut", rownames(Pn.exp), sep = "")
+
+Pn.mut = read.csv(Pn.mut.fname, header = T)
+rownames(Pn.mut) = paste("mut", rownames(Pn.mut), sep = "")
+
+Pn.medium = read.csv(Pn.medium.fname, header = T)
+rownames(Pn.medium) = paste("medium", rownames(Pn.medium), sep = "")
+
+mode = seq(ncol(Pn.medium))
+
+# Prepare modeComparison.medium
+tPn.medium = as.data.frame(t(as.matrix(Pn.medium)))
+tPn.medium = cbind(data.frame("mode" = mode), tPn.medium)
+modeComparison.medium = melt(tPn.medium, "mode", variable.name = "protein", value.name = "Pn")
+modeComparison.medium = ddply(modeComparison.medium, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
+
+# Prepare modeComparison.mut
+tPn.mut = as.data.frame(t(as.matrix(Pn.mut)))
+tPn.mut = cbind(data.frame("mode" = mode), tPn.mut)
+modeComparison.mut = melt(tPn.mut, "mode", variable.name = "protein", value.name = "Pn")
+modeComparison.mut = ddply(modeComparison.mut, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
+
+# Prepare modeComparison.exp
+tPn.exp = as.data.frame(t(as.matrix(Pn.exp)))
+tPn.exp = cbind(data.frame("mode" = mode), tPn.exp)
+modeComparison.exp = melt(tPn.exp, "mode", variable.name = "protein", value.name = "Pn")
+modeComparison.exp = ddply(modeComparison.exp, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
+
+# modeComparison.exp has NA's because for proteins with gaps when using Keff there're less modes
+#print("Warning: modeComparison.exp <- na.omit(modeComparison.exp)")
+modeComparison.exp <- na.omit(modeComparison.exp)
+modeComparison.medium <- na.omit(modeComparison.medium)
+modeComparison.mut <- na.omit(modeComparison.mut)
+
+CA.modeComparison.all.datasets = rbind(data.frame("dataset" = "exp", modeComparison.exp),
+                                       data.frame("dataset" = "mut", modeComparison.mut),
+                                       data.frame("dataset" = "medium", modeComparison.medium))
+```
+
+```{r median-vs-mode-energy}
+dat = CA.modeComparison.all.datasets
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
+
+# calculate dataset of medians
+
+dat = ddply(dat,c("dataset", "mode"), function(x) {
+    Pn.median = median(x$Pn)
+    Pn.median.ci = sort(x$Pn)[qbinom(c(.025, .975), length(x$Pn), 0.5)]
+    Pn.median.min = Pn.median.ci[1]
+    Pn.median.max = Pn.median.ci[2]
+    data.frame(Pn.median.min, Pn.median.max, Pn.median)
+})
+```
+```{r set-file-names}
+data.dir <- paste("OUT/out_subset_CM_ANM", sep = "")
+R0 = R0.CM
+
+# set input filenames
+## profiles to compare
+Pn.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.Pn.csv", sep = ""))
+Pn.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.Pn.csv", sep = ""))
+Pn.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.Pn.csv", sep = ""))
+```
+
+```{r prepare-site-data}
+# prepare the data
+Pn.exp = read.csv(Pn.exp.fname, header = T)
+rownames(Pn.exp) = paste("mut", rownames(Pn.exp), sep = "")
+
+Pn.mut = read.csv(Pn.mut.fname, header = T)
+rownames(Pn.mut) = paste("mut", rownames(Pn.mut), sep = "")
+
+Pn.medium = read.csv(Pn.medium.fname, header = T)
+rownames(Pn.medium) = paste("medium", rownames(Pn.medium), sep = "")
+
+mode = seq(ncol(Pn.medium))
+
+# Prepare modeComparison.medium
+tPn.medium = as.data.frame(t(as.matrix(Pn.medium)))
+tPn.medium = cbind(data.frame("mode" = mode), tPn.medium)
+modeComparison.medium = melt(tPn.medium, "mode", variable.name = "protein", value.name = "Pn")
+modeComparison.medium = ddply(modeComparison.medium, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
+
+# Prepare modeComparison.mut
+tPn.mut = as.data.frame(t(as.matrix(Pn.mut)))
+tPn.mut = cbind(data.frame("mode" = mode), tPn.mut)
+modeComparison.mut = melt(tPn.mut, "mode", variable.name = "protein", value.name = "Pn")
+modeComparison.mut = ddply(modeComparison.mut, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
+
+# Prepare modeComparison.exp
+tPn.exp = as.data.frame(t(as.matrix(Pn.exp)))
+tPn.exp = cbind(data.frame("mode" = mode), tPn.exp)
+modeComparison.exp = melt(tPn.exp, "mode", variable.name = "protein", value.name = "Pn")
+modeComparison.exp = ddply(modeComparison.exp, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
+
+# modeComparison.exp has NA's because for proteins with gaps when using Keff there're less modes
+#print("Warning: modeComparison.exp <- na.omit(modeComparison.exp)")
+modeComparison.exp <- na.omit(modeComparison.exp)
+modeComparison.medium <- na.omit(modeComparison.medium)
+modeComparison.mut <- na.omit(modeComparison.mut)
+
+CM.modeComparison.all.datasets = rbind(data.frame("dataset" = "exp", modeComparison.exp),
+                                       data.frame("dataset" = "mut", modeComparison.mut),
+                                       data.frame("dataset" = "medium", modeComparison.medium))
+```
+
+```{r median-vs-mode-energy}
+dat = CM.modeComparison.all.datasets
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
+
+# calculate dataset of medians
+
+d = ddply(dat,c("dataset", "mode"), function(x) {
+    Pn.median = median(x$Pn)
+    Pn.median.ci = sort(x$Pn)[qbinom(c(.025, .975), length(x$Pn), 0.5)]
+    Pn.median.min = Pn.median.ci[1]
+    Pn.median.max = Pn.median.ci[2]
+    data.frame(Pn.median.min, Pn.median.max, Pn.median)
+})
+```

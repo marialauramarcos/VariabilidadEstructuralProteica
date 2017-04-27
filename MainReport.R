@@ -34,6 +34,10 @@ for (f in (1:nrow(input))) {
   data.dir <- paste("OUT/out_subset_CA_ANM", sep = "")
   R0 = R0.CA
   
+  ## correlations
+  rmarkdown::render('comparison_CA_CM.Rmd', 
+                    output_file =  paste("OUT/report_comparison_CA_CM_", family, "_", enm, ".html", sep = ''))
+  
   ### Pn
   rmarkdown::render('analysis-structure-normal-modes.Rmd', 
                     output_file =  paste("OUT/report_structure_CA_normal_modes_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
