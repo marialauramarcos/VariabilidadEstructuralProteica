@@ -135,14 +135,10 @@ rownames(dri2.exp) = protein.exp
 
 ## mut
 dri2.mut = read.csv(dri2.mut.fname, header = T)
-site = site.info$site
-dri2.mut = dri2.mut[1:length(protein.exp), site]
 rownames(dri2.mut) = paste("mut", rownames(dri2.mut), sep = "")
 
 ## medium
 dri2.medium = read.csv(dri2.medium.fname, header = T)
-site = site.info$site
-dri2.medium = dri2.medium[1:length(protein.exp), site]
 rownames(dri2.medium) = paste("medium", rownames(dri2.medium), sep = "")
 ```
 
@@ -195,7 +191,7 @@ dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
 dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
 
 ## dat with means and standard errors
-d = ddply(dat,c("dataset", "site", "AA", "shell"), function(x) {
+d = ddply(dat,c("dataset", "site"), function(x) {
                 mean.z.RSD = mean(x$z.RSD, na.rm = T)
                 ndata = sum(!is.na(x$z.RSD))
                 se.z.RSD = sd(x$z.RSD, na.rm = T) / sqrt(ndata)
@@ -482,7 +478,7 @@ print(mean(p.accept.medium.sel))
 
 ### Sequence - structure comparison
 
-```{r structure-profiles-CN-comparison}
+```{r structure-CN-comparison}
 
 # compare profiles
 ## plot
