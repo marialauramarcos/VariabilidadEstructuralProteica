@@ -1,0 +1,387 @@
+---
+title: "Structural Divergence Analysis"
+author: "Maria Laura Marcos, Julian Echave"
+output: html_document
+---
+
+# Introduction
+We study the evolutionary divergence of proteins using the LF-ENM and comparing simulated mutants with experimental data.
+
+```{r setup, include = FALSE}
+# set chunk options
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r load-packages}
+# load packages
+library(ggplot2)
+library(reshape2)
+library(plyr)
+library(quantreg)
+library(bio3d)
+
+# load functions
+source(file.path(data.dir, "multiplot.R"))
+source(file.path(data.dir, "my-functions.R"))
+source("FUNCTIONS/readCA.R") 
+```
+
+```{r set-my-colors}
+# set my colors
+myColors = c("blue", "darkgreen", "darkgreen", "red", "red") 
+names(myColors) <- c("exp", "mut", "no-selection", "medium", "selection")
+```
+
+```{r set-run-variables}
+# set significance factors
+f95 = 1.96
+f99 = 2.6
+f999 = 3.3
+```
+
+```{r set-file-names}
+# set input filenames
+## data
+reference.fname = file.path(data.dir, paste(family, "_ref.txt", sep = ""))
+protein_list.fname = file.path(data.dir, paste(family, "_list.txt", sep = ""))
+site.info.fname = file.path(data.dir, paste(p.ref, "_m.da.ca.csv", sep = ""))
+min.da.CM.CA.fname = file.path(data.dir, paste(p.ref, "_min.da.CM.ca.csv", sep = ""))
+sum.inv.da.CM.CA.fname = file.path(data.dir, paste(p.ref, "_sum.inv.da.CM.ca.csv", sep = ""))
+functional.sites.fname = file.path("DATA", paste(p.ref, "_functionalSites.csv", sep = ""))
+
+## profiles to compare
+dri2.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.norm.dr.squarei.csv", sep = ""))
+dri2.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+dri2.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+
+## consurf
+score.fname = file.path(data.dir, paste(p.ref, "_consurf.csv", sep = ""))
+sim.data.mut.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_out_df.data.csv", sep = ""))
+sim.data.medium.sel.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_out_df.data.csv", sep = ""))
+```
+
+```{r set-reference-protein}
+# which is the reference protein?
+reference = as.character(read.table(reference.fname, header = F)[1, 1])
+if (reference != p.ref) {
+  print("Warning: different references")
+}
+```
+
+```{r read-functional-sites}
+# which are the functional sites?
+functional.sites = read.csv(functional.sites.fname, sep = ";")
+active.site.index = functional.sites$index
+description = functional.sites$description
+function.info = data.frame(active.site.index, description)
+```
+In this case we studied the `r family` family. 
+We used the ENM `r enm` with R0 = `r R0` to generate mutants.
+We used as reference for the ENM the protein with pdb code `r reference`. 
+The active/functional sites of the reference are:
+
+```{r print-info}
+print(function.info)
+```
+
+We simulated `r n.mut.p` mutants of this reference for each protein of the family.
+The `r family` family is of the type `r type` and consists of the following proteins:
+
+```{r set-experimental-protein-names}
+# experimental protein names
+protein.exp = read.table(protein_list.fname, header = F, stringsAsFactors = F)[, 1]
+protein.exp = protein.exp[protein.exp != reference]
+print(protein.exp)
+```
+
+```{r set-site-info}
+# read site information of the reference protein
+site.info = read.csv(site.info.fname, header = T, sep = ",")
+m.min.da.CM.CA = read.csv(min.da.CM.CA.fname)
+m.sum.inv.da.CM.CA = read.csv(sum.inv.da.CM.CA.fname)
+
+# add info to site.info
+d = ddply(site.info, "site", .fun = function(x) data.frame("da" = min(x[, c(-1, -2)])))
+
+# define shells of active.sites site neighborhood
+d$shell = cut(d$da, breaks = c(-.1, 2.5, 7.5, 12.5, 17.5, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, max(d$da)))
+levels(d$shell) = seq(length(levels(d$shell))) - 1 # rename shell levels
+site.info = merge(site.info, d, by = "site")
+
+# read reference pdb and calculate resno, AA, and CN
+reference.pdb.fname = file.path(data.dir,paste(reference, ".pdb", sep = ""))
+ref.pdb = read.pdb(reference.pdb.fname)
+inds = atom.select(ref.pdb, elety = "CA")
+ref.pdb.ca = ref.pdb$atom[inds$atom,]
+cmap.ca = cmap(ref.pdb$xyz[inds$xyz], dcut = R0, scut = 0, mask.lower = F)
+CN = rowSums(cmap.ca, na.rm = T) - 1 # diag(cmap.ca) returned by cmap is 1!
+n.sites = length(CN)
+AA = ref.pdb.ca$resid
+resno = ref.pdb.ca$resno
+pdb.info = data.frame(resno, AA, CN)
+names(pdb.info) = c("resno", "AA", paste("CN", as.character(R0), sep = ""))
+
+# add pdb.info to site.info
+site.info = cbind(site.info, pdb.info)
+```
+
+```{r read-data}
+# read data
+## exp
+dri2.exp = read.csv(dri2.exp.fname, header = T)
+site = site.info$site
+dri2.exp = dri2.exp[1:length(protein.exp), site]
+rownames(dri2.exp) = protein.exp
+
+## mut
+dri2.mut = read.csv(dri2.mut.fname, header = T)
+rownames(dri2.mut) = paste("mut", rownames(dri2.mut), sep = "")
+
+## medium
+dri2.medium = read.csv(dri2.medium.fname, header = T)
+rownames(dri2.medium) = paste("medium", rownames(dri2.medium), sep = "")
+```
+
+# Structural divergence along sites
+
+Here we study how structural divergence varies from site to site. We compare simulated data with empirical data. 
+
+```{r prepare-site-data}
+# prepare the data
+## exp
+tdri2.exp = as.data.frame(t(as.matrix(dri2.exp)))
+tdri2.exp = cbind(site.info, tdri2.exp)
+siteComparison.exp = melt(tdri2.exp, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
+
+## mut
+tdri2.mut = as.data.frame(t(as.matrix(dri2.mut)))
+tdri2.mut = cbind(site.info, tdri2.mut)
+siteComparison.mut = melt(tdri2.mut, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
+
+## medium
+tdri2.medium = as.data.frame(t(as.matrix(dri2.medium)))
+tdri2.medium = cbind(site.info, tdri2.medium)
+siteComparison.medium = melt(tdri2.medium, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
+
+# bluild the data.frame
+siteComparison.all.datasets = rbind(data.frame("dataset" = "exp", siteComparison.exp),
+                                    data.frame("dataset" = "mut", siteComparison.mut),
+                                    data.frame("dataset" = "medium", siteComparison.medium))
+
+siteComparison.all.datasets = ddply(siteComparison.all.datasets, c("dataset", "protein"), mutate,
+          "n.SD" = dri2/mean(dri2, na.rm = T),
+          "z.SD" = vscale(dri2),
+          "RSD" = sqrt(dri2), 
+          "n.RSD" = RSD/mean(RSD, na.rm = T),
+          "z.RSD" = vscale(RSD))
+```
+
+### Mean z.RSD vs site
+
+To measure structural divergence we use z.RSD profiles, which are the best for most families.
+
+The following plot compares the mean z.RSD profiles, including standard errors (with .999 confidence level for the mean)
+*Warning: the effective number of data should be smaller than the actual data, especially for the experimental dataset because of several factors. We need to deal with this for quantitative analysis. Probably we'll need to use bootstrapping to calculate standard errors non-parametrically*
+
+```{r-mean-se-z.RSD-vs-site, fig.cap = "Black lines are the active sites and grey lines are their contacts"}
+# comparison of z.RSD profiles with functional sites
+## prepare dat
+dat = siteComparison.all.datasets
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
+
+## dat with means and standard errors
+d = ddply(dat,c("dataset", "site"), function(x) {
+                mean.z.RSD = mean(x$z.RSD, na.rm = T)
+                ndata = sum(!is.na(x$z.RSD))
+                se.z.RSD = sd(x$z.RSD, na.rm = T) / sqrt(ndata)
+                data.frame(mean.z.RSD, ndata, se.z.RSD)
+})
+
+## find the active site and its contacts
+active.sites = d$site[d$shell == 0]
+contacts.active.sites = d$site[d$shell == 1]
+
+## prepare plots with mean profiles and deviations
+p = ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset, fill = dataset)) +
+    geom_line() +
+    geom_ribbon(aes(ymin = mean.z.RSD - f95 * se.z.RSD, ymax = mean.z.RSD + se.z.RSD), alpha = .4, show.legend = F) +
+    geom_vline(xintercept = active.sites, show.legend = F) +
+    geom_vline(xintercept = contacts.active.sites, col = "grey", show.legend = F) +
+    labs(x = "site", y = "<zRSDi>") +
+    coord_cartesian(ylim = c(-1.5, 2.8)) +
+    scale_colour_manual(name = NULL, values = myColors) + 
+    scale_fill_manual(name = NULL, values = myColors)
+
+## plot separate and comparative plots
+p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "bottom")
+
+p.facet %+% subset(d, dataset == "exp") 
+p.facet %+% subset(d, dataset == "no-selection")
+p.facet %+% subset(d, dataset == "selection") 
+p.facet
+
+## plot superimposed plots
+p + theme(legend.position = "bottom")
+```
+
+### Correlation between profiles
+
+```{r comparison-mean-z.RSD-vs-site}
+
+# comparison of z.RSD profiles
+
+ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset)) +
+  geom_line() +
+  geom_text(data = subset(d, dataset == "exp" & mean.z.RSD < -.5), aes(x = site, y = mean.z.RSD, label = site), nudge_y = -.1, size = 1.8) +
+  labs(x = "site", y = "<zRSDi>") +
+  geom_vline(xintercept = active.sites, show.legend = F) +
+  geom_vline(xintercept = contacts.active.sites, col = "grey", show.legend = F) + 
+  scale_colour_manual(name = NULL, values = myColors) 
+
+# calculate correlations berween profiles
+d.exp = subset(d, dataset == "exp")
+d.mut = subset(d, dataset == "no-selection")
+d.medium = subset(d, dataset == "selection")
+
+# calculate cors
+r.exp.mut = cor(d.exp$mean.z.RSD, d.mut$mean.z.RSD)
+r.exp.medium = cor(d.exp$mean.z.RSD, d.medium$mean.z.RSD)
+r.mut.medium = cor(d.mut$mean.z.RSD, d.medium$mean.z.RSD)
+
+cor.df = data.frame("comparison" = c("exp vs no-selection", "exp vs selection", "no-selection vs selection"),
+                    "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between <Z-scores> profiles")
+```
+
+### Comparison between profiles
+
+```{r comparisons-between-profiles}
+
+# plot exp vs simulated profiles 
+par(pty = "s")
+
+plot(x = d.exp$mean.z.RSD, 
+     y = d.mut$mean.z.RSD, 
+     xlab = "<z.RSD> experimental", 
+     ylab = "<z.RSD> no-selection", 
+     xlim = c(min(c(d.exp$mean.z.RSD, d.mut$mean.z.RSD)), max(c(d.exp$mean.z.RSD, d.mut$mean.z.RSD))),
+     ylim = c(min(c(d.exp$mean.z.RSD, d.mut$mean.z.RSD)), max(c(d.exp$mean.z.RSD, d.mut$mean.z.RSD))))
+points(x = as.numeric(d.exp$mean.z.RSD)[active.sites], y = as.numeric(d.mut$mean.z.RSD)[active.sites], col = "yellow")
+points(x = as.numeric(d.exp$mean.z.RSD)[contacts.active.sites], y = as.numeric(d.mut$mean.z.RSD)[contacts.active.sites], col = "green")
+abline(0, 1)
+
+plot(x = d.exp$mean.z.RSD, 
+     y = d.medium$mean.z.RSD, 
+     xlab = "<z.RSD> experimental", 
+     ylab = "<z.RSD> selection", 
+     xlim = c(min(c(d.exp$mean.z.RSD, d.medium$mean.z.RSD)), max(c(d.exp$mean.z.RSD, d.medium$mean.z.RSD))),
+     ylim = c(min(c(d.exp$mean.z.RSD, d.medium$mean.z.RSD)), max(c(d.exp$mean.z.RSD, d.medium$mean.z.RSD))))
+points(x = as.numeric(d.exp$mean.z.RSD)[contacts.active.sites], y = as.numeric(d.medium$mean.z.RSD)[contacts.active.sites], col = "green")
+points(x = as.numeric(d.exp$mean.z.RSD)[active.sites], y = as.numeric(d.medium$mean.z.RSD)[active.sites], col = "yellow")
+abline(0, 1)
+
+plot(x = d.mut$mean.z.RSD, 
+     y = d.medium$mean.z.RSD, 
+     xlab = "<z.RSD> no-selection", 
+     ylab = "<z.RSD> selection", 
+     xlim = c(min(c(d.mut$mean.z.RSD, d.medium$mean.z.RSD)), max(c(d.mut$mean.z.RSD, d.medium$mean.z.RSD))),
+     ylim = c(min(c(d.mut$mean.z.RSD, d.medium$mean.z.RSD)), max(c(d.mut$mean.z.RSD, d.medium$mean.z.RSD))))
+points(x = as.numeric(d.mut$mean.z.RSD)[contacts.active.sites], y = as.numeric(d.medium$mean.z.RSD)[contacts.active.sites], col = "green")
+points(x = as.numeric(d.mut$mean.z.RSD)[active.sites], y = as.numeric(d.medium$mean.z.RSD)[active.sites], col = "yellow")
+abline(0, 1)
+```
+
+### Distances to the active sites
+
+```{r comparison-min.da}
+
+# comparison of means.z.scores with the minimum distance to the functional sites
+plot(y = (d.exp$mean.z.RSD - d.mut$mean.z.RSD)[-active.site.index], x = m.min.da.CM.CA$min.da.CA[-active.site.index], xlab = "minimal distance to active site (between CAs)", ylab = "<z.RSD> experimental - <z.RSD> no-selection")
+plot(y = (d.exp$mean.z.RSD - d.mut$mean.z.RSD)[-active.site.index], x = m.min.da.CM.CA$min.da.CM[-active.site.index], xlab = "minimal distance to active site (between CMs)", ylab = "<z.RSD> experimental - <z.RSD> no-selection")
+
+## calculate correlations between profiles
+r.min.da.CA = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD)[-active.site.index], m.min.da.CM.CA$min.da.CA[-active.site.index])
+r.min.da.CM = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD)[-active.site.index], m.min.da.CM.CA$min.da.CM[-active.site.index])
+
+cor.df = data.frame("comparison" = c("(exp - no-selection) vs min.da.CA", "(exp - no-selection) vs min.da.CM"), "R" = c(r.min.da.CA, r.min.da.CM))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between differences in <Z-scores> profiles and the minimal distance to the active site")
+
+# comparison of means.z.scores with the minimum distance to the functional sites
+plot(y = (d.exp$mean.z.RSD - d.medium$mean.z.RSD)[-active.site.index], x = m.min.da.CM.CA$min.da.CA[-active.site.index], xlab = "minimal distance to active site (between CAs)", ylab = "<z.RSD> experimental - <z.RSD> selection")
+plot(y = (d.exp$mean.z.RSD - d.medium$mean.z.RSD)[-active.site.index], x = m.min.da.CM.CA$min.da.CM[-active.site.index], xlab = "minimal distance to active site (between CMs)", ylab = "<z.RSD> experimental - <z.RSD> selection")
+
+## calculate correlations between profiles
+r.min.da.CA = cor((d.exp$mean.z.RSD - d.medium$mean.z.RSD)[-active.site.index], m.min.da.CM.CA$min.da.CA[-active.site.index])
+r.min.da.CM = cor((d.exp$mean.z.RSD - d.medium$mean.z.RSD)[-active.site.index], m.min.da.CM.CA$min.da.CM[-active.site.index])
+
+cor.df = data.frame("comparison" = c("(exp - selection) vs min.da.CA", "(exp - selection) vs min.da.CM"), "R" = c(r.min.da.CA, r.min.da.CM))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between differences in <Z-scores> profiles and the minimal distance to the active site")
+```
+
+```{r comparison-sum.inv.da}
+
+# comparison of means.z.scores with the sum.inv distance to the functional sites
+plot(y = (d.exp$mean.z.RSD - d.mut$mean.z.RSD)[-active.site.index], x = m.sum.inv.da.CM.CA$sum.inv.da.CA[-active.site.index], xlab = "sum.inv distance to active site (between CAs)", ylab = "<z.RSD> experimental - <z.RSD> no-selection")
+plot(y = (d.exp$mean.z.RSD - d.mut$mean.z.RSD)[-active.site.index], x = m.sum.inv.da.CM.CA$sum.inv.da.CM[-active.site.index], xlab = "sum.inv distance to active site (between CMs)", ylab = "<z.RSD> experimental - <z.RSD> no-selection")
+
+## calculate correlations between profiles
+r.sum.inv.da.CA = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD)[-active.site.index], m.sum.inv.da.CM.CA$sum.inv.da.CA[-active.site.index])
+r.sum.inv.da.CM = cor((d.exp$mean.z.RSD - d.mut$mean.z.RSD)[-active.site.index], m.sum.inv.da.CM.CA$sum.inv.da.CM[-active.site.index])
+
+cor.df = data.frame("comparison" = c("(exp - no-selection) vs sum.inv.da.CA", "(exp - no-selection) vs sum.inv.da.CM"), "R" = c(r.sum.inv.da.CA, r.sum.inv.da.CM))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between differences in <Z-scores> profiles and the sum.inv distance to the active site")
+
+# comparison of means.z.scores with the sum.inv distance to the functional sites
+plot(y = (d.exp$mean.z.RSD - d.medium$mean.z.RSD)[-active.site.index], x = m.sum.inv.da.CM.CA$sum.inv.da.CA[-active.site.index], xlab = "sum.inv distance to active site (between CAs)", ylab = "<z.RSD> experimental - <z.RSD> selection")
+plot(y = (d.exp$mean.z.RSD - d.medium$mean.z.RSD)[-active.site.index], x = m.sum.inv.da.CM.CA$sum.inv.da.CM[-active.site.index], xlab = "sum.inv distance to active site (between CMs)", ylab = "<z.RSD> experimental - <z.RSD> selection")
+
+## calculate correlations between profiles
+r.sum.inv.da.CA = cor((d.exp$mean.z.RSD - d.medium$mean.z.RSD)[-active.site.index], m.sum.inv.da.CM.CA$sum.inv.da.CA[-active.site.index])
+r.sum.inv.da.CM = cor((d.exp$mean.z.RSD - d.medium$mean.z.RSD)[-active.site.index], m.sum.inv.da.CM.CA$sum.inv.da.CM[-active.site.index])
+
+cor.df = data.frame("comparison" = c("(exp - selection) vs sum.inv.da.CA", "(exp - selection) vs sum.inv.da.CM"), "R" = c(r.sum.inv.da.CA, r.sum.inv.da.CM))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between differences in <Z-scores> profiles and the sum.inv distance to the active site")
+```
+
+```{r correlation-da-CN} 
+## calculate correlations between profiles
+r.min.da.CA.CN = cor(CN[-active.site.index], m.min.da.CM.CA$min.da.CA[-active.site.index])
+r.min.da.CM.CN = cor(CN[-active.site.index], m.min.da.CM.CA$min.da.CM[-active.site.index])
+
+cor.df = data.frame("comparison" = c("CN vs min.da.CA", "CN vs min.da.CM"), "R" = c(r.min.da.CA.CN, r.min.da.CM.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between CN and the minimal distance to the active site")
+
+## calculate correlations between profiles
+r.sum.inv.da.CA.CN = cor(CN[-active.site.index], m.sum.inv.da.CM.CA$sum.inv.da.CA[-active.site.index])
+r.sum.inv.da.CM.CN = cor(CN[-active.site.index], m.sum.inv.da.CM.CA$sum.inv.da.CM[-active.site.index])
+
+cor.df = data.frame("comparison" = c("CN vs sum.inv.da.CA", "CN vs sum.inv.da.CM"), "R" = c(r.sum.inv.da.CA.CN, r.sum.inv.da.CM.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Correlation between CN and the sum.inv distance to the active site")
+```
+
+```{r write-pdbs} 
+# write pdb files with mean.z.RSDi as b-factor for building images
+
+## read pdb CAs
+pdb.xyz.ca = ReadCA(reference.pdb.fname, chain.p.ref)$xyz
+
+## experimental
+exp.mean.z.RSD.vec <- vec2resno(as.vector(d.exp$mean.z.RSD), 1:ncol(pdb.xyz.ca))
+write.pdb(xyz = c(pdb.xyz.ca), b = exp.mean.z.RSD.vec, file =  file.path(data.dir, paste(p.ref, "_exp.pdb", sep = "")))
+
+## mut
+mut.mean.z.RSD.vec <- vec2resno(as.vector(d.mut$mean.z.RSD), 1:ncol(pdb.xyz.ca))
+write.pdb(xyz = c(pdb.xyz.ca), b = mut.mean.z.RSD.vec, file = file.path(data.dir, paste(p.ref, "_mut.pdb", sep = "")))
+
+## mut + sel / medium
+medium.mean.z.RSD.vec <- vec2resno(as.vector(d.medium$mean.z.RSD), 1:ncol(pdb.xyz.ca))
+write.pdb(xyz = c(pdb.xyz.ca), b = medium.mean.z.RSD.vec, file = file.path(data.dir, paste(p.ref, "_medium.pdb", sep = "")))
+```

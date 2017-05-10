@@ -83,9 +83,9 @@ print(protein.exp)
 ```{r prepare_site_data}
 # prepare the data
 Pn.exp = read.csv(Pn.exp.fname, header = T)
-rownames(Pn.exp) = protein.exp
+rownames(Pn.exp) = paste("exp", rownames(Pn.exp), sep = "")
 energy.exp = read.csv(energy.exp.fname, header = T)
-rownames(energy.exp) = protein.exp
+rownames(energy.exp) = paste("exp", rownames(energy.exp), sep = "")
 
 Pn.mut = read.csv(Pn.mut.fname, header = T)
 rownames(Pn.mut) = paste("mut", rownames(Pn.mut), sep = "")
@@ -212,7 +212,7 @@ p.points.rq = ggplot(dat, aes(x = energy, y = Pn, col = dataset)) +
     geom_line(aes(y = rq.95)) 
 p = p.points.rq +  
     labs(x = "mode energy", y = "structural divergence") +
-    coord_cartesian(xlim = c(0,2.5)) +
+    coord_cartesian(xlim = c(0,3)) +
     scale_colour_manual(name = NULL, values = myColors) + 
     scale_fill_manual(name=NULL, values = myColors)
 
@@ -249,7 +249,7 @@ p = ggplot(dat,aes(x=energy.mean,y=Pn.median,col=dataset,fill=dataset)) +
     labs(x="mode energy",y="structural divergence (median Pn) ") +
     scale_colour_manual(name = NULL,values = myColors) + 
     scale_fill_manual(name=NULL,values=myColors)+
-    coord_cartesian(xlim=c(0,1)) 
+    coord_cartesian(xlim=c(0,3)) 
 
 
 p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "none")
@@ -262,6 +262,7 @@ p + theme(legend.position = "bottom")
 ```
 
 ### correlaction between mode profiles
+(calculated for the first 100 modes)
 
 ```{r correlation-mode-profiles}
 #dat$dataset = revalue(dat$dataset,c("medium" = "mut+sel"))

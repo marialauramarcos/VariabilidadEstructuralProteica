@@ -123,6 +123,11 @@ names(pdb.info) = c("resno", "AA", paste("CN", as.character(R0), sep = ""))
 
 # add pdb.info to site.info
 site.info = cbind(site.info, pdb.info)
+
+# find the active site and its contacts
+active.sites = d$site[d$shell == 0]
+contacts.active.sites = d$site[d$shell == 1]
+
 ```
 
 ```{r read-data}
@@ -169,19 +174,16 @@ siteComparison.all.datasets = rbind(data.frame("dataset" = "exp", siteComparison
                                     data.frame("dataset" = "medium", siteComparison.medium))
 
 siteComparison.all.datasets = ddply(siteComparison.all.datasets, c("dataset", "protein"), mutate,
-          "n.SD" = dri2/mean(dri2, na.rm = T),
-          "z.SD" = vscale(dri2),
-          "RSD" = sqrt(dri2), 
-          "n.RSD" = RSD/mean(RSD, na.rm = T),
-          "z.RSD" = vscale(RSD))
+                     "n.SD" = dri2/mean(dri2, na.rm = T),
+                     "z.SD" = vscale(dri2),
+                      "RSD" = sqrt(dri2),
+                    "n.RSD" = RSD/mean(RSD, na.rm = T),
+                    "z.RSD" = vscale(RSD))
 ```
 
 ### Mean z.RSD vs site
 
-To measure structural divergence we use z.RSD profiles, which are the best for most families.
-
-The following plot compares the mean z.RSD profiles, including standard errors (with .999 confidence level for the mean)
-*Warning: the effective number of data should be smaller than the actual data, especially for the experimental dataset because of several factors. We need to deal with this for quantitative analysis. Probably we'll need to use bootstrapping to calculate standard errors non-parametrically*
+To measure structural divergence we use z.RSD profiles, which are the best for most families. The following plot compares the mean z.RSD profiles, including standard errors (with .999 confidence level for the mean).
 
 ```{r-mean-se-z.RSD-vs-site, fig.cap = "Black lines are the active sites and grey lines are their contacts"}
 # comparison of z.RSD profiles with functional sites
@@ -198,18 +200,16 @@ d = ddply(dat,c("dataset", "site"), function(x) {
                 data.frame(mean.z.RSD, ndata, se.z.RSD)
 })
 
-## find the active site and its contacts
-active.sites = d$site[d$shell == 0]
-contacts.active.sites = d$site[d$shell == 1]
+print(active.sites)
 
 ## prepare plots with mean profiles and deviations
 p = ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset, fill = dataset)) +
     geom_line() +
     geom_ribbon(aes(ymin = mean.z.RSD - f95 * se.z.RSD, ymax = mean.z.RSD + se.z.RSD), alpha = .4, show.legend = F) +
-    geom_vline(xintercept = active.sites, show.legend = F) +
+    geom_vline(xintercept = c(active.sites), show.legend = F) +
     geom_vline(xintercept = contacts.active.sites, col = "grey", show.legend = F) +
     labs(x = "site", y = "<zRSDi>") +
-    coord_cartesian(ylim = c(-1.5, 2.8)) +
+    coord_cartesian(ylim = c(-2, 3.5)) + 
     scale_colour_manual(name = NULL, values = myColors) + 
     scale_fill_manual(name = NULL, values = myColors)
 
@@ -227,16 +227,16 @@ p + theme(legend.position = "bottom")
 
 ### Correlation between profiles
 
-```{r comparison-mean-z.RSD-vs-site}
+```{r comparison-mean-z.RSD-vs-site, fig.cap = "Yellow points are the active sites and green points are their contacts"}
 
 # comparison of z.RSD profiles
-
 ggplot(d, aes(x = site, y = mean.z.RSD, col = dataset)) +
   geom_line() +
   geom_text(data = subset(d, dataset == "exp" & mean.z.RSD < -.5), aes(x = site, y = mean.z.RSD, label = site), nudge_y = -.1, size = 1.8) +
   labs(x = "site", y = "<zRSDi>") +
   geom_vline(xintercept = active.sites, show.legend = F) +
-  geom_vline(xintercept = contacts.active.sites, col = "grey", show.legend = F) + 
+  geom_vline(xintercept = contacts.active.sites, col = "grey", show.legend = F) +   
+  coord_cartesian(ylim = c(-2,3.5)) +
   scale_colour_manual(name = NULL, values = myColors) 
 
 # calculate correlations berween profiles
@@ -252,7 +252,7 @@ r.mut.medium = cor(d.mut$mean.z.RSD, d.medium$mean.z.RSD)
 cor.df = data.frame("comparison" = c("exp vs no-selection", "exp vs selection", "no-selection vs selection"),
                     "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
 
-knitr::kable(cor.df, digits = 2, caption = "Correlation between <Z-scores> profiles")
+knitr::kable(cor.df, digits = 2, caption = "Correlation between <z.RSD> profiles")
 ```
 
 ### Comparison between profiles
@@ -437,16 +437,16 @@ for (i in (1:n.sites)) {
 ## plot
 par(pty = "s")
 
-plot(x = log(p.accept.mut), y = CN, xlab = "log(paccept no-selection)")
-plot(x = log(p.accept.mut), y = score, xlab = "log(paccept no-selection)")
-plot(x = score, y = CN) 
+plot(x = p.accept.mut, y = log(CN))
+plot(x = p.accept.mut, y = score)
+plot(x = score, y = log(CN)) 
 
 ## calculate corelations
-r.p.accept.mut.CN = cor(p.accept.mut, CN)
+r.p.accept.mut.CN = cor(p.accept.mut, log(CN))
 r.p.accept.mut.score = cor(p.accept.mut, score)
-r.score.CN = cor(score, CN)
+r.score.CN = cor(score, log(CN))
 
-cor.df = data.frame("comparison" = c("log(paccept no-selection) vs CN", "log(paccept no-selection) vs score", "score vs CN"),
+cor.df = data.frame("comparison" = c("paccept no-selection vs log(CN)", "paccept no-selection vs score", "score vs log(CN)"),
                     "R" = c(r.p.accept.mut.CN , r.p.accept.mut.score, r.score.CN))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
@@ -458,16 +458,16 @@ print(mean(p.accept.mut))
 ## plot
 par(pty = "s")
 
-plot(x = log(p.accept.medium.sel), y = CN, xlab = "log(paccept selection)")
-plot(x = log(p.accept.medium.sel), y = score, xlab = "log(paccept selection)")
-plot(x = score, y = CN)
+plot(x = p.accept.medium.sel, y = log(CN))
+plot(x = p.accept.medium.sel, y = score)
+plot(x = score, y = log(CN))
 
 ## calculate corelations
-r.p.accept.medium.sel.CN = cor(log(p.accept.medium.sel), CN)
-r.p.accept.medium.sel.score = cor(log(p.accept.medium.sel), score)
-r.score.CN = cor(score, CN)
+r.p.accept.medium.sel.CN = cor(p.accept.medium.sel, log(CN))
+r.p.accept.medium.sel.score = cor(p.accept.medium.sel, score)
+r.score.CN = cor(score, log(CN))
 
-cor.df = data.frame("comparison" = c("log(paccept selection) vs CN", "log(paccept selection) vs score", "score vs CN"),
+cor.df = data.frame("comparison" = c("paccept selection vs log(CN)", "paccept selection vs score", "score vs log(CN)"),
                     "R" = c(r.p.accept.medium.sel.CN , r.p.accept.medium.sel.score, r.score.CN))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
@@ -484,16 +484,16 @@ print(mean(p.accept.medium.sel))
 ## plot
 par(pty = "s")
 
-plot(x = d.exp$mean.z.RSD, y = CN, xlab = "<zRSDi> experimental ")
-plot(x = d.mut$mean.z.RSD, y = CN, xlab = "<zRSDi> no-selection")
-plot(x = d.medium$mean.z.RSD, y = CN, xlab = "<zRSDi> selection")
+plot(x = d.exp$mean.z.RSD, y = log(CN), xlab = "<zRSDi> experimental ")
+plot(x = d.mut$mean.z.RSD, y = log(CN), xlab = "<zRSDi> no-selection")
+plot(x = d.medium$mean.z.RSD, y = log(CN), xlab = "<zRSDi> selection")
 
 ## calculate correlations
-r.exp.mean.z.RSD.CN = cor(d.exp$mean.z.RSD, CN)
-r.mut.mean.z.RSD.CN = cor(d.mut$mean.z.RSD, CN)
-r.medium.mean.z.RSD.CN = cor(d.medium$mean.z.RSD, CN)
+r.exp.mean.z.RSD.CN = cor(d.exp$mean.z.RSD, log(CN))
+r.mut.mean.z.RSD.CN = cor(d.mut$mean.z.RSD, log(CN))
+r.medium.mean.z.RSD.CN = cor(d.medium$mean.z.RSD, log(CN))
 
-cor.df = data.frame("comparison" = c("<z.RSD> experimental vs CN", "<z.RSD> no-selection vs CN", "<z.RSD> selection vs CN"),
+cor.df = data.frame("comparison" = c("<z.RSD> experimental vs log(CN)", "<z.RSD> no-selection vs log(CN)", "<z.RSD> selection vs log(CN)"),
                     "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation structure (<z.RSD>) - sequence (CN)")

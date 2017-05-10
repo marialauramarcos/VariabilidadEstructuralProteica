@@ -329,52 +329,52 @@ cc.z.RSD = data.frame(cc.z.RSD.exp.mut, cc.z.RSD.exp.medium, cc.z.RSD.mut.medium
 cc.z.RSD = cc.z.RSD[1:8, ]
 cc.z.RSD = rbind(cc.z.RSD, colMeans(cc.z.RSD))
 family = as.character(input$family[1:8])
-cc.z.RSD = data.frame(c(family, "mean"), cc.z.RSD)
-colnames(cc.z.RSD) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
+cc.z.RSD_CA = data.frame(c(family, "mean"), cc.z.RSD)
+colnames(cc.z.RSD_CA) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
 
-write.csv(cc.z.RSD, file = "cc_z.RSD_CA.csv")
+write.csv(cc.z.RSD_CA, file = "cc_z.RSD_CA.csv")
 
 cc.Pn = data.frame(cc.Pn.exp.mut, cc.Pn.exp.medium, cc.Pn.mut.medium)
 cc.Pn = cc.Pn[1:8, ]
 cc.Pn = rbind(cc.Pn, colMeans(cc.Pn))
 family = as.character(input$family[1:8])
-cc.Pn = data.frame(c(family, "mean"), cc.Pn)
-colnames(cc.Pn) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
+cc.Pn_CA = data.frame(c(family, "mean"), cc.Pn)
+colnames(cc.Pn_CA) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
 
-write.csv(cc.Pn, file = "cc_Pn_CA.csv")
+write.csv(cc.Pn_CA, file = "cc_Pn_CA.csv")
 
 cc.Pn.100 = data.frame(cc.Pn.100.exp.mut, cc.Pn.100.exp.medium, cc.Pn.100.mut.medium)
-cc.Pn = cc.Pn.100[1:8, ]
-cc.Pn = rbind(cc.Pn, colMeans(cc.Pn))
+cc.Pn.100 = cc.Pn.100[1:8, ]
+cc.Pn.100 = rbind(cc.Pn.100, colMeans(cc.Pn.100))
 family = as.character(input$family[1:8])
-cc.Pn = data.frame(c(family, "mean"), cc.Pn)
-colnames(cc.Pn) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
+cc.Pn.100_CA = data.frame(c(family, "mean"), cc.Pn.100)
+colnames(cc.Pn.100_CA) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
 
-write.csv(cc.Pn, file = "cc_Pn_100_CA.csv")
+write.csv(cc.Pn.100_CA, file = "cc_Pn_100_CA.csv")
 
 cc.MSF = data.frame(cc.MSF.exp.mut, cc.MSF.exp.medium, cc.MSF.mut.medium)
 cc.MSF = cc.MSF[1:8, ]
 cc.MSF = rbind(cc.MSF, colMeans(cc.MSF))
 family = as.character(input$family[1:8])
-cc.MSF = data.frame(c(family, "mean"), cc.MSF)
-colnames(cc.MSF) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
+cc.MSF_CA = data.frame(c(family, "mean"), cc.MSF)
+colnames(cc.MSF_CA) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
 
-write.csv(cc.MSF, file = "cc_MSF_CA.csv")
+write.csv(cc.MSF_CA, file = "cc_MSF_CA.csv")
 
 cc.nH = data.frame(cc.nH.exp.mut, cc.nH.exp.medium, cc.nH.mut.medium)
 cc.nH = cc.nH[1:8, ]
 cc.nH = rbind(cc.nH, colMeans(cc.nH))
 family = as.character(input$family[1:8])
-cc.nH = data.frame(c(family, "mean"), cc.nH)
-colnames(cc.nH) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
+cc.nH_CA = data.frame(c(family, "mean"), cc.nH)
+colnames(cc.nH_CA) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
 
-write.csv(cc.nH, file = "cc_nH_CA.csv")
+write.csv(cc.nH_CA, file = "cc_nH_CA.csv")
 
 cc.nH.100 = data.frame(cc.nH.100.exp.mut, cc.nH.100.exp.medium, cc.nH.100.mut.medium)
-cc.nH = cc.nH.100[1:8, ]
-cc.nH = rbind(cc.nH, colMeans(cc.nH))
+cc.nH.100 = cc.nH.100[1:8, ]
+cc.nH.100 = rbind(cc.nH.100, colMeans(cc.nH.100))
 family = as.character(input$family[1:8])
-cc.nH = data.frame(c(family, "mean"), cc.nH)
-colnames(cc.nH) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
+cc.nH.100_CA = data.frame(c(family, "mean"), cc.nH.100)
+colnames(cc.nH.100_CA) = c("family", "exp-mut-R0.1", "exp-mut-R0.2", "exp-mut-R0.3", "exp-sel-R0.1", "exp-sel-R0.2", "exp-sel-R0.3", "mut-sel-R0.1", "mut-sel-R0.2", "mut-sel-R0.3")
 
-write.csv(cc.nH, file = "cc_nH_100_CA.csv")
+write.csv(cc.nH.100_CA, file = "cc_nH_100_CA.csv")

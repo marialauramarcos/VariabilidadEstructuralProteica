@@ -78,7 +78,7 @@ mean.nR.exp = vscale(mean.nR.exp[which(!is.na(mean.nR.exp))])
 mean.nR.mut = vscale(mean.nR.mut[which(!is.na(mean.nR.mut))])
 mean.nR.medium = vscale(mean.nR.medium[which(!is.na(mean.nR.medium))])
 
-plot(mean.nR.exp, ylab = "<z.nR>", xlab = "mode", col = "blue")
+plot(mean.nR.exp, ylab = "<nR>", xlab = "mode", col = "blue")
 points(mean.nR.mut, col = "green")
 points(mean.nR.medium, col = "red")
 
@@ -98,20 +98,20 @@ par(pty = "s")
 
 plot(x = mean.nR.exp, 
      y = mean.nR.mut, 
-     xlab = "<z.nR> experimental", 
-     ylab = "<z.nR> no-selection")
+     xlab = "<nR> experimental", 
+     ylab = "<nR> no-selection")
 abline(0, 1)
 
 plot(x = mean.nR.exp, 
      y = mean.nR.medium, 
-     xlab = "<z.nR> experimental", 
-     ylab = "<z.nR> selection")
+     xlab = "<nR> experimental", 
+     ylab = "<nR> selection")
 abline(0, 1)
 
 plot(x = mean.nR.mut, 
      y = mean.nR.medium, 
-     xlab = "<z.nR> no-selection", 
-     ylab = "<z.nR> selection")
+     xlab = "<nR> no-selection", 
+     ylab = "<nR> selection")
 abline(0, 1)
 ```
 

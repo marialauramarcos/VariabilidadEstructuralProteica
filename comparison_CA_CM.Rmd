@@ -288,11 +288,11 @@ for (i in (1:n.sites)) {
 }
 
 ## calculate corelations
-r.p.accept.mut.CN = cor(p.accept.mut, CN)
+r.p.accept.mut.CN = cor(p.accept.mut, log(CN))
 r.p.accept.mut.score = cor(p.accept.mut, score)
-r.score.CN = cor(score, CN)
+r.score.CN = cor(score, log(CN))
 
-cor.df = data.frame("Comparison CA" = c("log(paccept no-selection) vs CN", "log(paccept no-selection) vs score", "score vs CN"),
+cor.df = data.frame("Comparison CA" = c("paccept no-selection vs log(CN)", "paccept no-selection vs score", "score vs log(CN)"),
                     "R" = c(r.p.accept.mut.CN , r.p.accept.mut.score, r.score.CN))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
@@ -301,11 +301,11 @@ print("<paccept no-selection>")
 print(mean(p.accept.mut))
 
 ## calculate corelations
-r.p.accept.medium.sel.CN = cor(log(p.accept.medium.sel), CN)
-r.p.accept.medium.sel.score = cor(log(p.accept.medium.sel), score)
-r.score.CN = cor(score, CN)
+r.p.accept.medium.sel.CN = cor(p.accept.medium.sel, log(CN))
+r.p.accept.medium.sel.score = cor(p.accept.medium.sel, score)
+r.score.CN = cor(score, log(CN))
 
-cor.df = data.frame("Comparison CA" = c("log(paccept selection) vs CN", "log(paccept selection) vs score", "score vs CN"),
+cor.df = data.frame("Comparison CA" = c("paccept selection vs log(CN)", "paccept selection vs score", "score vs log(CN)"),
                     "R" = c(r.p.accept.medium.sel.CN , r.p.accept.medium.sel.score, r.score.CN))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
@@ -357,11 +357,11 @@ for (i in (1:n.sites)) {
 }
 
 ## calculate corelations
-r.p.accept.mut.CN = cor(p.accept.mut, CN)
+r.p.accept.mut.CN = cor(p.accept.mut, log(CN))
 r.p.accept.mut.score = cor(p.accept.mut, score)
-r.score.CN = cor(score, CN)
+r.score.CN = cor(score, log(CN))
 
-cor.df = data.frame("Comparison CM" = c("log(paccept no-selection) vs CN", "log(paccept no-selection) vs score", "score vs CN"),
+cor.df = data.frame("Comparison CM" = c("paccept no-selection vs log(CN)", "paccept no-selection vs score", "score vs log(CN)"),
                     "R" = c(r.p.accept.mut.CN , r.p.accept.mut.score, r.score.CN))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
@@ -370,11 +370,11 @@ print("<paccept no-selection>")
 print(mean(p.accept.mut))
 
 ## calculate corelations
-r.p.accept.medium.sel.CN = cor(log(p.accept.medium.sel), CN)
-r.p.accept.medium.sel.score = cor(log(p.accept.medium.sel), score)
-r.score.CN = cor(score, CN)
+r.p.accept.medium.sel.CN = cor(p.accept.medium.sel, log(CN))
+r.p.accept.medium.sel.score = cor(p.accept.medium.sel, score)
+r.score.CN = cor(score, log(CN))
 
-cor.df = data.frame("Comparison CM" = c("log(paccept selection) vs CN", "log(paccept selection) vs score", "score vs CN"),
+cor.df = data.frame("Comparison CM" = c("paccept selection vs log(CN)", "paccept selection vs score", "score vs log(CN)"),
                     "R" = c(r.p.accept.medium.sel.CN , r.p.accept.medium.sel.score, r.score.CN))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
@@ -563,14 +563,14 @@ d.mut = subset(d, dataset == "no-selection")
 d.medium = subset(d, dataset == "selection")
 
 # calculate cors
-r.exp.mut = cor(d.exp$median.Pn, d.mut$median.Pn)
-r.exp.medium = cor(d.exp$median.Pn, d.medium$median.Pn)
-r.mut.medium = cor(d.mut$median.Pn, d.medium$median.Pn)
+r.exp.mut = cor(d.exp$median.Pn[1:100], d.mut$median.Pn[1:100])
+r.exp.medium = cor(d.exp$median.Pn[1:100], d.medium$median.Pn[1:100])
+r.mut.medium = cor(d.mut$median.Pn[1:100], d.medium$median.Pn[1:100])
 
 # save data
-CA.mean.exp = d.exp$median.Pn
-CA.mean.mut = d.mut$median.Pn
-CA.mean.medium = d.medium$median.Pn
+CA.mean.exp = d.exp$median.Pn[1:100]
+CA.mean.mut = d.mut$median.Pn[1:100]
+CA.mean.medium = d.medium$median.Pn[1:100]
 
 CA.se.exp = d.exp$se.z.RSD
 CA.se.mut = d.mut$se.z.RSD
@@ -590,14 +590,14 @@ d.mut = subset(d, dataset == "no-selection")
 d.medium = subset(d, dataset == "selection")
 
 # calculate cors
-r.exp.mut = cor(d.exp$median.Pn, d.mut$median.Pn)
-r.exp.medium = cor(d.exp$median.Pn, d.medium$median.Pn)
-r.mut.medium = cor(d.mut$median.Pn, d.medium$median.Pn)
+r.exp.mut = cor(d.exp$median.Pn[1:100], d.mut$median.Pn[1:100])
+r.exp.medium = cor(d.exp$median.Pn[1:100], d.medium$median.Pn[1:100])
+r.mut.medium = cor(d.mut$median.Pn[1:100], d.medium$median.Pn[1:100])
 
 # save data
-CM.mean.exp = d.exp$median.Pn
-CM.mean.mut = d.mut$median.Pn
-CM.mean.medium = d.medium$median.Pn
+CM.mean.exp = d.exp$median.Pn[1:100]
+CM.mean.mut = d.mut$median.Pn[1:100]
+CM.mean.medium = d.medium$median.Pn[1:100]
 
 CM.se.exp = d.exp$se.z.RSD
 CM.se.mut = d.mut$se.z.RSD
@@ -971,14 +971,14 @@ d.mut = subset(d, dataset == "no-selection")
 d.medium = subset(d, dataset == "selection")
 
 # calculate cors
-r.exp.mut = cor(d.exp$mean.nH, d.mut$mean.nH)
-r.exp.medium = cor(d.exp$mean.nH, d.medium$mean.nH)
-r.mut.medium = cor(d.mut$mean.nH, d.medium$mean.nH)
+r.exp.mut = cor(d.exp$mean.nH[1:100], d.mut$mean.nH[1:100])
+r.exp.medium = cor(d.exp$mean.nH[1:100], d.medium$mean.nH[1:100])
+r.mut.medium = cor(d.mut$mean.nH[1:100], d.medium$mean.nH[1:100])
 
 # save data
-CA.mean.exp = d.exp$mean.nH
-CA.mean.mut = d.mut$mean.nH
-CA.mean.medium = d.medium$mean.nH
+CA.mean.exp = d.exp$mean.nH[1:100]
+CA.mean.mut = d.mut$mean.nH[1:100]
+CA.mean.medium = d.medium$mean.nH[1:100]
 
 CA.se.exp = d.exp$se.z.RSD
 CA.se.mut = d.mut$se.z.RSD
@@ -998,14 +998,14 @@ d.mut = subset(d, dataset == "no-selection")
 d.medium = subset(d, dataset == "selection")
 
 # calculate cors
-r.exp.mut = cor(d.exp$mean.nH, d.mut$mean.nH)
-r.exp.medium = cor(d.exp$mean.nH, d.medium$mean.nH)
-r.mut.medium = cor(d.mut$mean.nH, d.medium$mean.nH)
+r.exp.mut = cor(d.exp$mean.nH[1:100], d.mut$mean.nH[1:100])
+r.exp.medium = cor(d.exp$mean.nH[1:100], d.medium$mean.nH[1:100])
+r.mut.medium = cor(d.mut$mean.nH[1:100], d.medium$mean.nH[1:100])
 
 # save data
-CM.mean.exp = d.exp$mean.nH
-CM.mean.mut = d.mut$mean.nH
-CM.mean.medium = d.medium$mean.nH
+CM.mean.exp = d.exp$mean.nH[1:100]
+CM.mean.mut = d.mut$mean.nH[1:100]
+CM.mean.medium = d.medium$mean.nH[1:100]
 
 CM.se.exp = d.exp$se.z.RSD
 CM.se.mut = d.mut$se.z.RSD

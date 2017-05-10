@@ -58,71 +58,75 @@ protein.exp = protein.exp[protein.exp != reference]
 print(protein.exp)
 ```
 ```{r prepare-mode-data}
+
 # prepare the data
 nH.exp = read.csv(nH.exp.fname, header = T)
+rownames(nH.exp) = paste("mut", rownames(nH.exp), sep = "")
 nH.mut = read.csv(nH.mut.fname, header = T)
+rownames(nH.mut) = paste("mut", rownames(nH.mut), sep = "")
 nH.medium = read.csv(nH.medium.fname, header = T)
+rownames(nH.medium) = paste("mut", rownames(nH.medium), sep = "")
+    
+mode = seq(ncol(nH.medium))
+    
+# Prepare modeComparison
+tnH.medium = as.data.frame(t(as.matrix(nH.medium)))
+tnH.medium = cbind(data.frame("mode" = mode), tnH.medium)
+modeComparison.medium = melt(tnH.medium, "mode", variable.name = "protein", value.name = "nH")
+modeComparison.medium = ddply(modeComparison.medium, "protein", mutate, "nH" = nH / mean(nH, na.rm = T))
+    
+tnH.mut = as.data.frame(t(as.matrix(nH.mut)))
+tnH.mut = cbind(data.frame("mode" = mode), tnH.mut)
+modeComparison.mut = melt(tnH.mut, "mode", variable.name = "protein", value.name = "nH")
+modeComparison.mut = ddply(modeComparison.mut, "protein", mutate, "nH" = nH / mean(nH, na.rm = T))
+    
+tnH.exp = as.data.frame(t(as.matrix(nH.exp)))
+tnH.exp = cbind(data.frame("mode" = mode), tnH.exp)
+modeComparison.exp = melt(tnH.exp, "mode", variable.name = "protein", value.name = "nH")
+modeComparison.exp = ddply(modeComparison.exp, "protein", mutate, "nH" = nH / mean(nH, na.rm = T))
+    
+# modeComparison.exp has NA's because for proteins with gaps when using Keff there're less modes
+#print("Warning: modeComparison.exp <- na.omit(modeComparison.exp)")
+modeComparison.exp <- na.omit(modeComparison.exp)
+modeComparison.medium <- na.omit(modeComparison.medium)
+modeComparison.mut <- na.omit(modeComparison.mut)
+    
+modeComparison.all.datasets = rbind(data.frame("dataset" = "exp", modeComparison.exp),                                                   data.frame("dataset" = "mut", modeComparison.mut),
+                                    data.frame("dataset" = "medium", modeComparison.medium))
+    
+dat = modeComparison.all.datasets
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
+    
+# calculate dataset of means
+d = ddply(dat,c("dataset", "mode"), function(x) {
+    mean.nH = mean(x$nH)
+    data.frame(mean.nH)
+    })
+    
+    # calculate correlations berween profiles
+    d.exp = subset(d, dataset == "exp")
+    d.mut = subset(d, dataset == "no-selection")
+    d.medium = subset(d, dataset == "selection")
 ```
 ### Dynamical divergence along normal modes
 
-In this section we consider dynamical divergence using normal modes coordinates. We calculated <nH> and we z-normalized profiles.
+In this section we consider dynamical divergence using normal modes coordinates. We calculated <nH> and we normalized profiles.
 
-```{r comparison-of-means, fig.cap = "blue = experimental - green = no-selection - red = selection"}
-# calculate means
-mean.nH.exp = colMeans(nH.exp, na.rm = T)
-mean.nH.mut = colMeans(nH.mut)
-mean.nH.medium = colMeans(nH.medium)
-
-# scale profiles
-mean.nH.exp = vscale(mean.nH.exp[which(!is.na(mean.nH.exp))])
-mean.nH.mut = vscale(mean.nH.mut[which(!is.na(mean.nH.mut))])
-mean.nH.medium = vscale(mean.nH.medium[which(!is.na(mean.nH.medium))])
-
-plot(mean.nH.exp, ylab = "<z.nH>", xlab = "mode", col = "blue")
-points(mean.nH.mut, col = "green")
-points(mean.nH.medium, col = "red")
-
-r.exp.mut = cor(mean.nH.exp, mean.nH.mut)
-r.exp.medium = cor(mean.nH.exp, mean.nH.medium)
-r.mut.medium = cor(mean.nH.mut, mean.nH.medium)
-
-cor.df = data.frame("comparison" = c("exp vs no-selection", "exp vs selection", "no-selection vs selection"),
-                    "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
-knitr::kable(cor.df, digits = 2)
-```
-
-```{r vs-mean-plots}
-
-# plot comparative profiles 
-par(pty = "s")
-
-plot(x = mean.nH.exp, 
-     y = mean.nH.mut, 
-     xlab = "<z.nH> experimental", 
-     ylab = "<z.nH> no-selection")
-abline(0, 1)
-
-plot(x = mean.nH.exp, 
-     y = mean.nH.medium, 
-     xlab = "<z.nH> experimental", 
-     ylab = "<z.nH> selection")
-abline(0, 1)
-
-plot(x = mean.nH.mut, 
-     y = mean.nH.medium, 
-     xlab = "<z.nH> no-selection", 
-     ylab = "<z.nH> selection")
-abline(0, 1)
+```{r means}
+# get means
+mean.nH.exp =  subset(d, dataset == "exp")$mean.nH
+mean.nH.mut = d.mut = subset(d, dataset == "no-selection")$mean.nH
+mean.nH.medium = subset(d, dataset == "selection")$mean.nH
 ```
 
 ```{r comparison-of-means-100-modes}
-
 # get first 100 modes and re-scale
-mean.nH.exp = vscale(mean.nH.exp[1:100])
-mean.nH.mut = vscale(mean.nH.mut[1:100])
-mean.nH.medium = vscale(mean.nH.medium[1:100])
+mean.nH.exp = mean.nH.exp[1:100]
+mean.nH.mut = mean.nH.mut[1:100]
+mean.nH.medium = mean.nH.medium[1:100]
 
-plot(mean.nH.exp, ylab = "<z.nH>", xlab = "mode", col = "blue")
+plot(mean.nH.exp, ylab = "<nH>", xlab = "mode", col = "blue")
 points(mean.nH.mut, col = "green")
 points(mean.nH.medium, col = "red")
 
@@ -140,60 +144,19 @@ knitr::kable(cor.df, digits = 2)
 # plot comparative profiles 
 plot(x = mean.nH.exp, 
      y = mean.nH.mut, 
-     xlab = "<z.nH> experimental", 
-     ylab = "<z.nH> no-selection")
+     xlab = "<nH> experimental", 
+     ylab = "<nH> no-selection")
 abline(0, 1)
 
 plot(x = mean.nH.exp, 
      y = mean.nH.medium, 
-     xlab = "<z.nH> experimental", 
-     ylab = "<z.nH> selection")
+     xlab = "<nH> experimental", 
+     ylab = "<nH> selection")
 abline(0, 1)
 
 plot(x = mean.nH.mut, 
      y = mean.nH.medium, 
-     xlab = "<z.nH> no-selection", 
-     ylab = "<z.nH> selection")
-abline(0, 1)
-```
-```{r comparison-of-means-20-modes}
-
-# get first 100 modes and re-scale
-mean.nH.exp = vscale(mean.nH.exp[1:20])
-mean.nH.mut = vscale(mean.nH.mut[1:20])
-mean.nH.medium = vscale(mean.nH.medium[1:20])
-
-plot(mean.nH.exp, ylab = "<z.nH>", xlab = "mode", col = "blue")
-points(mean.nH.mut, col = "green")
-points(mean.nH.medium, col = "red")
-
-r.exp.mut = cor(mean.nH.exp, mean.nH.mut)
-r.exp.medium = cor(mean.nH.exp, mean.nH.medium)
-r.mut.medium = cor(mean.nH.mut, mean.nH.medium)
-
-cor.df = data.frame("comparison" = c("exp vs no-selection", "exp vs selection", "no-selection vs selection"),
-                    "R" = c(r.exp.mut, r.exp.medium, r.mut.medium))
-knitr::kable(cor.df, digits = 2)
-```
-
-```{r vs-mean-plots-20-modes}
-
-# plot comparative profiles 
-plot(x = mean.nH.exp, 
-     y = mean.nH.mut, 
-     xlab = "<z.nH> experimental", 
-     ylab = "<z.nH> no-selection")
-abline(0, 1)
-
-plot(x = mean.nH.exp, 
-     y = mean.nH.medium, 
-     xlab = "<z.nH> experimental", 
-     ylab = "<z.nH> selection")
-abline(0, 1)
-
-plot(x = mean.nH.mut, 
-     y = mean.nH.medium, 
-     xlab = "<z.nH> no-selection", 
-     ylab = "<z.nH> selection")
+     xlab = "<nH> no-selection", 
+     ylab = "<nH> selection")
 abline(0, 1)
 ```
