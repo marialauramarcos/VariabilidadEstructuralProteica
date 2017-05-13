@@ -18,7 +18,7 @@ input <- read.csv(input.fname)
 
 ## comparisons all families
 rmarkdown::render('comparison_families.Rmd', 
-                  output_file =  paste("OUT/report_comparison_families", ".html", sep = ''))
+                  output_file =  paste("OUT/report_comparison_selected_families", ".html", sep = ''))
 
 # satart a loop for each family
 for (f in (1:nrow(input))) { 
