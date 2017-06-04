@@ -20,7 +20,12 @@ library(plyr)
 library(quantreg)
 library(bio3d)
 
+ReadCA.fname <- "FUNCTIONS/ReadCA.R"
+CalculateSideChainCM.fname <- "FUNCTIONS/CalculateSideChainCM.R"
+
 # load functions
+source(ReadCA.fname) 
+source(CalculateSideChainCM.fname)
 source(file.path(data.dir, "multiplot.R"))
 source(file.path(data.dir, "my-functions.R"))
 source("FUNCTIONS/readCA.R") 
@@ -120,6 +125,20 @@ AA = ref.pdb.ca$resid
 resno = ref.pdb.ca$resno
 pdb.info = data.frame(resno, AA, CN)
 names(pdb.info) = c("resno", "AA", paste("CN", as.character(R0), sep = ""))
+
+if (data.dir == "OUT/out_subset_CM_ANM") { 
+
+  # Read PDB of p.ref
+  pdb.ca = ReadCA(reference.pdb.fname, chain.p.ref)
+  r.ca.p.ref = pdb.ca$xyz.calpha
+  n.aa = pdb.ca$n.sites
+  
+  r.CM.p.ref = CalculateSideChainCM(reference.pdb.fname, chain.p.ref)
+  n.CM = ncol(r.CM.p.ref)
+
+  cmap.CM = cmap(r.CM.p.ref, dcut = R0, scut = 0, mask.lower = F)
+  CN = rowSums(cmap.CM, na.rm = T) - 2
+}
 
 # add pdb.info to site.info
 site.info = cbind(site.info, pdb.info)
@@ -484,7 +503,7 @@ print(mean(p.accept.medium.sel))
 ## plot
 par(pty = "s")
 
-plot(x = d.exp$mean.z.RSD, y = log(CN), xlab = "<zRSDi> experimental ")
+plot(x = d.exp$mean.z.RSD, y = log(CN), xlab = "<zRSDi> experimental")
 plot(x = d.mut$mean.z.RSD, y = log(CN), xlab = "<zRSDi> no-selection")
 plot(x = d.medium$mean.z.RSD, y = log(CN), xlab = "<zRSDi> selection")
 
@@ -496,5 +515,15 @@ r.medium.mean.z.RSD.CN = cor(d.medium$mean.z.RSD, log(CN))
 cor.df = data.frame("comparison" = c("<z.RSD> experimental vs log(CN)", "<z.RSD> no-selection vs log(CN)", "<z.RSD> selection vs log(CN)"),
                     "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
 
-knitr::kable(cor.df, digits = 2, caption = "Correlation structure (<z.RSD>) - sequence (CN)")
+knitr::kable(cor.df, digits = 2, caption = "Pearson Correlation structure (<z.RSD>) - sequence (CN)")
+
+## calculate correlations
+r.exp.mean.z.RSD.CN = cor(d.exp$mean.z.RSD, log(CN), method = "spearman")
+r.mut.mean.z.RSD.CN = cor(d.mut$mean.z.RSD, log(CN), method = "spearman")
+r.medium.mean.z.RSD.CN = cor(d.medium$mean.z.RSD, log(CN), method = "spearman")
+
+cor.df = data.frame("comparison" = c("<z.RSD> experimental vs log(CN)", "<z.RSD> no-selection vs log(CN)", "<z.RSD> selection vs log(CN)"),
+                    "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Spearman Correlation structure (<z.RSD>) - sequence (CN)")
 ```

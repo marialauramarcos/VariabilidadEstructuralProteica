@@ -112,6 +112,15 @@ resno = ref.pdb.ca$resno
 pdb.info = data.frame(resno, AA, CN)
 names(pdb.info) = c("resno", "AA", paste("CN", as.character(R0), sep = ""))
 
+# calculate WCN
+
+r.p.ref = matrix(ref.pdb$xyz[inds$xyz], nrow=3)
+dist.r.p.ref = dist.xyz(t(r.p.ref))
+WCN = c()
+for (i in (1:ncol(r.p.ref))) {
+  WCN[i] = sum(1/dist.r.p.ref[i, -i]^2)
+}
+
 # add pdb.info to site.info
 site.info = cbind(site.info[indexes.core, ], pdb.info[indexes.core, ])
 ```
@@ -346,6 +355,7 @@ knitr::kable(cor.df, digits = 2, caption = "Correlation between differences in <
 ```{r correlation-da-CN} 
 ## CN core
 CN = CN[indexes.core]
+WCN = WCN[indexes.core]
 
 ## calculate correlations between profiles
 r.min.da.CA.CN = cor(CN[-active.sites], m.min.da.CM.CA$min.da.CA[indexes.core][-active.sites])
@@ -450,5 +460,125 @@ cor.df = data.frame("comparison" = c("paccept selection vs log(CN)", "paccept se
                     "R" = c(r.p.accept.medium.sel.CN , r.p.accept.medium.sel.score, r.score.CN))
 
 knitr::kable(cor.df, digits = 2, caption = "Correlation between sequence profiles")
+
+```
+
+
+### Sequence - structure comparison
+
+```{r structure-CN-comparison}
+
+
+# compare profiles
+## plot
+par(pty = "s")
+
+plot(x = d.exp$mean.z.RSD, y = log(CN), xlab = "<zRSDi> experimental")
+plot(x = d.mut$mean.z.RSD, y = log(CN), xlab = "<zRSDi> no-selection")
+plot(x = d.medium$mean.z.RSD, y = log(CN), xlab = "<zRSDi> selection")
+
+## calculate correlations
+r.exp.mean.z.RSD.CN = cor(d.exp$mean.z.RSD, log(CN))
+r.mut.mean.z.RSD.CN = cor(d.mut$mean.z.RSD, log(CN))
+r.medium.mean.z.RSD.CN = cor(d.medium$mean.z.RSD, log(CN))
+
+cor.df = data.frame("comparison" = c("<z.RSD> experimental vs log(CN)", "<z.RSD> no-selection vs log(CN)", "<z.RSD> selection vs log(CN)"),
+                    "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Pearson Correlation structure (<z.RSD>) - sequence (CN)")
+
+## calculate correlations
+r.exp.mean.z.RSD.CN = cor(d.exp$mean.z.RSD, log(CN), method = "spearman")
+r.mut.mean.z.RSD.CN = cor(d.mut$mean.z.RSD, log(CN), method = "spearman")
+r.medium.mean.z.RSD.CN = cor(d.medium$mean.z.RSD, log(CN), method = "spearman")
+
+cor.df = data.frame("comparison" = c("<z.RSD> experimental vs log(CN)", "<z.RSD> no-selection vs log(CN)", "<z.RSD> selection vs log(CN)"),
+                    "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Spearman Correlation structure (<z.RSD>) - sequence (CN)")
+
+# mean profiles
+
+CN.simple = CN[!duplicated(CN)]
+
+CN.i.mean = c()
+exp.mean.z.RSD.i.mean = c()
+mut.mean.z.RSD.i.mean = c()
+medium.mean.z.RSD.i.mean = c()
+
+count = 0
+for (i in (CN.simple)) {
+  count = count + 1
+  index = 0
+  for (j in (1:length(CN))){
+    if (CN[j] == i) {
+      index = cbind(index, j)
+    } 
+  }
+  CN.i.mean[count] = mean(CN[index])
+  exp.mean.z.RSD.i.mean[count] = mean(d.exp$mean.z.RSD[index])
+  mut.mean.z.RSD.i.mean[count] = mean(d.mut$mean.z.RSD[index])
+  medium.mean.z.RSD.i.mean[count] = mean(d.medium$mean.z.RSD[index])
+}
+
+## plot
+par(pty = "s")
+
+plot(x = exp.mean.z.RSD.i.mean, y = log(CN.i.mean), xlab = "mean <zRSDi> experimental for each CN", ylab = "log(CN)")
+plot(x = mut.mean.z.RSD.i.mean, y = log(CN.i.mean), xlab = "mean <zRSDi> no-selection for each CN", ylab = "log(CN)")
+plot(x = medium.mean.z.RSD.i.mean, y = log(CN.i.mean), xlab = "mean <zRSDi> selection for each CN", ylab = "log(CN)")
+
+## calculate correlations
+r.exp.mean.z.RSD.CN = cor(exp.mean.z.RSD.i.mean, log(CN.i.mean), method = "s")
+r.mut.mean.z.RSD.CN = cor(mut.mean.z.RSD.i.mean, log(CN.i.mean), method = "s")
+r.medium.mean.z.RSD.CN = cor(medium.mean.z.RSD.i.mean, log(CN.i.mean), method = "s")
+
+cor.df = data.frame("comparison" = c("<z.RSD> experimental vs log(CN)", "<z.RSD> no-selection vs log(CN)", "<z.RSD> selection vs log(CN)"),
+                    "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Spearman Correlation structure (<z.RSD>) - sequence (CN)")
+
+## calculate correlations
+r.exp.mean.z.RSD.CN = cor(exp.mean.z.RSD.i.mean, log(CN.i.mean), method = "p")
+r.mut.mean.z.RSD.CN = cor(mut.mean.z.RSD.i.mean, log(CN.i.mean), method = "p")
+r.medium.mean.z.RSD.CN = cor(medium.mean.z.RSD.i.mean, log(CN.i.mean), method = "p")
+
+cor.df = data.frame("comparison" = c("<z.RSD> experimental vs log(CN)", "<z.RSD> no-selection vs log(CN)", "<z.RSD> selection vs log(CN)"),
+                    "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Pearson Correlation structure (<z.RSD>) - sequence (CN)")
+```
+
+### Sequence - structure comparison WCN
+
+```{r structure-WCN-comparison}
+
+# compare profiles
+## plot
+par(pty = "s")
+
+plot(x = d.exp$mean.z.RSD, y = log(WCN), xlab = "<zRSDi> experimental")
+plot(x = d.mut$mean.z.RSD, y = log(WCN), xlab = "<zRSDi> no-selection")
+plot(x = d.medium$mean.z.RSD, y = log(WCN), xlab = "<zRSDi> selection")
+
+## calculate correlations
+r.exp.mean.z.RSD.CN = cor(d.exp$mean.z.RSD, log(WCN))
+r.mut.mean.z.RSD.CN = cor(d.mut$mean.z.RSD, log(WCN))
+r.medium.mean.z.RSD.CN = cor(d.medium$mean.z.RSD, log(WCN))
+
+cor.df = data.frame("comparison" = c("<z.RSD> experimental vs log(WCN)", "<z.RSD> no-selection vs log(WCN)", "<z.RSD> selection vs log(WCN)"),
+                    "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Pearson Correlation structure (<z.RSD>) - sequence (WCN)")
+
+## calculate correlations
+r.exp.mean.z.RSD.CN = cor(d.exp$mean.z.RSD, log(WCN), method = "spearman")
+r.mut.mean.z.RSD.CN = cor(d.mut$mean.z.RSD, log(WCN), method = "spearman")
+r.medium.mean.z.RSD.CN = cor(d.medium$mean.z.RSD, log(WCN), method = "spearman")
+
+cor.df = data.frame("comparison" = c("<z.RSD> experimental vs log(WCN)", "<z.RSD> no-selection vs log(WCN)", "<z.RSD> selection vs log(WCN)"),
+                    "R" = c(r.exp.mean.z.RSD.CN , r.mut.mean.z.RSD.CN, r.medium.mean.z.RSD.CN))
+
+knitr::kable(cor.df, digits = 2, caption = "Spearman Correlation structure (<z.RSD>) - sequence (WCN)")
 
 ```

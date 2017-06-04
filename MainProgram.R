@@ -38,7 +38,7 @@ library(seqinr)
 data.dir <- "DATA"
 
 # set Elastic Network Model: "ANM" or "pfANM"
-model <- "ANM"
+model <- "pfANM"
 
 # output dir
 if (model == "ANM") out.dir <- "OUT/out_subset_CA_ANM"

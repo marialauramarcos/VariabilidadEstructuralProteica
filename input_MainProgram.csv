@@ -1,5 +1,15 @@
 family,p.ref,chain.p.ref,n.mut.p,enm,fmax,R0.CA,R0.CM,rotate,heme,calculate.betas,analyze.family,generate.mutants,analyze.experimental.theoretical,K.analysis
 
+sh3,1lcka,F,10,PFANM,2,NC,NC,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
+snakesToxin,1ntx,S,10,PFANM,2,NC,NC,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
+az,1bxva,G,10,PFANM,2,NC,NC,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
+globins,1a4fb,d,10,PFANM,2,NC,NC,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
+fabp,1hmt,D,10,PFANM,2,NC,NC,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
+phoslip,1jiaa,L,10,PFANM,2,NC,NC,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
+rrm,1fxla2,G,10,PFANM,2,NC,NC,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
+serinProteases,1mcta,G,10,PFANM,2,NC,NC,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
+FAKE,FAKE,d,10,ANM,2,10,7.5,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
+
 igvar_l,1reilv,J,10,ANM,2,7.5,7.5,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
 igvar_h,1fdlhv,S,10,ANM,2,7.5,7.5,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff
 alpha_amylase_N,7taa,L,10,ANM,2,7.5,7.5,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,Keff

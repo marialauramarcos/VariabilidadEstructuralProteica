@@ -69,7 +69,7 @@ CalculateBetas <- function(chain.p.ref,
   betas = seq(0, 10, by = 0.1)
   
   # Set possible sites to mutate
-  sites.to.mutate = seq(1:151) # CA´s coordinates
+  sites.to.mutate = seq(1:ncol(r.p.ref)) # CA´s coordinates
 
   # Create a matrix to save p.accept
   p.accept = matrix(nrow = n.mut.b, ncol = length(betas))

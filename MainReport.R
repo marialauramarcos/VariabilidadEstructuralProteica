@@ -29,17 +29,30 @@ for (f in (1:nrow(input))) {
   chain.p.ref <- as.character(input$chain.p.ref)[f]
   print(family)
   
+  
+  ## pfANM
+  R0 = "NC"
+  data.dir <- paste("OUT/out_subset_CA_pfANM", sep = "")
+
+  ### RMSD
+  rmarkdown::render('analysis-structure-pfANM.Rmd', 
+                    output_file =  paste("OUT/report_structure_pfANM_", family, ".html", sep = ''))
+  
   ## CA
   data.dir <- paste("OUT/out_subset_CA_ANM", sep = "")
   R0 = R0.CA
   
-  ### Pn
-  rmarkdown::render('analysis-structure-normal-modes.Rmd', 
-                    output_file =  paste("OUT/report_structure_CA_normal_modes_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
-  
   ### RMSD
   rmarkdown::render('analysis-structure.Rmd', 
                     output_file =  paste("OUT/report_structure_CA_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### RMSD - SEQUENCE
+  rmarkdown::render('analysis-structure-CN-WCN-exp-2.Rmd', 
+                    output_file =  paste("OUT/report_structure_CN_WCN_", family, ".html", sep = ''))
+  
+  ### Pn
+  rmarkdown::render('analysis-structure-normal-modes.Rmd', 
+                    output_file =  paste("OUT/report_structure_CA_normal_modes_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
   
   ### MSF
   rmarkdown::render('analysis-dynamical-MSF-structure.Rmd', 
@@ -77,6 +90,10 @@ for (f in (1:nrow(input))) {
   ### RMSD
   rmarkdown::render('analysis-structure.Rmd', 
                     output_file =  paste("OUT/report_structure_CM_", family, "_", enm, "_R0_", R0, ".html", sep = ''))
+  
+  ### RMSD vs CN-WCN
+  rmarkdown::render('analysis-structure-CN-WCN.Rmd', 
+                    output_file =  paste("OUT/report_structure-CN-WCN_CM_", family, "_", enm, ".html", sep = ''))
   
   ### MSF
   rmarkdown::render('analysis-dynamical-MSF-structure.Rmd', 
