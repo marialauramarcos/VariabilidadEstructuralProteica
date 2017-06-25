@@ -806,6 +806,11 @@ c.R0 = rep(rep(paste("R0.", seq(number.R0), sep = ""), n.sets/number.R0), number
 comparison = rep(c(rep("exp vs mut",  number.R0), rep("exp vs selection", number.R0), rep("selection vs no-selection",  number.R0)), number.families)
 df.cc.z.RSD_CA = cbind(data.frame("comparison" = comparison, "c.R0" = c.R0), cc.z.RSD = c(t(cc.z.RSD_CA)))
 
+## comparison mut - sel
+plot(x = cc.z.RSD_CA[,3], y = cc.z.RSD_CA[,6], xlab = "cc <z.RSD> exp - <z.RSD> no-selection", ylab = "cc <z.RSD> exp - <z.RSD> selection")
+abline(0,1)
+legend("topleft", paste ("r = ", round(cor(cc.z.RSD_CA[,3], cc.z.RSD_CA[,6]), digits = 2)), bty = "n")
+
 dat = df.cc.z.RSD_CA
 
 d = ddply(dat,c("comparison", "c.R0"), function(x) {
@@ -853,6 +858,11 @@ ggplot(d, aes(x = c.R0, y = cc.mean, col = comparison, fill = comparison)) +
 # prepare the data
 cc.Pn_CA = cc.Pn_CA[1:number.families, 2:ncol(cc.Pn_CA)]
 df.cc.Pn_CA = cbind(data.frame("comparison" = comparison, "c.R0" = c.R0), cc.Pn = c(t(cc.Pn_CA)))
+
+plot(x = cc.Pn_CA[,3], y = cc.Pn_CA[,6], xlab = "cc <Pn> exp -  <Pn> no-selection", ylab = "cc <Pn> exp -  <Pn> selection")
+abline(0,1)
+legend("topleft", paste ("r = ", round(cor(cc.Pn_CA[,3], cc.Pn_CA[,6]), digits = 2)), bty = "n")
+
 
 dat = df.cc.Pn_CA
 
@@ -950,6 +960,12 @@ ggplot(d, aes(x = c.R0, y = cc.mean, col = comparison, fill = comparison)) +
 cc.MSF_CA = cc.MSF_CA[1:number.families, 2:ncol(cc.MSF_CA)]
 df.cc.MSF_CA = cbind(data.frame("comparison" = comparison, "c.R0" = c.R0), cc.MSF = c(t(cc.MSF_CA)))
 
+## comparison mut - sel
+plot(x = cc.MSF_CA[,3], y = cc.MSF_CA[,6], xlab = "cc <MSF> exp - <MSF> no-selection", ylab = "cc <MSF> exp -  <MSF> selection")
+abline(0,1)
+legend("topleft", paste ("r = ", round(cor(cc.MSF_CA[,3], cc.MSF_CA[,6]), digits = 2)), bty = "n")
+
+
 dat = df.cc.MSF_CA
 
 d = ddply(dat,c("comparison", "c.R0"), function(x) {
@@ -997,6 +1013,11 @@ ggplot(d, aes(x = c.R0, y = cc.mean, col = comparison, fill = comparison)) +
 # prepare the data
 cc.nH_CA = cc.nH_CA[1:number.families, 2:ncol(cc.nH_CA)]
 df.cc.nH_CA = cbind(data.frame("comparison" = comparison, "c.R0" = c.R0), cc.nH = c(t(cc.nH_CA)))
+
+## comparison mut - sel
+plot(x = cc.nH_CA[,3], y = cc.nH_CA[,6], xlab = "cc <nH> exp -  <MSF> no-selection", ylab = "cc <nH> exp -  <MSF> selection")
+abline(0,1)
+legend("topleft", paste ("r = ", round(cor(cc.nH_CA[,3], cc.nH_CA[,6]), digits = 2)), bty = "n")
 
 dat = df.cc.nH_CA
 

@@ -1,0 +1,234 @@
+---
+title: "Structural Divergence - Protein dynamics"
+author: "Maria Laura Marcos, Julian Echave"
+output: html_document
+---
+
+# Introduction
+In this report we compare Pn profiles with the fluctuation along normal modes.
+
+```{r setup, include = FALSE}
+# set chunk options
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r load_packages}
+# load packages
+library(ggplot2)
+library(reshape2)
+library(plyr)
+library(quantreg)
+library(bio3d)
+
+# load functions
+source(file.path(data.dir, "multiplot.R"))
+source(file.path(data.dir, "my-functions.R")) 
+```
+
+```{r set_my_colors}
+# set my colors
+myColors = c("blue", "darkgreen", "darkgreen", "red", "red") 
+names(myColors) <- c("exp", "mut", "no-selection", "medium", "selection")
+```
+
+```{r set_run_variables}
+# set significance factors
+f95 = 1.96
+f99 = 2.6
+f999 = 3.3
+```
+
+```{r set_file_names}
+# set input filenames
+## data
+reference.fname = file.path(data.dir, paste(family, "_ref.txt", sep = ""))
+protein_list.fname = file.path(data.dir, paste(family, "_list.txt", sep = ""))
+site.info.fname = file.path(data.dir, paste(p.ref, "_m.da.ca.csv", sep = ""))
+
+## profiles to compare
+### Pn
+Pn.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.Pn.csv", sep = ""))
+Pn.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.Pn.csv", sep = ""))
+Pn.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.Pn.csv", sep = ""))
+
+### energy
+energy.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.va.csv", sep = ""))
+energy.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.va.csv", sep = ""))
+energy.mut.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.va.csv", sep = ""))
+```
+
+```{r set_reference_protein}
+# which is the reference protein?
+reference = as.character(read.table(reference.fname, header = F)[1, 1])
+if (reference != p.ref) {
+  print("Warning: different references")
+}
+```
+
+We studied the `r family` family. 
+We used the ENM `r enm` with R0 = `r R0` to generate mutants.
+We used as reference for the ENM the protein with pdb code `r reference`. 
+We simulated `r n.mut.p` mutants of this reference for each protein of the family.
+The `r family` family is of the type `r type` and consists of the following proteins:
+
+```{r set_experimental_protein_names, comment = ""}
+# experimental protein names
+protein.exp = read.table(protein_list.fname, header = F, stringsAsFactors = F)[, 1]
+protein.exp = protein.exp[protein.exp != reference]
+print(protein.exp)
+```
+
+```{r prepare_site_data}
+# prepare the data
+Pn.exp = read.csv(Pn.exp.fname, header = T)
+rownames(Pn.exp) = paste("exp", rownames(Pn.exp), sep = "")
+energy.exp = read.csv(energy.exp.fname, header = T)
+rownames(energy.exp) = paste("exp", rownames(energy.exp), sep = "")
+
+Pn.mut = read.csv(Pn.mut.fname, header = T)
+rownames(Pn.mut) = paste("mut", rownames(Pn.mut), sep = "")
+energy.mut = read.csv(energy.mut.fname, header = T)
+rownames(energy.mut) = paste("mut", rownames(energy.mut), sep = "")
+
+Pn.medium = read.csv(Pn.medium.fname, header = T)
+rownames(Pn.medium) = paste("medium", rownames(Pn.medium), sep = "")
+energy.medium = read.csv(energy.medium.fname, header = T)
+rownames(energy.medium) = paste("medium", rownames(energy.medium), sep = "")
+```
+
+```{r prepare-mode-data}
+mode = seq(ncol(Pn.medium))
+
+# Prepare modeComparison.medium
+tPn.medium = as.data.frame(t(as.matrix(Pn.medium)))
+tPn.medium = cbind(data.frame("mode" = mode), tPn.medium)
+Pn.medium.long = melt(tPn.medium, "mode", variable.name = "protein", value.name = "Pn")
+
+tenergy.medium = as.data.frame(t(as.matrix(energy.medium)))
+tenergy.medium = cbind(data.frame("mode" = mode), tenergy.medium)
+energy.medium.long = melt(tenergy.medium, "mode", variable.name = "protein", value.name = "energy")
+energy.medium.long$sn2 = 1/energy.medium.long$energy
+
+modeComparison.medium = merge(energy.medium.long, Pn.medium.long, by = c("mode", "protein"))
+modeComparison.medium = ddply(modeComparison.medium, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
+
+# Prepare modeComparison.mut
+tPn.mut = as.data.frame(t(as.matrix(Pn.mut)))
+tPn.mut = cbind(data.frame("mode" = mode), tPn.mut)
+Pn.mut.long = melt(tPn.mut, "mode", variable.name = "protein", value.name = "Pn")
+
+tenergy.mut = as.data.frame(t(as.matrix(energy.mut)))
+tenergy.mut = cbind(data.frame("mode" = mode), tenergy.mut)
+energy.mut.long = melt(tenergy.mut, "mode", variable.name = "protein", value.name = "energy")
+energy.mut.long$sn2 = 1/energy.mut.long$energy
+
+modeComparison.mut = merge(energy.mut.long, Pn.mut.long, by = c("mode", "protein"))
+modeComparison.mut = ddply(modeComparison.mut, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
+
+# Prepare modeComparison.exp
+tPn.exp = as.data.frame(t(as.matrix(Pn.exp)))
+tPn.exp = cbind(data.frame("mode" = mode), tPn.exp)
+Pn.exp.long = melt(tPn.exp, "mode", variable.name = "protein", value.name = "Pn")
+
+tenergy.exp = as.data.frame(t(as.matrix(energy.exp)))
+tenergy.exp = cbind(data.frame("mode" = mode), tenergy.exp)
+energy.exp.long = melt(tenergy.exp, "mode", variable.name = "protein", value.name = "energy")
+energy.exp.long$sn2 = 1/energy.exp.long$energy
+
+modeComparison.exp = merge(energy.exp.long,Pn.exp.long,by=c("mode", "protein"))
+modeComparison.exp = ddply(modeComparison.exp, "protein", mutate, "Pn" = Pn / mean(Pn, na.rm = T))
+
+modeComparison.exp <- na.omit(modeComparison.exp)
+modeComparison.medium <- na.omit(modeComparison.medium)
+modeComparison.mut <- na.omit(modeComparison.mut)
+
+# put simulated and experimental data together
+modeComparison.all.datasets = rbind(data.frame("dataset" = "exp", modeComparison.exp),
+                                    data.frame("dataset" = "mut", modeComparison.mut),
+                                    data.frame("dataset" = "medium", modeComparison.medium))
+
+modeComparison.all.datasets$dataset = factor(modeComparison.all.datasets$dataset, levels = c("exp", "mut", "medium"))
+```
+
+```{r median-vs-mode-energy}
+
+dat = modeComparison.all.datasets
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
+
+# calculate dataset of medians
+
+dat = ddply(dat,c("dataset", "mode"), function(x) {
+    energy.mean = mean(x$energy)
+    Pn.mean = mean(x$Pn)
+    ndata = sum(!is.na(x$Pn))
+    Pn.se = sd(x$Pn, na.rm = T) / sqrt(ndata)
+    data.frame(energy.mean, Pn.mean, Pn.se)
+})
+
+p = ggplot(dat, aes(x = mode, y = Pn.mean, col = dataset, fill = dataset)) +
+    geom_line() +
+    geom_ribbon(aes(ymin = Pn.mean - f95 * Pn.se, ymax = Pn.mean + Pn.se), alpha = .4, show.legend = F) +
+    labs(x = "mode", y = "<Pn>") +
+    scale_colour_manual(name = NULL, values = myColors) + 
+    scale_fill_manual(name = NULL, values = myColors)
+
+p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "none")
+p.facet %+% subset(dat,dataset == "exp")
+p.facet %+% subset(dat,dataset == "no-selection")
+p.facet %+% subset(dat,dataset == "selection")
+p.facet
+p + theme(legend.position = "bottom")
+
+p = ggplot(dat, aes(x = (1/energy.mean), y = Pn.mean, col = dataset, fill = dataset)) +
+    geom_point() +
+    labs(x = "1/lambda_n", y = "<Pn>") +
+    scale_colour_manual(name = NULL, values = myColors) + 
+    scale_fill_manual(name = NULL, values = myColors)
+
+p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "none")
+p.facet %+% subset(dat,dataset == "exp")
+p.facet %+% subset(dat,dataset == "no-selection")
+p.facet %+% subset(dat,dataset == "selection")
+p.facet
+p + theme(legend.position = "bottom")
+
+```
+
+### correlaction between mode profiles
+(calculated for the first 100 modes)
+
+```{r correlation}
+dat = subset(dat, mode < 101)
+dat.exp = subset(dat, dataset == "exp")
+dat.mut = subset(dat,dataset == "no-selection")
+dat.medium = subset(dat,dataset == "selection")
+
+r.exp = cor(dat.exp$Pn.mean, (1/dat.exp$energy.mean))
+r.mut = cor(dat.mut$Pn.mean, (1/dat.mut$energy.mean))
+r.medium = cor(dat.medium$Pn.mean, (1/dat.medium$energy.mean))
+cor.df = data.frame("comparison" = c("exp", "mut", "medium"),
+                    "R" = c(r.exp, r.mut, r.medium))
+knitr::kable(cor.df, digits = 2)
+
+# plots
+par(pty = "s")
+
+plot(y = dat.exp$Pn.mean, x = (1/dat.exp$energy.mean), xlab = "1/lambda_n", ylab = "<Pn> experimental")
+fluc = (1/dat.exp$energy.mean)
+lm = lm(dat.exp$Pn.mean ~ fluc)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.exp, digits = 2)), bty = "n")
+
+plot(y = dat.mut$Pn.mean, x = (1/dat.mut$energy.mean), xlab = "1/lambda_n", ylab = "<Pn> no-selection")
+fluc = (1/dat.mut$energy.mean)
+lm = lm(dat.mut$Pn.mean ~ fluc)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.mut, digits = 2)), bty = "n")
+
+plot(y = dat.medium$Pn.mean, x = (1/dat.medium$energy.mean), xlab = "1/lambda_n", ylab = "<Pn> selection")
+fluc = (1/dat.medium$energy.mean)
+lm = lm(dat.medium$Pn.mean ~ fluc)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.medium, digits = 2)), bty = "n")
+```

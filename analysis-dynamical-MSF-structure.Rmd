@@ -204,7 +204,9 @@ siteComparison.all.datasets.dri2 = rbind(data.frame("dataset" = "exp", siteCompa
 
 siteComparison.all.datasets.dri2 = ddply(siteComparison.all.datasets.dri2, c("dataset", "protein"), mutate,
           "RSD" = sqrt(dri2), 
-        "z.RSD" = vscale(RSD))
+           "SD" = dri2, 
+        "z.RSD" = vscale(RSD),
+         "z.SD" = vscale(SD))
 ```
 
 ### Dynamical divergence along sites
@@ -342,9 +344,12 @@ dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
 # dat with means and standard errors
 d = ddply(dat,c("dataset", "site", "AA", "shell"), function(x) {
                 mean.z.RSD = mean(x$z.RSD, na.rm = T)
+                mean.RSD = mean(x$RSD, na.rm = T)
+                mean.z.SD = mean(x$z.SD, na.rm = T)
+                mean.SD = mean(x$SD, na.rm = T)
                 n.data = sum(!is.na(x$z.RSD))
                 se.z.RSD = sd(x$z.RSD, na.rm = T) / sqrt(n.data)
-                data.frame(mean.z.RSD, n.data, se.z.RSD)
+                data.frame(mean.z.RSD,mean.RSD, mean.z.SD, mean.SD, n.data, se.z.RSD)
 })
 
 # extract means
@@ -355,6 +360,65 @@ d.medium = subset(d, dataset == "selection")
 mean.r.dri2.exp = d.exp$mean.z.RSD
 mean.r.dri2.mut = d.mut$mean.z.RSD
 mean.r.dri2.medium = d.medium$mean.z.RSD
+
+# MSF.p.ref vs z.RSD and z.SD
+MSF.p.ref = as.vector(MSF.p.ref)
+
+## correlations
+r.exp = cor(d.exp$mean.RSD, MSF.p.ref)
+r.medium = cor(d.mut$mean.RSD, MSF.p.ref)
+r.mut = cor(d.medium$mean.RSD, MSF.p.ref)
+
+cor.df = data.frame("MSF vs RSD" = c("exp", "selection", "no-selection"),
+                    "R" = c(r.exp, r.medium, r.mut))
+knitr::kable(cor.df, digits = 2)
+
+## plots
+
+par(pty = "s")
+
+plot(y = d.exp$mean.RSD, x = MSF.p.ref, ylab = "RSD experimental")
+lm = lm(d.exp$mean.RSD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.exp, digits = 2)), bty = "n")
+
+plot(y = d.mut$mean.RSD, x = MSF.p.ref, ylab = "RSD no-selection")
+lm = lm(d.mut$mean.RSD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.mut, digits = 2)), bty = "n")
+
+plot(y = d.medium$mean.RSD, x = MSF.p.ref, ylab = "RSD selection")
+lm = lm(d.medium$mean.RSD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.medium, digits = 2)), bty = "n")
+
+## correlations
+r.exp = cor(d.exp$mean.SD, MSF.p.ref)
+r.medium = cor(d.mut$mean.SD, MSF.p.ref)
+r.mut = cor(d.medium$mean.SD, MSF.p.ref)
+
+cor.df = data.frame("MSF vs SD" = c("exp", "selection", "no-selection"),
+                    "R" = c(r.exp, r.medium, r.mut))
+knitr::kable(cor.df, digits = 2)
+
+## plots
+par(pty = "s")
+
+plot(y = d.exp$mean.SD, x = MSF.p.ref, ylab = "SD experimental")
+lm = lm(d.exp$mean.SD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.exp, digits = 2)), bty = "n")
+
+plot(y = d.mut$mean.SD, x = MSF.p.ref, ylab = "SD no-selection")
+lm = lm(d.mut$mean.SD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.mut, digits = 2)), bty = "n")
+
+plot(y = d.medium$mean.SD, x = MSF.p.ref, ylab = "SD selection")
+lm = lm(d.medium$mean.SD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.medium, digits = 2)), bty = "n")
+
 ```
 
 ### Comparison structure - dynamics

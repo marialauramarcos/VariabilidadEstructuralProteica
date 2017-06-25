@@ -25,7 +25,7 @@ CalculateDynamicalVariability <- function(r.p.1,
                               tolerance, 
                               K.analysis)
 
-  ## get cov matrices
+  ## get variance - covariance matrix
   cov.p.1 = ENMK.p.1$cov
   cov.p.2 = ENMK.p.2$cov
 
@@ -39,7 +39,6 @@ CalculateDynamicalVariability <- function(r.p.1,
   nR = 1 / rowSums(overlap ^ 4)
 
   # calculate MSF (Mean Square Fluctuation)
-  
   ## get the diagonal of the cov matrix
   diag.p.1 = diag(cov.p.1)
   diag.p.2 = diag(cov.p.2)

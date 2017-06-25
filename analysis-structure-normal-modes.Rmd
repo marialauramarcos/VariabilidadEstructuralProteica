@@ -259,6 +259,20 @@ p.facet %+% subset(dat,dataset == "selection")
 p.facet
 p + theme(legend.position = "bottom")
 
+p = ggplot(dat,aes(x=mode,y=Pn.median,col=dataset,fill=dataset)) +
+    geom_pointrange(aes(ymin=Pn.median.min,ymax = Pn.median.max),size=.2,alpha=.4) +
+    geom_line(aes(y=rq.5))  +
+    labs(x="mode energy",y="structural divergence (median Pn) ") +
+    scale_colour_manual(name = NULL,values = myColors) + 
+    scale_fill_manual(name=NULL,values=myColors)+
+    coord_cartesian(xlim=c(0,3)) 
+
+p.facet = p + facet_grid(dataset~., switch = "y") + theme(legend.position = "none")
+p.facet %+% subset(dat,dataset == "exp")
+p.facet %+% subset(dat,dataset == "no-selection")
+p.facet %+% subset(dat,dataset == "selection")
+p.facet
+p + theme(legend.position = "bottom")
 ```
 
 ### correlaction between mode profiles

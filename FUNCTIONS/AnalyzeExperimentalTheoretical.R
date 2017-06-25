@@ -69,7 +69,7 @@ AnalyzeExperimentalTheoretical <- function(family,
   n.prot = length(pdbid.dataset)
   
   ### THEORETICAL ###
-  print("analysing theoretical...")
+  print("analyzing theoretical...")
   
   # filenames
   theo.r.p.ref.fname <- file.path(out.dir, paste(mut.fname.id, "_out_r.p.ref.csv", sep = ""))
@@ -144,6 +144,7 @@ AnalyzeExperimentalTheoretical <- function(family,
   write.csv(m.theo.nR, file = file.path(out.dir, paste(analysis.fname.id, "_out_m.theo.nR.csv", sep = "")), row.names = FALSE)
   
   ### EXPERIMENTAL ###
+  print("analyzing experimental...")
   
   # Read pdb of exp.p.ref
   exp.r.p.ref = theo.r.p.ref

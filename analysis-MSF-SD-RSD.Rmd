@@ -1,0 +1,256 @@
+---
+title: "Dynamical Divergence Analysis"
+author: "Maria Laura Marcos, Julian Echave"
+output: html_document
+---
+# Introduction
+In this report we compare structural divergence profiles in cartesian coordinates (RMSD and MSD) with the Mean Square Fluctuation (MSF) of the sites.
+
+```{r setup, include = FALSE}
+# set chunk options
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r load-packages}
+# load packages
+library(ggplot2)
+library(reshape2)
+library(plyr)
+library(quantreg)
+library(bio3d)
+
+# load functions
+source(file.path(data.dir, "multiplot.R"))
+source(file.path(data.dir, "my-functions.R")) 
+```
+
+```{r set-my-colors}
+# set my colors
+myColors = c("blue", "darkgreen","darkgreen", "red", "red", "red") 
+names(myColors) <- c("exp", "mut", "no-selection", "medium", "selection", "mut+sel")
+```
+
+```{r set-run-variables}
+# general parameters
+tolerance = 1e-10
+
+# set significance factors
+f95 = 1.96
+f99 = 2.6
+f999 = 3.3
+```
+
+```{r set-file-names}
+# set input filenames
+## data
+reference.fname = file.path(data.dir, paste(family, "_ref.txt", sep = ""))
+protein_list.fname = file.path(data.dir, paste(family, "_list.txt", sep = ""))
+site.info.fname = file.path(data.dir, paste(p.ref, "_m.da.ca.csv", sep = ""))
+min.da.CM.CA.fname = file.path(data.dir, paste(p.ref, "_min.da.CM.ca.csv", sep = ""))
+
+## profiles to compare
+### dri2
+dri2.exp.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.exp.norm.dr.squarei.csv", sep = ""))
+dri2.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+dri2.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+```
+
+```{r set-reference-protein}
+# which is the reference protein?
+reference = as.character(read.table(reference.fname, header = F)[1, 1])
+if (reference != p.ref) {
+  print("Warning: different references")
+}
+```
+We studied the `r family` family. 
+We used the ENM `r enm` with R0 = `r R0` to generate mutants.
+We used as reference for the ENM the protein with pdb code `r reference`. 
+We simulated `r n.mut.p` mutants of this reference for each protein of the family.
+The `r family` family is of the type `r type` and consists of the following proteins:
+
+```{r set-experimental-protein-names, comment = ""}
+# experimental protein names
+protein.exp = read.table(protein_list.fname, header = F, stringsAsFactors = F)[, 1]
+protein.exp = protein.exp[protein.exp != reference]
+print(protein.exp)
+```
+
+```{r set-site-info}
+# read site information of the reference protein
+site.info = read.csv(site.info.fname, header = T, sep = ",")
+
+# add info to site.info
+d = ddply(site.info, "site", .fun = function(x) data.frame("da" = min(x[, c(-1, -2)])))
+
+# define shells of active.sites site neighborhood
+d$shell = cut(d$da, breaks = c(-.1, 2.5, 7.5, 12.5, 17.5, 22.5, 27.5, 32.5, 37.5, 42.5, 47.5, 52.5, max(d$da)))
+levels(d$shell) = seq(length(levels(d$shell))) - 1 # rename shell levels
+site.info = merge(site.info, d, by = "site")
+
+# read reference pdb and calculate resno, AA, and CN
+reference.pdb.fname = file.path(data.dir,paste(reference, ".pdb", sep = ""))
+ref.pdb = read.pdb(reference.pdb.fname)
+inds = atom.select(ref.pdb, elety = "CA")
+ref.pdb.ca = ref.pdb$atom[inds$atom,]
+cmap.ca = cmap(ref.pdb$xyz[inds$xyz], dcut = R0, scut = 0, mask.lower = F)
+r.p.ref = ref.pdb$xyz[inds$xyz]
+CN = rowSums(cmap.ca, na.rm = T) - 1 # diag(cmap.ca) returned by cmap is 1!
+n.sites = length(CN)
+AA = ref.pdb.ca$resid
+resno = ref.pdb.ca$resno
+
+pdb.info = data.frame(resno, AA, CN)
+names(pdb.info) = c("resno", "AA", paste("CN", as.character(R0), sep = ""))
+
+# add pdb.info to site.info
+site.info = cbind(site.info, pdb.info)
+```
+
+```{r read-site-data}
+# read dri2 data
+dri2.exp = read.csv(dri2.exp.fname, header = T)
+dri2.mut = read.csv(dri2.mut.fname, header = T)
+dri2.medium = read.csv(dri2.medium.fname, header = T)
+```
+
+```{r calculate-MSF-p.ref}
+# calculate MSF of p.ref (Mean Square Fluctuation)
+## calculate ENM
+ENMK.p.ref = CalculateENMKeff(matrix(r.p.ref, nrow = 3), 
+                              seq(1:n.sites), 
+                              c(), 
+                              R0, 
+                              tolerance, 
+                              K.analysis)
+## get cov matrix
+cov.p.ref = ENMK.p.ref$cov
+
+## get the diagonal of the cov matrix
+diag.p.ref = diag(cov.p.ref)
+
+## calculate the factor to split the diagonal
+factor = sort(rep(seq(1:n.sites), 3))
+
+## split the diagonal
+s.diag.p.ref = split(diag.p.ref, factor)
+
+## create a matrix to save the data
+MSF.p.ref = matrix(nrow = 1, ncol = n.sites)
+
+## start a loop to calculate sums for each site
+for (i in (1:n.sites)) {
+  MSF.p.ref[, i] = sum(unlist(s.diag.p.ref[i]), use.names = F)
+}
+ 
+```
+
+```{r prepare-site-data-dri2}
+# prepare the data
+## exp
+tdri2.exp = as.data.frame(t(as.matrix(dri2.exp)))
+tdri2.exp = cbind(site.info, tdri2.exp)
+siteComparison.exp = melt(tdri2.exp, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
+
+## mut
+tdri2.mut = as.data.frame(t(as.matrix(dri2.mut)))
+tdri2.mut = cbind(site.info, tdri2.mut)
+siteComparison.mut = melt(tdri2.mut, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
+
+## medium
+tdri2.medium = as.data.frame(t(as.matrix(dri2.medium)))
+tdri2.medium = cbind(site.info, tdri2.medium)
+siteComparison.medium = melt(tdri2.medium, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
+
+# bluild the data.frame
+siteComparison.all.datasets.dri2 = rbind(data.frame("dataset" = "exp", siteComparison.exp),
+                                         data.frame("dataset" = "mut", siteComparison.mut),
+                                         data.frame("dataset" = "medium", siteComparison.medium))
+
+siteComparison.all.datasets.dri2 = ddply(siteComparison.all.datasets.dri2, c("dataset", "protein"), mutate,
+          "RSD" = sqrt(dri2), 
+           "SD" = dri2, 
+        "z.RSD" = vscale(RSD),
+         "z.SD" = vscale(SD))
+```
+
+```{r mean-profiles-comparisons}
+# prepare dat
+dat = siteComparison.all.datasets.dri2
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
+
+# dat with means and standard errors
+d = ddply(dat,c("dataset", "site", "AA", "shell"), function(x) {
+                mean.z.RSD = mean(x$z.RSD, na.rm = T)
+                mean.RSD = mean(x$RSD, na.rm = T)
+                mean.z.SD = mean(x$z.SD, na.rm = T)
+                mean.SD = mean(x$SD, na.rm = T)
+                n.data = sum(!is.na(x$z.RSD))
+                se.z.RSD = sd(x$z.RSD, na.rm = T) / sqrt(n.data)
+                data.frame(mean.z.RSD,mean.RSD, mean.z.SD, mean.SD, n.data, se.z.RSD)
+})
+
+# extract means
+d.exp = subset(d, dataset == "exp")
+d.mut = subset(d, dataset == "no-selection")
+d.medium = subset(d, dataset == "selection")
+
+# MSF.p.ref vs z.RSD and z.SD
+MSF.p.ref = as.vector(MSF.p.ref)
+
+# z.RSD
+## correlations
+r.exp = cor(d.exp$mean.RSD, MSF.p.ref)
+r.medium = cor(d.mut$mean.RSD, MSF.p.ref)
+r.mut = cor(d.medium$mean.RSD, MSF.p.ref)
+
+cor.df = data.frame("MSF vs RSD" = c("exp", "selection", "no-selection"),
+                             "R" = c(r.exp, r.medium, r.mut))
+knitr::kable(cor.df, digits = 2)
+
+## plots
+par(pty = "s")
+
+plot(y = d.exp$mean.RSD, x = MSF.p.ref, ylab = "RSD experimental")
+lm = lm(d.exp$mean.RSD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.exp, digits = 2)), bty = "n")
+
+plot(y = d.mut$mean.RSD, x = MSF.p.ref, ylab = "RSD no-selection")
+lm = lm(d.mut$mean.RSD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.mut, digits = 2)), bty = "n")
+
+plot(y = d.medium$mean.RSD, x = MSF.p.ref, ylab = "RSD selection")
+lm = lm(d.medium$mean.RSD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.medium, digits = 2)), bty = "n")
+
+# SD
+## correlations
+r.exp = cor(d.exp$mean.SD, MSF.p.ref)
+r.medium = cor(d.mut$mean.SD, MSF.p.ref)
+r.mut = cor(d.medium$mean.SD, MSF.p.ref)
+
+cor.df = data.frame("MSF vs SD" = c("exp", "selection", "no-selection"),
+                            "R" = c(r.exp, r.medium, r.mut))
+knitr::kable(cor.df, digits = 2)
+
+## plots
+par(pty = "s")
+
+plot(y = d.exp$mean.SD, x = MSF.p.ref, ylab = "SD experimental")
+lm = lm(d.exp$mean.SD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.exp, digits = 2)), bty = "n")
+
+plot(y = d.mut$mean.SD, x = MSF.p.ref, ylab = "SD no-selection")
+lm = lm(d.mut$mean.SD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.mut, digits = 2)), bty = "n")
+
+plot(y = d.medium$mean.SD, x = MSF.p.ref, ylab = "SD selection")
+lm = lm(d.medium$mean.SD ~ MSF.p.ref)
+abline(lm)
+legend("topleft", paste ("r = ", round(r.medium, digits = 2)), bty = "n")
+```

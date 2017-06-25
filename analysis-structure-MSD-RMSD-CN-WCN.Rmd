@@ -1,0 +1,258 @@
+---
+title: "Structural Divergence Analysis"
+author: "Maria Laura Marcos, Julian Echave"
+output: html_document
+---
+
+
+```{r load-packages}
+# load packages
+library(ggplot2)
+library(reshape2)
+library(plyr)
+library(quantreg)
+library(bio3d)
+
+# load functions
+source("FUNCTIONS/ReadCA.R") 
+source("FUNCTIONS/CalculateSideChainCM.R")
+source(file.path(data.dir, "multiplot.R"))
+source(file.path(data.dir, "my-functions.R"))
+```
+
+```{r set-file-names}
+# set input filenames
+cc.matrix = c()
+s.cc.matrix = c()
+
+# satart a loop for each family
+for (f in (1:nrow(input))) { 
+  print(f)
+  family <- as.character(input$family)[f]
+  type <- as.character(input$type)[f]
+  p.ref <- as.character(input$p.ref)[f]
+  enm <- as.character(input$enm)[f]
+  n.mut.p <- input$n.mut.p[f]
+  R0.CA = input$R0.CA[f]
+  R0.CM = input$R0.CM[f]
+  chain.p.ref <- as.character(input$chain.p.ref)[f]
+  print(family)
+  
+  data.dir <- paste("OUT/out_subset_CA_ANM", sep = "")
+  R0 = 10
+  
+  ## data
+  reference.fname = file.path(data.dir, paste(family, "_ref.txt", sep = ""))
+  protein_list.fname = file.path(data.dir, paste(family, "_list.txt", sep = ""))
+
+  ## profiles to compare
+  dri2.exp.fname = file.path(data.dir, paste(family, "_R0_", R0,   "_beta_no.sel_K.analysis_Keff_out_m.exp.norm.dr.squarei.csv", sep = ""))
+  dri2.medium.fname = file.path(data.dir, paste(family, "_R0_", R0, "_beta_medium.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+  dri2.mut.fname = file.path(data.dir,paste(family, "_R0_", R0, "_beta_no.sel_K.analysis_Keff_out_m.theo.norm.dr.squarei.csv", sep = ""))
+
+# which is the reference protein?
+reference = as.character(read.table(reference.fname, header = F)[1, 1])
+if (reference != p.ref) {
+  print("Warning: different references")
+}
+
+# experimental protein names
+protein.exp = read.table(protein_list.fname, header = F, stringsAsFactors = F)[, 1]
+protein.exp = protein.exp[protein.exp != reference]
+print(protein.exp)
+
+# read reference pdb and calculate resno, AA, and CN
+reference.pdb.fname = file.path(data.dir,paste(reference, ".pdb", sep = ""))
+ref.pdb = read.pdb(reference.pdb.fname)
+inds = atom.select(ref.pdb, elety = "CA")
+ref.pdb.ca = ref.pdb$atom[inds$atom, ]
+n.sites = length(ref.pdb.ca$resid)
+AA = ref.pdb.ca$resid
+resno = seq(1:n.sites)
+pdb.info = data.frame(resno, AA)
+names(pdb.info) = c("resno", "AA")
+print(n.sites)
+
+site.info = pdb.info
+
+### CA ###
+
+# calculate CN
+R0 = 10
+cmap.ca.R0.10 = cmap(ref.pdb$xyz[inds$xyz], dcut = R0, scut = 0, mask.lower = F)
+CN = rowSums(cmap.ca.R0.10, na.rm = T) - 1 # diag(cmap.ca) returned by cmap is 1!
+
+# calculate WCN
+r.p.ref = matrix(ref.pdb$xyz[inds$xyz], nrow = 3)
+dist.r.p.ref = dist.xyz(t(r.p.ref))
+WCN = c()
+for (i in (1:ncol(r.p.ref))) {
+  WCN[i] = sum(1/dist.r.p.ref[i, -i]^2)
+}
+
+# read data
+## exp
+dri2.exp = read.csv(dri2.exp.fname, header = T)
+site = site.info$site
+rownames(dri2.exp) = paste("exp", rownames(dri2.exp), sep = "")
+
+## mut
+dri2.mut = read.csv(dri2.mut.fname, header = T)
+rownames(dri2.mut) = paste("mut", rownames(dri2.mut), sep = "")
+
+## medium
+dri2.medium = read.csv(dri2.medium.fname, header = T)
+rownames(dri2.medium) = paste("medium", rownames(dri2.medium), sep = "")
+
+# prepare the data
+## exp
+tdri2.exp = as.data.frame(t(as.matrix(dri2.exp)))
+tdri2.exp = cbind(site.info, tdri2.exp)
+siteComparison.exp = melt(tdri2.exp, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
+
+## mut
+tdri2.mut = as.data.frame(t(as.matrix(dri2.mut)))
+tdri2.mut = cbind(site.info, tdri2.mut)
+siteComparison.mut = melt(tdri2.mut, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
+
+## medium
+tdri2.medium = as.data.frame(t(as.matrix(dri2.medium)))
+tdri2.medium = cbind(site.info, tdri2.medium)
+siteComparison.medium = melt(tdri2.medium, id.vars = names(site.info), variable.name = "protein", value.name = "dri2")
+
+# bluild the data.frame
+siteComparison.all.datasets = rbind(data.frame("dataset" = "exp", siteComparison.exp),
+                                    data.frame("dataset" = "mut", siteComparison.mut),
+                                    data.frame("dataset" = "medium", siteComparison.medium))
+
+siteComparison.all.datasets = ddply(siteComparison.all.datasets, c("dataset", "protein"), mutate,
+                     "z.SD" = vscale(dri2),
+                      "RSD" = sqrt(dri2),
+                    "z.RSD" = vscale(RSD))
+
+## prepare dat
+dat = siteComparison.all.datasets
+dat$dataset = revalue(dat$dataset, c("medium" = "selection"))
+dat$dataset = revalue(dat$dataset, c("mut" = "no-selection"))
+
+## dat with means and standard errors
+d = ddply(dat,c("dataset", "resno"), function(x) {
+                mean.z.RSD = mean(x$z.RSD, na.rm = T)
+                mean.z.SD = mean(x$z.SD, na.rm = T)
+                ndata = sum(!is.na(x$z.RSD))
+                data.frame(mean.z.RSD, mean.z.SD, ndata)
+})
+
+# calculate correlations berween profiles
+d.exp = subset(d, dataset == "exp")
+d.mut = subset(d, dataset == "no-selection")
+d.medium = subset(d, dataset == "selection")
+
+# calculate correlations
+
+cc = c()
+cc = c(cc,cor(d.exp$mean.z.RSD, CN))
+cc = c(cc,cor(d.exp$mean.z.RSD, WCN))
+cc = c(cc,cor(d.exp$mean.z.RSD, 1/CN))
+cc = c(cc,cor(d.exp$mean.z.RSD, 1/WCN))
+cc = c(cc,cor(d.mut$mean.z.RSD, CN))
+cc = c(cc,cor(d.mut$mean.z.RSD, WCN))
+cc = c(cc,cor(d.mut$mean.z.RSD, 1/CN))
+cc = c(cc,cor(d.mut$mean.z.RSD, 1/WCN))
+cc = c(cc,cor(d.medium$mean.z.RSD, CN))
+cc = c(cc,cor(d.medium$mean.z.RSD, WCN))
+cc = c(cc,cor(d.medium$mean.z.RSD, 1/CN))
+cc = c(cc,cor(d.medium$mean.z.RSD, 1/WCN))
+
+cc = c(cc,cor(d.exp$mean.z.SD, CN))
+cc = c(cc,cor(d.exp$mean.z.SD, WCN))
+cc = c(cc,cor(d.exp$mean.z.SD, 1/CN))
+cc = c(cc,cor(d.exp$mean.z.SD, 1/WCN))
+cc = c(cc,cor(d.mut$mean.z.SD, CN))
+cc = c(cc,cor(d.mut$mean.z.SD, WCN))
+cc = c(cc,cor(d.mut$mean.z.SD, 1/CN))
+cc = c(cc,cor(d.mut$mean.z.SD, 1/WCN))
+cc = c(cc,cor(d.medium$mean.z.SD, CN))
+cc = c(cc,cor(d.medium$mean.z.SD, WCN))
+cc = c(cc,cor(d.medium$mean.z.SD, 1/CN))
+cc = c(cc,cor(d.medium$mean.z.SD, 1/WCN))
+
+cc.matrix = cbind(cc.matrix, cc)
+
+cc = c()
+cc = c(cc,cor(d.exp$mean.z.RSD, CN, method = "spearman"))
+cc = c(cc,cor(d.exp$mean.z.RSD, WCN, method = "spearman"))
+cc = c(cc,cor(d.exp$mean.z.RSD, 1/CN, method = "spearman"))
+cc = c(cc,cor(d.exp$mean.z.RSD, 1/WCN, method = "spearman"))
+cc = c(cc,cor(d.mut$mean.z.RSD, CN, method = "spearman"))
+cc = c(cc,cor(d.mut$mean.z.RSD, WCN, method = "spearman"))
+cc = c(cc,cor(d.mut$mean.z.RSD, 1/CN, method = "spearman"))
+cc = c(cc,cor(d.mut$mean.z.RSD, 1/WCN, method = "spearman"))
+cc = c(cc,cor(d.medium$mean.z.RSD, CN, method = "spearman"))
+cc = c(cc,cor(d.medium$mean.z.RSD, WCN, method = "spearman"))
+cc = c(cc,cor(d.medium$mean.z.RSD, 1/CN, method = "spearman"))
+cc = c(cc,cor(d.medium$mean.z.RSD, 1/WCN, method = "spearman"))
+
+cc = c(cc,cor(d.exp$mean.z.SD, CN, method = "spearman"))
+cc = c(cc,cor(d.exp$mean.z.SD, WCN, method = "spearman"))
+cc = c(cc,cor(d.exp$mean.z.SD, 1/CN, method = "spearman"))
+cc = c(cc,cor(d.exp$mean.z.SD, 1/WCN, method = "spearman"))
+cc = c(cc,cor(d.mut$mean.z.SD, CN, method = "spearman"))
+cc = c(cc,cor(d.mut$mean.z.SD, WCN, method = "spearman"))
+cc = c(cc,cor(d.mut$mean.z.SD, 1/CN, method = "spearman"))
+cc = c(cc,cor(d.mut$mean.z.SD, 1/WCN, method = "spearman"))
+cc = c(cc,cor(d.medium$mean.z.SD, CN, method = "spearman"))
+cc = c(cc,cor(d.medium$mean.z.SD, WCN, method = "spearman"))
+cc = c(cc,cor(d.medium$mean.z.SD, 1/CN, method = "spearman"))
+cc = c(cc,cor(d.medium$mean.z.SD, 1/WCN, method = "spearman"))
+
+s.cc.matrix = cbind(s.cc.matrix, cc)
+}
+
+colnames(cc.matrix) = input$family
+colnames(s.cc.matrix) = input$family
+
+names = c(                "exp.mean.z.RSD vs CN",
+                        "exp.mean.z.RSD vs WCN",
+                        "exp.mean.z.RSD vs 1/CN",
+                        "exp.mean.z.RSD vs 1/WCN",
+                        "no-sel.mean.z.RSD vs CN",
+                        "no-sel.mean.z.RSD vs WCN",
+                        "no-sel.mean.z.RSD vs 1/CN",
+                        "no-sel.mean.z.RSD vs 1/WCN",
+                        "sel.mean.z.RSD vs CN",
+                        "sel.mean.z.RSD vs WCN",
+                        "sel.mean.z.RSD vs 1/CN",
+                        "sel.mean.z.RSD vs 1/WCN",
+                        "exp.mean.z.SD vs CN",
+                        "exp.mean.z.SD vs WCN",
+                        "exp.mean.z.SD vs 1/CN",
+                        "exp.mean.z.SD vs 1/WCN",
+                        "no-sel.mean.z.SD vs CN",
+                        "no-sel.mean.z.SD vs WCN",
+                        "no-sel.mean.z.SD vs 1/CN",
+                        "no-sel.mean.z.SD vs 1/WCN",
+                        "sel.mean.z.SD vs CN",
+                        "sel.mean.z.SD vs WCN",
+                        "sel.mean.z.SD vs 1/CN",
+                        "sel.mean.z.SD vs 1/WCN")
+rownames(cc.matrix) = names
+rownames(s.cc.matrix) = names
+
+write.csv(cc.matrix, file="pearson.cc.SDvsPD.csv")
+write.csv(s.cc.matrix, file="spearman.cc.SDvsPD.csv")
+
+```
+
+
+### All correlations
+
+```{r correlations}
+# build a data frame
+cor = data.frame("CA pearson" = CA.cor.p,
+                 "CM pearson" = CM.cor.p,
+                 "CA spearman" = CA.cor.s,
+                 "CM spearman" = CM.cor.s)
+rownames(cor) = c("CN R0 = -0.1", "CN R0 = 2.5", "CN R0 = 7.5", "CN R0 = 12.5", "CN R0 = 17.5", "CN R0 = 22.5", "CN R0 = 27.5", "CN R0 = 32.5", "CN R0 = 37.5", "CN R0 = 42.5", "CN R0 = 47.5", "CN R0 = 52.5", "WCN")
+knitr::kable(cor, digits = 2, caption = "Correlation structure (<z.RSD>) - sequence (CN/WCN)")
+```
